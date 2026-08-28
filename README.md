@@ -1,215 +1,243 @@
-# Airline Snowflake dbt Analytics Platform
+# Airline Operations & Commercial Analytics Engineering Platform
 
-Production-style analytics engineering portfolio project for airline operations and commercial analytics, centred on Snowflake, dbt, SQL, testing, lineage, and financial control.
+A Snowflake + dbt + SQL analytics engineering platform modelling airline operations, bookings,
+pricing, billing, fulfilment-driven revenue recognition, financial reconciliation, and commercial
+reporting -- built production-style, end to end, on deterministic synthetic data.
 
-## Purpose
+## Overview
 
-This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
+This is a specialist analytics-engineering portfolio project, not a generic data platform. It
+covers one coherent business domain -- an airline's operational and commercial data -- from
+conformed airport reference data through to executive-facing commercial marts, with the financial
+rigour (reconciliation, exception detection, revenue-recognition semantics) a real airline finance
+or commercial-analytics team would expect.
 
-Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completed the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. Milestone 9 added a deterministic synthetic airline operational/commercial source dataset. Milestone 10 added a dbt source and staging layer over that synthetic dataset — 31 source tables and 31 typed `stg_airline__*` staging views across reference, operations, bookings, pricing, and billing domains — with no business transformation yet. Milestone 11 added the core airline operations model: four `int_*` intermediate transformations, six conformed core dimensions (including the first genuine `dim_airport` join to AirStats), and two core facts (`fct_flight_schedule`, `fct_flight_operations`) covering routes, airlines, aircraft, and flight schedules/instances. Milestone 12 added the booking and ticketing layer: five booking-lifecycle intermediate models, four core dimensions (`dim_passenger`, `dim_booking_channel`, `dim_fare_class`, `dim_cabin`), and four core facts (`fct_bookings`, `fct_booking_passengers`, `fct_ticket_segments`, `fct_passenger_journeys`), plus a deterministic `passengers_carried`/`load_factor` update to `fct_flight_operations`. Milestone 13 added a deterministic pricing/tariff layer: five pricing intermediate models, six core dimensions (`dim_fare_rule`, `dim_tax`, `dim_currency`, `dim_discount`, `dim_service`, `dim_product`), one core fact (`fct_pricing_events`), and a `convert_currency` macro, covering fares, fare rules, taxes, airport charges, discounts, ancillary pricing, and currency handling. Milestone 14 added a trustworthy invoice layer: four billing intermediate models (`int_invoice_status`, `int_invoice_calculation`, `int_invoice_charge_comparison`, `int_invoice_line_validation`) and two core facts (`fct_invoices`, `fct_invoice_lines`), covering invoice/invoice-line structure, an internal header-vs-lines arithmetic control, and an external pricing-vs-invoice comparison against Milestone 13's `fct_pricing_events` — evidence only, with no billing-exception classification yet. Milestone 15 added a reliable payment layer: five billing intermediate models (`int_payment_attempt_classification`, `int_failed_payment_attempts`, `int_invoice_payment_matching`, `int_payment_allocation`, `int_unallocated_payments`), one core dimension (`dim_payment_method`), and two core facts (`fct_payment_attempts`, `fct_payments`), covering payment-attempt classification, invoice matching/allocation, currency/timing evidence, and a provisional `amount_collected`/`payment_count` extension to `fct_invoices` — again evidence only, with no billing-exception classification. Milestone 16 added a reliable post-payment financial-adjustment layer: four billing intermediate models (`int_refund_payment_matching`, `int_refund_allocation`, `int_adjustment_allocation`, `int_credit_note_application`) and three core facts (`fct_refunds`, `fct_adjustments`, `fct_credit_notes`), covering refund/payment matching, refund-limit evidence, adjustment sign/type evidence, credit-note handling, and a provisional `refund_count`/`refund_amount`/`adjustment_count`/`net_adjustment_amount` extension to `fct_invoices` — again evidence only, with no billing-exception classification. Milestone 17 added a service-fulfilment-driven revenue-recognition layer: six intermediate models under `models/intermediate/revenue_recognition/` (`int_fulfilled_flight_services`, `int_fulfilled_ancillary_services`, `int_ticket_revenue_recognition`, `int_ancillary_revenue_recognition`, `int_refund_revenue_reversal`, `int_revenue_adjustments`) and one core fact (`fct_revenue`, a unified ticket_revenue/ancillary_revenue/refund_reversal/revenue_adjustment event structure), covering fulfilment-driven ticket and ancillary revenue recognition, refund reversals, and revenue adjustments — recognition depends only on service fulfilment, never on booking/invoice/payment status alone. Milestone 18 added the first complete financial-assurance layer: a final outstanding-balance model (`int_outstanding_balance`/`fct_outstanding_balances`, one row per invoice, `outstanding_balance = source_invoice_total - amount_collected + refund_amount + net_adjustment_amount`, never clamped to zero), a currency-safe corporate-balance aggregate (`int_corporate_outstanding_balances`), and a fourteen-type billing/revenue exception-detection framework (`int_billing_exceptions`/`fct_billing_exceptions`) that reuses Milestone 14-17 evidence directly — with deterministic severity and financial-value-at-risk logic, and honest null workflow placeholders rather than a fabricated investigation history. Milestone 19 adds a formal reconciliation layer: eight intermediate models under `models/intermediate/reconciliation/` (booking/invoice/payment/refund source-to-warehouse controls, a revenue/cash bridge, a unified control summary, a billing-exception aggregate, and a month-end snapshot), one core fact (`fct_reconciliation_controls`), a deterministic Python reconciliation-evidence generator (`scripts/generate_reconciliation_evidence.py`) producing a dbt seed and offline `outputs/*.csv` evidence, and five portfolio reports under `reports/` — proving that Milestone 9's synthetic source control totals and the warehouse analytical layer agree, while explicitly distinguishing a business anomaly (e.g. the deliberately over-collected refund, which still reconciles exactly) from a genuine reconciliation failure. Milestone 20 adds business-facing commercial reporting marts across five domains under `models/marts/`: `airline_operations` (daily/route/airline/airport flight-activity reporting), `passenger_commercial` (booking/journey/channel/fare-class/cabin/corporate-account reporting), `billing_assurance` (thin reporting re-selections of the Milestone 14-19 financial-assurance facts), `revenue` (recognised-revenue reporting from `fct_revenue`, including a documented route-commercial-performance mart that deliberately excludes profitability because no cost data exists in this repository), and `executive` (four narrow cross-domain summary marts). No operational, pricing, billing, exception-detection, revenue-recognition, or reconciliation logic is recomputed anywhere in Milestone 20; every mart reuses an existing governed fact/dimension or another mart. It does not add dashboards, live BI deployment, production dbt contracts, incremental model design, state-based CI, or the further production dbt-engineering enhancements reserved for Milestone 21 — those remain planned for later milestones. Milestone 21 hardens the project for production-style analytics engineering: enforced dbt model contracts on nine governed core dimensions/facts, incremental materialisation (merge strategy) for four transaction-event facts, four new `check`-strategy SCD Type 2 snapshots for airline reference data, six dbt exposures documenting intended (not yet deployed) BI consumption surfaces, a governed metric-definition convention, and a two-lane CI (an always-green offline-assurance lane plus a credentials-gated warehouse-assurance lane) — without changing any existing business logic, adding new business domains, or claiming any of this has executed against a live Snowflake warehouse. See `docs/engineering/dbt_production_engineering.md` and `docs/runbooks/dbt_production_runbook.md`.
+## Business Problem
 
-See `reports/airstats_capstone_summary.md` for a concise AirStats capstone summary, `docs/data_models/airstats_capstone_completion_evidence.md` for the full AirStats requirement-to-file mapping, `docs/data_models/airline_synthetic_source_data.md` for the Milestone 9 synthetic-data design, `docs/data_models/airline_staging_layer.md` for the Milestone 10 source/staging design, `docs/data_models/airline_core_operations.md` for the Milestone 11 core operations model design, `docs/data_models/airline_booking_ticketing.md` for the Milestone 12 booking/ticketing design, `docs/data_models/airline_pricing_tariffs.md` for the Milestone 13 pricing/tariffs design, `docs/data_models/airline_invoices.md` for the Milestone 14 invoice design, `docs/data_models/airline_payments.md` for the Milestone 15 payment design, `docs/data_models/airline_refunds_adjustments.md` for the Milestone 16 refund/adjustment design, `docs/data_models/airline_revenue_recognition.md` for the Milestone 17 revenue-recognition design, `docs/data_models/airline_outstanding_balances_exceptions.md` for the Milestone 18 outstanding-balance/exception design, `docs/data_models/airline_reconciliation_controls.md` for the Milestone 19 reconciliation design, `docs/data_models/airline_commercial_marts.md` for the Milestone 20 commercial-marts design, and `docs/engineering/dbt_production_engineering.md` plus `docs/runbooks/dbt_production_runbook.md` for the Milestone 21 production-engineering design.
+An airline (and the finance/commercial teams around it) needs to answer questions that span
+several distinct systems: which flights actually operated, which bookings turned into tickets,
+what was priced versus what was invoiced, what cash was actually collected, which invoices remain
+outstanding, which billing events look wrong, and how much revenue was genuinely *earned* -- not
+just billed. This platform builds the layered dbt project that answers those questions
+end to end, with every monetary figure traceable back to a specific, governed source.
 
-## Core Stack
+## What the Platform Demonstrates
 
-- Snowflake for the analytical warehouse
-- dbt Core with the Snowflake adapter for SQL transformation
-- SQLFluff for Snowflake/dbt SQL linting
-- Python tooling for local development checks
-- GitHub Actions for credential-free CI foundation
+- Dimensional modelling with explicit grain, surrogate keys, and conformed dimensions across two
+  independent source systems (AirStats airport reference + a synthetic airline operational/
+  commercial dataset).
+- A financial-assurance layer that distinguishes booked value, invoiced value, cash collected,
+  refunds/adjustments, recognised revenue, outstanding balance, and financial value at risk --
+  never blurring these into one generic "revenue" number.
+- Deterministic synthetic data with 14 deliberately injected, catalogued business anomalies, and
+  rule-based detection that finds all of them without a single hardcoded record ID.
+- Source-to-warehouse reconciliation that explicitly separates a genuine ETL defect from a
+  business anomaly that reconciles correctly.
+- Production-style dbt engineering -- enforced model contracts, incremental models, SCD Type 2
+  snapshots, exposures, governed metric definitions, and a two-lane CI pipeline -- applied
+  selectively and justified in writing, not applied everywhere by default.
 
-## Intended Analytical Flow
+## Architecture
 
-AirStats airport/runway reference -> routes and flights -> bookings and tickets -> fares/products/services -> invoices and payments -> refunds and adjustments -> revenue recognition -> balances and billing exceptions -> reconciliation -> commercial reporting.
+```mermaid
+flowchart LR
+    SRC[Sources -- AirStats and Synthetic Airline Data] --> STG[Staging]
+    STG --> INT[Intermediate]
+    INT --> CORE[Core Dimensions and Facts]
+    CORE --> ASSURE[Assurance and Reconciliation]
+    CORE --> MARTS[Commercial Marts]
+    ASSURE --> MARTS
+    MARTS --> BI[Intended BI Consumption]
+```
+
+Five layers: `staging` (typed, source-aligned), `intermediate` (reusable business logic),
+`core` (governed dimensions/facts, nine under an enforced dbt contract), `marts` (37
+consumption-ready reporting models across six domains), and a set of exposures documenting
+intended (not yet deployed) BI consumption surfaces. See
+[`docs/architecture/overview.md`](docs/architecture/overview.md) for the full layer breakdown and
+[`docs/data_models/`](docs/data_models/) for per-domain lineage detail.
+
+## Core Data Flow
+
+```text
+AirStats / OurAirports reference
+  -> routes
+  -> scheduled flights
+  -> operated flight instances
+  -> bookings
+  -> passengers
+  -> tickets and flight segments
+  -> pricing / fares / taxes / fees / ancillaries
+  -> invoices
+  -> payments
+  -> refunds / adjustments
+  -> service fulfilment
+  -> recognised revenue
+  -> outstanding balances
+  -> billing exceptions
+  -> reconciliation
+  -> commercial reporting
+```
+
+Every arrow above is a real `ref()`/`source()` dependency in the dbt DAG, not an aspirational
+diagram -- see [`docs/data_models/`](docs/data_models/) for the model-by-model lineage behind each
+step.
+
+## AirStats: the Conformed Airport Reference Foundation
+
+AirStats is this project's own conformed layer over real, open OurAirports-style airport and
+runway reference data -- staged, tested, snapshotted (SCD Type 2), and exposed as consumption-ready
+marts under `models/marts/airport_operations/`. It is the **sole authoritative source** for
+airport identity in this platform: `dim_airport` is built directly from the AirStats marts, and
+every airline route, hub, and operational airport identifier is conformed to it. The synthetic
+airline dataset carries airport identifiers styled the way AirStats/OurAirports represents them,
+but that synthetic fixture is never treated as an authoritative reference -- only AirStats is.
+
+## Key Capabilities
+
+- **Layered dbt architecture** with explicit grain and surrogate keys generated once per entity
+  and reused everywhere via `ref()` -- never re-derived.
+- **Nine enforced dbt model contracts** on the platform's most-consumed governed dimensions/facts
+  (`dim_airport`, `dim_route`, `fct_flight_operations`, `fct_bookings`, `fct_invoice_lines`,
+  `fct_payments`, `fct_revenue`, `fct_billing_exceptions`, `fct_outstanding_balances`), applied
+  selectively -- not to every model.
+- **Incremental materialisation** (`merge` strategy, configurable late-arrival lookback window)
+  for four transaction-event facts, with a written rationale for the facts deliberately left
+  full-refresh.
+- **SCD Type 2 snapshots** for both AirStats reference data and airline reference entities
+  (fare rules, airport fees, taxes, corporate accounts), using `check` strategy throughout because
+  no source in this project has a genuine `updated_at` field -- documented, never fabricated.
+- **Deterministic synthetic data**, standard-library Python only, fixed seed, with a documented
+  catalogue of 14 controlled business anomalies and a machine-readable exception manifest.
+- **1,700+ dbt tests** -- generic, singular business-rule, source-quality, referential-integrity,
+  incremental-integrity, and snapshot-integrity -- organised by folder, with stored failures
+  configured per test category.
+- **Offline-safe CI** (SQLFluff, `pre-commit`, `dbt parse`/`ls`, the full Python regression suite)
+  that runs green with zero Snowflake credentials, plus a second, credentials-gated lane for real
+  warehouse execution that is skipped, never failed, when secrets are absent.
+- **Six dbt exposures** and a **governed metric-definition convention** in place of a semantic
+  layer the project's own pinned dependencies don't support.
+- **State/defer and dbt-artifact-handling readiness**, documented and infrastructure-prepared,
+  without claiming a capability that has never actually run.
+
+## Commercial & Financial Analytics
+
+This platform treats these as **distinct, separately governed measures** -- never collapsed into
+one generic "revenue" figure:
+
+| Measure | What it actually means |
+| --- | --- |
+| Booked value | What a booking's tickets/ancillaries were priced at (`fct_pricing_events`). |
+| Invoiced value | What was actually billed (`fct_invoices.source_invoice_total`). |
+| Amount collected | Cash actually received against an invoice (`fct_invoices.amount_collected`). |
+| Refunds / adjustments | Money returned or corrected after the fact, each with its own sign convention. |
+| Recognised revenue | Revenue earned once the underlying service was *fulfilled* -- independent of billing or cash timing (`fct_revenue`). |
+| Outstanding balance | `invoiced - collected + refunds + adjustments`, never clamped to zero. |
+| Financial value at risk | The monetary exposure carried by a detected billing exception -- not a balance, not revenue. |
+
+Currency safety is enforced throughout: no model ever sums raw amounts across different
+currencies. See [`docs/business_glossary/metric_definitions.md`](docs/business_glossary/metric_definitions.md)
+for the full governed metric list.
+
+## Data Quality / Assurance
+
+- **Deterministic synthetic control totals** (`scripts/generate_control_totals.py`) generated
+  directly from the same source-of-truth data the warehouse layer models -- never hand-typed.
+- **Source-to-warehouse reconciliation** across booking, invoice, payment, and refund domains,
+  plus a revenue/cash bridge that deliberately does *not* force false equality between invoiced
+  value, collected cash, and recognised revenue -- they are genuinely different things.
+- **14 controlled business anomalies** (a duplicate invoice, an overpaid/unallocated payment, a
+  refund exceeding its collected payment, a currency mismatch, an invalid adjustment, and more),
+  each with rule-based -- never hardcoded-ID -- detection.
+- **The central assurance distinction**: a business anomaly (the data itself is unusual, but
+  faithfully carried through) is not the same thing as a reconciliation failure (the warehouse
+  computed something differently from the source). Both are demonstrated, and tested, as
+  independently true where applicable -- see
+  [`docs/data_models/airline_reconciliation_controls.md`](docs/data_models/airline_reconciliation_controls.md).
+- No live-warehouse reconciliation has been run; every reconciliation figure in this repository's
+  evidence is either a dbt test definition or an offline Python recomputation explicitly labelled
+  as such.
+
+## Commercial Marts
+
+Six mart domains, 37 consumption-ready models total: `airport_operations` (AirStats capacity/
+runway/status reporting), `airline_operations` (flight/route/airport activity), `passenger_commercial`
+(bookings, journeys, channels, fare classes, cabins, corporate accounts), `billing_assurance`
+(invoices, payments, refunds, outstanding balances, billing exceptions, reconciliation),
+`revenue` (recognised revenue by route/airport/fare-class/cabin/channel/corporate-account, plus
+route commercial performance), and `executive` (four narrow cross-domain summaries).
+
+**Route profitability is intentionally excluded.** No route or flight cost dataset exists anywhere
+in this project's source data (no fuel, crew, maintenance, or airport-charge cost basis) -- this
+was assessed deliberately, not overlooked. `mart_route_commercial_performance` is the documented
+substitute: revenue-per-unit commercial metrics only (revenue per passenger, revenue per flight),
+never RASK, CASK, margin, or a fabricated cost figure. See
+[`docs/data_models/airline_commercial_marts.md`](docs/data_models/airline_commercial_marts.md).
+
+## Production dbt Engineering
+
+- **9 contracted models** with every column's data type verified against actual SQL output.
+- **4 incremental facts** (`fct_payment_attempts`, `fct_payments`, `fct_refunds`, `fct_revenue`),
+  `merge` strategy, with a documented rationale for the facts deliberately left full-refresh.
+- **6 SCD Type 2 snapshots** total (2 AirStats, 4 airline), `check` strategy throughout.
+- **Source freshness**: deliberately unconfigured everywhere -- no source in this project has a
+  genuine ingestion timestamp, and this was verified against the actual generator code rather than
+  assumed.
+- **6 exposures** documenting intended BI consumption surfaces, explicitly labelled as not yet
+  deployed.
+- **A governed metric-definition convention** in place of a dbt Semantic Layer, since the
+  required `dbt-metricflow` package isn't part of this project's pinned dependencies.
+- **Two-lane CI**: an always-green offline-assurance lane (YAML/SQL validation, `dbt parse`/`ls`,
+  SQLFluff, `pre-commit`, the full Python regression suite, a secret scan) and a
+  credentials-gated warehouse-assurance lane that is skipped -- never failed -- without Snowflake
+  secrets configured.
+- **State/defer and dbt-artifact-handling readiness**, documented and prepared, not claimed as
+  executed.
+
+See [`docs/engineering/dbt_production_engineering.md`](docs/engineering/dbt_production_engineering.md)
+for the full policy behind every decision above, and
+[`docs/runbooks/dbt_production_runbook.md`](docs/runbooks/dbt_production_runbook.md) for the
+operational runbook.
 
 ## Repository Structure
 
-- `models/`: dbt model layers: staging, intermediate, core, and marts (AirStats marts under `models/marts/airport_operations/`; airline staging under `models/staging/airline_{reference,operations,bookings,pricing,billing}/`); reusable `doc()` blocks live in `models/docs/`
-- `macros/`, `snapshots/`, `seeds/`, `analyses/`: standard dbt project areas (AirStats analyses under `analyses/`)
-- `data/`: raw, synthetic, seed, and sample data landing areas; `data/synthetic/` holds the generated Milestone 9 airline dataset (reference/operations/bookings/pricing/billing)
-- `scripts/`: standard-library Python tooling, including `generate_airline_data.py`, `generate_control_totals.py`, `generate_reconciliation_evidence.py`, and `validate_source_data.py`
-- `tests/`: generic, singular, reconciliation, business-rule, and source-quality dbt tests, plus lightweight Python tests under `tests/python/`
-- `docs/`: architecture, glossary, data-model, billing, reconciliation, runbook, and decision records
-- `reports/`: portfolio-facing summary reports, such as `airstats_capstone_summary.md`
-- `.github/workflows/`: CI checks that can run without live Snowflake credentials
+```text
+models/
+  staging/       typed, source-aligned models (36)
+  intermediate/  reusable business transformations (51)
+  core/          governed dimensions and facts (35; 9 under an enforced contract)
+  marts/         consumption-ready reporting models (37, across 6 domains)
+  exposures/     intended BI consumption surfaces (6)
+snapshots/       SCD Type 2 history (6: 2 AirStats, 4 airline)
+seeds/           small, version-controlled reference fixtures (reconciliation control totals)
+tests/           generic + singular dbt tests, organised by category (1,700+), plus Python tests
+macros/          reusable dbt macros (currency conversion)
+scripts/         standard-library Python: synthetic-data generation, validation, reconciliation evidence
+docs/            architecture, data models, engineering, business glossary, runbooks, decisions
+reports/         portfolio-facing summary reports (reconciliation, assurance, revenue recognition)
+outputs/         offline reconciliation-evidence CSV fixtures
+```
 
-## Current Status
+Full documentation index: [`docs/README.md`](docs/README.md).
 
-Implementation status:
+## Technology Stack
 
-- Milestone 1 - complete
-- Milestone 2 - complete
-- Milestone 3 - complete
-- Milestone 4 - complete
-- Milestone 5 - complete
-- Milestone 6 - complete
-- Milestone 7 - complete
-- Milestone 8 - complete
-- Milestone 9 - complete
-- Milestone 10 - complete
-- Milestone 11 - complete
-- Milestone 12 - complete
-- Milestone 13 - complete
-- Milestone 14 - complete
-- Milestone 15 - complete
-- Milestone 16 - complete
-- Milestone 17 - complete
-- Milestone 18 - complete
-- Milestone 19 - complete
-- Milestone 20 - complete
-- Milestone 21 - complete
-- Milestone 22 and later milestones - planned
+Snowflake (target warehouse) - dbt Core 1.9 with the Snowflake adapter - SQL - Python
+(standard library only for data generation/validation) - SQLFluff - `pre-commit` - GitHub Actions -
+`dbt_utils` / `dbt_expectations` / `dbt_date` packages.
 
-Implemented (AirStats capstone, Milestones 1-8):
+## Example Analytical Outputs
 
-- dbt project configuration with logical modelling layers
-- dependency and Python development configuration
-- Snowflake profile example using environment variables only
-- SQLFluff and pre-commit configuration
-- GitHub Actions foundation for static validation
-- initial architecture, development standards, and ADR documentation
-- AirStats raw-data convention for airport-reference CSV sources
-- dbt source metadata and source-level tests for AirStats raw tables
-- AirStats staging views with typing, minimal cleanup, and lineage-preserving identifiers
-- AirStats intermediate transformations for geography, runway profile, source-derived status, comment activity, comment quality, and runway capability
-- AirStats incremental airport-comments model using comment timestamp watermarking and merge semantics
-- AirStats SCD Type 2 snapshot definitions for airport and runway reference history
-- AirStats testing and assurance checks with targeted stored-failure configuration (184 discoverable dbt data tests)
-- AirStats consumption-ready marts under `models/marts/airport_operations/`: capacity profile, runway capability, geographic coverage, operational status, comment activity, and data quality
-- reusable dbt `doc()` blocks in `models/docs/_airstats_docs.md`, referenced from model/snapshot YAML
-- curated AirStats analysis queries under `analyses/`
-- capstone completion evidence (`docs/data_models/airstats_capstone_completion_evidence.md`) and summary report (`reports/airstats_capstone_summary.md`)
+Offline evidence, generated by `scripts/generate_reconciliation_evidence.py` directly from the
+checked-in synthetic dataset -- explicitly *not* an executed `dbt run`/`dbt build` result (see each
+file's own header for that distinction):
 
-Implemented (Milestone 9, synthetic airline source data):
+- `outputs/`: [`daily_booking_control_totals.csv`](outputs/daily_booking_control_totals.csv), [`daily_invoice_control_totals.csv`](outputs/daily_invoice_control_totals.csv), [`daily_payment_control_totals.csv`](outputs/daily_payment_control_totals.csv), [`daily_refund_control_totals.csv`](outputs/daily_refund_control_totals.csv) -- fully-populated offline reconciliation fixtures.
+- `outputs/`: [`revenue_reconciliation.csv`](outputs/revenue_reconciliation.csv), [`billing_exceptions.csv`](outputs/billing_exceptions.csv) -- schema-only fixtures for outputs that require live warehouse business-logic execution, labelled as such rather than fabricated.
+- `reports/`: [`billing_reconciliation_report.md`](reports/billing_reconciliation_report.md), [`payment_assurance_report.md`](reports/payment_assurance_report.md), [`refund_assurance_report.md`](reports/refund_assurance_report.md), [`revenue_recognition_report.md`](reports/revenue_recognition_report.md), [`month_end_revenue_reconciliation.md`](reports/month_end_revenue_reconciliation.md) -- narrative reports over the same offline evidence.
+- `reports/`: [`airstats_capstone_summary.md`](reports/airstats_capstone_summary.md) -- the AirStats foundation's own capstone summary.
 
-- a deterministic synthetic-data generator (`scripts/generate_airline_data.py`) covering all 31 entities across reference/operations, passenger/booking, products/pricing, and billing/payments domains — standard library only, fixed seed, no live Snowflake connection
-- an AirStats-consistent airport-reference fixture used by routes, flight schedules, flight instances, ticket segments, and airport fees
-- a documented catalogue of 14 deliberately injected data-quality/financial-control exceptions with a machine-readable manifest (`data/synthetic/exception_manifest.csv`)
-- synthetic source-level control totals (`scripts/generate_control_totals.py`, `data/synthetic/control_totals.json`)
-- an offline validator (`scripts/validate_source_data.py`) and pytest suite (`tests/python/`) that check keys, relationships, currencies, exception fingerprints, and generator determinism without dbt or Snowflake
-- full design documentation (`docs/data_models/airline_synthetic_source_data.md`, `docs/data_models/airline_synthetic_exception_catalogue.md`)
-
-Implemented (Milestone 10, airline source and staging layer):
-
-- five Snowflake-oriented dbt sources (`airline_reference`, `airline_operations`, `airline_bookings`, `airline_pricing`, `airline_billing`) covering all 31 Milestone 9 entities, documented but not deployed to any live schema
-- 31 typed, normalised `stg_airline__*` staging views under `models/staging/airline_{reference,operations,bookings,pricing,billing}/`, following the AirStats casting/naming conventions with fixed-precision decimal amounts (no floats for money)
-- 352 new source/staging dbt tests (keys, relationships, accepted values, ranges), deliberately omitted wherever a generic test would fail against a known Milestone 9 exception
-- full preservation of all 14 Milestone 9 controlled exceptions through staging — nothing filtered, corrected, or suppressed
-- design documentation (`docs/data_models/airline_staging_layer.md`) mapping RAW airline domains through sources to staging, and documenting (without implementing) the future AirStats airport conformance join
-
-Implemented (Milestone 11, core airline operations model):
-
-- four reusable intermediate transformations under `models/intermediate/airline_operations/`: `int_route_airport_pair` (the first genuine airline-to-AirStats join), `int_scheduled_flight_segments`, `int_operated_flight_segments`, and `int_aircraft_route_compatibility`
-- six conformed core dimensions under `models/core/dimensions/`: `dim_airport` (built from the existing AirStats marts, the conformance join Milestone 10 documented but did not implement), `dim_airline`, `dim_aircraft_type`, `dim_aircraft`, `dim_route`, and `dim_flight`, each with a surrogate key generated via `dbt_utils.generate_surrogate_key`
-- two core facts under `models/core/facts/`: `fct_flight_schedule` (grain: `schedule_id`) and `fct_flight_operations` (grain: `flight_instance_id`), covering operational schedule/instance measures only — no passenger-booking, revenue, or ticketing facts; `passengers_carried`/`load_factor` are structurally present but always null pending Milestone 12 ticket data
-- a deterministic `operational_completion_status` recode and a three-valued `is_assigned_aircraft_type_consistent` signal derived from the source's scheduled-vs-actual aircraft type; no delay measures, since the source has no actual/observed timestamps
-- one singular business-rule test (`tests/business_rules/airline_route_origin_destination_distinct.sql`) plus column-level generic tests across the new intermediate/core YAML, including cross-domain `relationships` tests into `stg_airstats__airports` and `dim_airport`
-- design documentation (`docs/data_models/airline_core_operations.md`) covering grain/key decisions, the AirStats conformance implementation, and delay/completion/load-factor logic
-
-Implemented (Milestone 12, booking and ticketing):
-
-- five reusable intermediate transformations under `models/intermediate/booking_lifecycle/`: `int_booking_current_state`, `int_booking_passengers`, `int_ticketed_segments`, `int_passenger_journey_completion`, and `int_cancelled_bookings`
-- four core dimensions: `dim_passenger`, `dim_booking_channel`, `dim_fare_class`, `dim_cabin` (the last two deliberately excluding fare/pricing monetary columns, reserved for Milestone 13)
-- four core facts: `fct_bookings`, `fct_booking_passengers`, `fct_ticket_segments`, `fct_passenger_journeys`, plus a deterministic `passengers_carried`/`load_factor` update to `fct_flight_operations` derived from completed ticket segments
-- a deterministic `journey_completion_status` derivation (scheduled/completed/cancelled/not_flown/other) reused by both the passenger-journey fact and the flight-operations passenger count
-- one singular business-rule test guarding against double-counting a passenger across a round trip's two flight instances, plus column-level generic tests across the new intermediate/core YAML
-- design documentation (`docs/data_models/airline_booking_ticketing.md`) covering grain/key decisions, journey-completion semantics, and the controlled-exception interaction with EXC-006
-
-Implemented (Milestone 13, products, services, prices and tariffs):
-
-- five reusable intermediate transformations under `models/intermediate/pricing/`: `int_fare_component_calculation`, `int_tax_calculation`, `int_airport_charge_calculation`, `int_ancillary_charge_calculation`, and `int_booking_charge_components`, all deterministically grounded in `scripts/airline_synth/build_billing.py`'s own ground-truth arithmetic
-- six core dimensions: `dim_fare_rule`, `dim_tax`, `dim_currency`, `dim_discount`, `dim_service`, `dim_product` (reusing the existing `dim_fare_class` from Milestone 12)
-- one core fact, `fct_pricing_events`: a unified, sign-conventioned charge-component structure (`base_fare`, `distance_fare`, `tax`, `airport_fee`, `ancillary`, `discount`) ready for Milestone 14 invoice-line generation without recalculating pricing
-- a narrow `convert_currency` macro using fixed-point `decimal(18, 2)` arithmetic, no floats
-- three singular business-rule tests (fare-formula sanity, fixed-point amount consistency, discount-not-exceeding-subtotal), plus column-level generic tests across the new intermediate/core YAML
-- design documentation (`docs/data_models/airline_pricing_tariffs.md`) covering the fare formula, tax/airport-fee/discount/ancillary logic, currency handling, the charge-component grain/sign convention, and controlled `incorrect_fare`-exception preservation for a future Milestone 14 exception-detection model
-
-Implemented (Milestone 14, invoices and invoice lines):
-
-- four reusable intermediate transformations under `models/intermediate/billing/`: `int_invoice_status` (current-state status), `int_invoice_calculation` (internal header-vs-lines arithmetic control), `int_invoice_charge_comparison` (external pricing-vs-invoice comparison against Milestone 13's `fct_pricing_events`), and `int_invoice_line_validation` (structural validation signals only)
-- two core facts: `fct_invoices` (grain: `invoice_id`) and `fct_invoice_lines` (grain: `invoice_line_id`), each keeping both `source_*` and `calculated_*`/`expected_*` amounts side by side rather than overwriting either, plus a consistently signed `invoice_total_variance`/`pricing_variance_amount`
-- a deterministic `reference_code`-based alignment between `fct_pricing_events` and `stg_airline__invoice_lines` (verified against `scripts/airline_synth/build_billing.py`) that lets the pricing-vs-invoice comparison work without a shared ID between the two independently generated tables
-- three singular business-rule tests (invoice-arithmetic sanity, fixed-point amount consistency, and a controlled-anomaly-presence guard covering all four invoice-affecting Milestone 9 exceptions), plus column-level generic tests across the new intermediate/core YAML
-- evidence only, no classification: no `is_incorrect_fare`, `billing_exception_type`, or `financial_value_at_risk` field exists anywhere in this milestone -- that belongs to Milestone 18
-- design documentation (`docs/data_models/airline_invoices.md`) covering the invoice architecture, the pricing-to-invoice relationship, invoice arithmetic, source-vs-calculated totals, variance semantics, and controlled anomaly preservation
-
-Implemented (Milestone 15, payments and failed payments):
-
-- five reusable intermediate transformations under `models/intermediate/billing/`: `int_payment_attempt_classification` (deterministic successful/failed/other classification, plus a declined/insufficient_funds/other failure-reason bucketing), `int_failed_payment_attempts`, `int_invoice_payment_matching` (preserves unmatched payments rather than dropping them), `int_payment_allocation` (least(payment, invoice total) allocation with fixed-point decimal arithmetic), and `int_unallocated_payments`
-- one core dimension, `dim_payment_method`, reused across both new facts
-- two core facts: `fct_payment_attempts` (grain: `payment_attempt_id`) and `fct_payments` (grain: `payment_id`), plus a provisional `amount_collected`/`payment_count` extension to `fct_invoices` that is explicitly documented as not a final outstanding-balance measure (refunds/adjustments are not yet modelled)
-- currency and timing evidence: `is_currency_match` (no conversion attempted) and `payment_delay_days` (no invented "late" threshold, since the source defines none)
-- four singular business-rule tests (payment-allocation arithmetic sanity, fixed-point amount consistency, successful-payment-linked-to-successful-attempt consistency, and a controlled-anomaly-presence guard covering all five payment-affecting Milestone 9 exceptions), plus column-level generic tests across the new intermediate/core YAML
-- evidence only, no classification: no `billing_exception_type`, `severity`, `financial_value_at_risk`, or `resolution_status` field exists anywhere in this milestone -- that belongs to Milestone 18
-- design documentation (`docs/data_models/airline_payments.md`) covering payment-attempt/successful-payment architecture, invoice matching, allocation semantics, failed-payment classification, currency comparison, late-payment evidence, and controlled anomaly preservation
-
-Implemented (Milestone 16, refunds and adjustments):
-
-- four reusable intermediate transformations under `models/intermediate/billing/`: `int_refund_payment_matching` (preserves unmatched refund evidence rather than dropping it), `int_refund_allocation` (refund-limit evidence: `refund_limit_variance = refund_amount - refundable_amount_reference`, never capped or corrected), `int_adjustment_allocation` (verified sign convention: credit = negative, decreasing amount due), and `int_credit_note_application`
-- three core facts: `fct_refunds` (grain: `refund_id`), `fct_adjustments` (grain: `adjustment_id`), and `fct_credit_notes` (grain: `credit_note_id`, implemented as its own standalone fact since a credit note is a distinct document type in the source), plus a provisional `refund_count`/`refund_amount`/`adjustment_count`/`net_adjustment_amount` extension to `fct_invoices` that is explicitly documented as not a final outstanding-balance measure
-- two independent, preserved-not-classified controlled-anomaly signals on the deliberately injected `invalid_adjustment` exception (`has_invoice_match = false` and `has_expected_sign_for_type = false` -- a `credit`-type adjustment with a positive amount), plus `refund_limit_variance = 100.00` unmodified on the `refund_greater_than_collected_amount` exception's row
-- three singular business-rule tests (refund-allocation arithmetic sanity, fixed-point amount consistency, and a controlled-anomaly-presence guard covering all three preserved signatures), plus column-level generic tests across the new intermediate/core YAML
-- evidence only, no classification: no `billing_exception_type`, `severity`, `financial_value_at_risk`, or `resolution_status` field exists anywhere in this milestone -- that belongs to Milestone 18
-- design documentation (`docs/data_models/airline_refunds_adjustments.md`) covering refund architecture, payment/refund relationships, refund-limit evidence, adjustment semantics, credit-note handling, sign conventions, currency handling, and the distinction between financial movement and revenue treatment
-
-Implemented (Milestone 17, revenue recognition):
-
-- six reusable intermediate transformations under `models/intermediate/revenue_recognition/`: `int_fulfilled_flight_services`/`int_fulfilled_ancillary_services` (fulfilment indicators reused unchanged from Milestone 12/13, never redefined), `int_ticket_revenue_recognition` (ticket-grain, matching Milestone 13's own pricing grain: recognised only when every one of a ticket's segments is fulfilled, no invented pro-rata split), `int_ancillary_revenue_recognition` (fulfilled-only), `int_refund_revenue_reversal`, and `int_revenue_adjustments` (both `least()`-capped so a reversal/adjustment can never remove more revenue than was actually recognised)
-- one core fact, `fct_revenue`: a unified `ticket_revenue`/`ancillary_revenue`/`refund_reversal`/`revenue_adjustment` event structure with a documented sign convention (`gross_recognised_amount >= 0`, `reversal_or_adjustment_amount <= 0` for reversals and native-signed for adjustments, `net_recognised_amount` summable directly)
-- revenue recognition and invoicing/payment kept structurally separate throughout: no model in this milestone reads `fct_payments`/`fct_payment_attempts`, and the `completed_segment_without_recognised_revenue_precursor` controlled exception is preserved as a clean "fulfilled but not billed" divergence between `fct_revenue` and `fct_invoice_lines`, never reconciled
-- four singular business-rule tests (a combined recognition-arithmetic sanity check recomputed independently from raw fulfilment/pricing signals, fixed-point amount consistency, reversal-not-exceeding-recognised-revenue, and a controlled-anomaly-evidence guard covering all three revenue-affecting Milestone 9 exceptions), plus column-level generic tests across the new intermediate/core YAML
-- evidence only, no classification: no `billing_exception_type`, `severity`, or `financial_value_at_risk` field exists anywhere in this milestone -- that belongs to Milestone 18
-- design documentation (`docs/data_models/airline_revenue_recognition.md`) covering the recognition policy, the ticket-grain decision, refund reversals, revenue adjustments, sign convention, invoice/payment separation, and controlled anomaly preservation
-
-Implemented (Milestone 18, outstanding balances and billing exceptions):
-
-- a final outstanding-balance model: `int_outstanding_balance`/`fct_outstanding_balances` (grain: `invoice_id`), `outstanding_balance = source_invoice_total - amount_collected + refund_amount + net_adjustment_amount` with every component kept visible, never clamped to zero (a negative balance is preserved as exception evidence), plus a currency-safe `int_corporate_outstanding_balances` aggregate (one row per corporate account per currency, never mixing currencies into one fabricated total)
-- a fourteen-type billing/revenue exception-detection framework: `int_billing_exceptions`/`fct_billing_exceptions` (grain: one row per detected exception), covering `duplicate_invoice`, `failed_payment_after_ticket_issue`, `unallocated_payment`, `payment_without_invoice`, `incorrect_fare`, `currency_mismatch`, `refund_greater_than_collected_amount`, `invalid_adjustment`, `cancelled_flight_without_refund`, `completed_segment_without_recognised_revenue_precursor`, `ancillary_sold_but_not_fulfilled`, `ancillary_fulfilled_but_not_billed`, `missing_invoice_line`, and `late_arriving_payment` -- every rule reuses Milestone 14-17 evidence directly (`pricing_variance_amount`, `unallocated_amount`, `is_currency_match`, `refund_limit_variance`, `has_expected_sign_for_type`, and more), with no exception matched by hard-coded ID
-- deterministic severity (exception-type tier escalated by monetary exposure, never randomness) and `financial_value_at_risk_amount` (a non-negative absolute magnitude per type, `0` only for the genuinely-zero-exposure `late_arriving_payment` timing anomaly)
-- honest workflow-field placeholders: `status = 'open'` for every detected exception, with `assigned_owner`/`resolution_date`/`root_cause`/`remediation_action` left null rather than fabricating an investigation history that never occurred
-- three singular business-rule tests (outstanding-balance arithmetic sanity, fixed-point amount consistency, and a rule-based fourteen-type controlled-exception coverage guard -- never an ID-based hack), plus column-level generic tests across the new intermediate/core YAML
-- design documentation (`docs/data_models/airline_outstanding_balances_exceptions.md`) covering the balance formula, sign conventions, settlement semantics, the full exception taxonomy and detection rules, severity/financial-value-at-risk logic, and controlled exception coverage
-
-Implemented (Milestone 19, reconciliation controls):
-
-- source-control integration: `data/synthetic/control_totals.json` (Milestone 9's own deterministic control artifact) mechanically re-expressed as a dbt seed (`seeds/reconciliation/seed_synthetic_control_totals.csv`) by a new Python helper (`scripts/generate_reconciliation_evidence.py`) -- never hand-typed, never duplicated
-- eight reconciliation intermediate models under `models/intermediate/reconciliation/`: `int_booking_reconciliation`, `int_invoice_reconciliation`, `int_payment_reconciliation`, `int_refund_reconciliation` (twelve direct source-to-warehouse controls, exact/1-cent-tolerance pass-fail), `int_revenue_reconciliation` (a financial bridge across invoiced value, collected cash, refunds, adjustments, recognised revenue, and outstanding balance -- deliberately `not_applicable`, never forcing false equality between different business states), `int_financial_control_summary` (the unified contract), `int_billing_exception_control_summary` (aggregates `fct_billing_exceptions` by type/severity/status/currency), and `int_month_end_financial_assurance` (a single fixed-as-of-date snapshot)
-- one core fact, `fct_reconciliation_controls` (grain: one row per control per as-of period), a deliberate, documented promotion of `int_financial_control_summary`
-- the central Milestone 19 distinction operationalised as a test: `refund.refund_total_value` reconciles exactly (`pass`) even though `refunds.csv` contains a deliberately over-collected refund, while that same record remains correctly flagged by `fct_billing_exceptions` -- a business anomaly is not a reconciliation failure
-- five singular business-rule tests, six Python tests (`tests/python/test_reconciliation_evidence.py`), and offline evidence under `outputs/` (four fully-populated daily control-total CSVs, plus two schema-only fixtures for outputs that would require live warehouse business-logic execution, honestly labelled as such rather than fabricated) and five portfolio reports under `reports/`
-- design documentation (`docs/data_models/airline_reconciliation_controls.md`) covering source-control provenance, every control's exact formula, control statuses/tolerance, the business-anomaly-vs-reconciliation-failure distinction, and the offline execution limitation
-
-Implemented (Milestone 20, commercial reporting marts):
-
-- four `airline_operations` marts under `models/marts/airline_operations/`: `mart_daily_flight_operations` (grain: `flight_date`), `mart_route_operational_performance` (grain: `route_key`), `mart_airline_on_time_performance` (grain: `airline_key`, explicitly documented as a completion measure, not a timeliness/delay measure -- no actual/observed timestamps exist in this dataset), and `mart_airport_flight_activity` (grain: `(airport_key, attribution)`, origin/destination reported as separate rows to avoid double-counting)
-- six `passenger_commercial` marts under `models/marts/passenger_commercial/`: `mart_booking_performance`, `mart_passenger_journey_performance`, `mart_booking_channel_performance`, `mart_fare_class_performance`, `mart_cabin_performance`, and `mart_corporate_account_activity` (currency-safe, reusing `int_corporate_outstanding_balances` unchanged)
-- eight `billing_assurance` marts under `models/marts/billing_assurance/`: `mart_daily_billing`, `mart_invoice_status`, `mart_failed_payments`, `mart_unallocated_payments`, `mart_refund_performance`, `mart_outstanding_balances`, `mart_billing_exceptions` (sliced by type/severity/status/currency/route/corporate-account), and `mart_billing_reconciliation` (a thin passthrough of `fct_reconciliation_controls`) -- no billing exception is re-detected and no reconciliation arithmetic is re-run
-- nine `revenue` marts under `models/marts/revenue/`, all sourced from `fct_revenue`: `mart_daily_passenger_revenue`, `mart_revenue_by_route`, `mart_revenue_by_airport`, `mart_revenue_by_fare_class`, `mart_revenue_by_cabin`, `mart_ancillary_revenue` (preserving the sold-vs-fulfilled distinction), `mart_revenue_by_booking_channel`, `mart_revenue_by_corporate_account`, and `mart_route_commercial_performance` -- the documented, explicit substitute for a "route profitability" mart, since no route/flight cost data exists anywhere in this repository; only revenue-per-unit commercial metrics (`revenue_per_passenger`, `revenue_per_flight`) are exposed, never RASK/CASK/margin
-- four `executive` marts under `models/marts/executive/`: `mart_executive_airline_summary`, `mart_executive_revenue_summary`, `mart_executive_billing_assurance`, and `mart_executive_route_performance` -- each a narrow consumption contract reused from an already-aggregated domain mart, never re-aggregating a core fact
-- strict currency safety throughout: every currency-bearing mart groups by `currency` as part of its own grain; no mart ever sums raw amounts across currencies, and no currency conversion is invented
-- precise KPI naming (`recognised_revenue`, `invoice_total_value`, `amount_collected_total`, `outstanding_balance_total`, `financial_value_at_risk_total`) that is never blurred into a generic "revenue"
-- mart-scoped tests only (declared-grain uniqueness, non-null keys, dimension relationships, non-negative counts, `[0, 1]`-bounded rates, revenue-arithmetic consistency, route origin/destination consistency, executive-summary arithmetic) -- no upstream fact-level test is duplicated
-- design documentation (`docs/data_models/airline_commercial_marts.md`) covering mart architecture, domains/grains, KPI definitions, revenue semantics, currency handling, route/airport attribution, the profitability-exclusion rationale, and the Milestone 21 boundary
-
-Implemented (Milestone 21, production dbt engineering):
-
-- enforced dbt model contracts on nine governed core models (`dim_airport`, `dim_route`, `fct_flight_operations`, `fct_bookings`, `fct_invoice_lines`, `fct_payments`, `fct_revenue`, `fct_billing_exceptions`, `fct_outstanding_balances`), every declared column type verified against the model's actual SQL output; `fct_reconciliation_controls` deliberately left uncontracted (documented rationale: its measures mix heterogeneous count/money precision across a five-domain union)
-- incremental materialisation (`merge` strategy, var-controlled lookback window) for four transaction-event facts (`fct_payment_attempts`, `fct_payments`, `fct_refunds`, `fct_revenue`); `fct_billing_exceptions`/`fct_outstanding_balances` deliberately kept full-refresh (documented rationale: current-state re-evaluation, not an append-only log)
-- four new `check`-strategy SCD Type 2 snapshots (`snap_fare_rules`, `snap_airport_fees`, `snap_taxes`, `snap_corporate_accounts`) under `snapshots/airline/`; no `updated_at` field exists anywhere in the Milestone 9 source, so `timestamp` strategy was never fabricated
-- a documented decision to configure no dbt source freshness anywhere (no source in this project has a genuine ingestion-timestamp field)
-- governance metadata (`owner`/`domain`/`sensitivity`) applied via `dbt_project.yml` config inheritance across every model layer and mart domain
-- six dbt exposures (`models/exposures/_exposures.yml`) documenting intended, not-yet-deployed BI consumption surfaces per domain
-- a governed metric-definition convention (`docs/business_glossary/metric_definitions.md`) in place of a dbt Semantic Layer, since the required `dbt-metricflow` package is not installed in this project
-- a two-lane CI (`offline-assurance`, always green with zero secrets; `warehouse-assurance`, skipped -- never failed -- unless Snowflake secrets are configured), plus a `pre-commit` fix so `pre-commit run --all-files` now works fully offline
-- design documentation (`docs/engineering/dbt_production_engineering.md`) and a production runbook (`docs/runbooks/dbt_production_runbook.md`) covering every decision above plus test governance and performance considerations
-
-Planned (Milestone 22 onward):
-
-- voucher application
-- final portfolio README polish
-- credential-backed Snowflake `dbt build`/`dbt docs generate` and dashboards, once real warehouse access exists
-
-## Local Setup
+## Local Validation / Getting Started
 
 ```bash
 python3 -m venv .venv
@@ -222,7 +250,17 @@ pre-commit install
 pre-commit run --all-files
 ```
 
-For local dbt connectivity, copy `profiles.example.yml` to the ignored local `profiles.yml` file or to another private dbt profile location:
+To regenerate the synthetic airline dataset and validate it offline:
+
+```bash
+python scripts/generate_airline_data.py
+python scripts/generate_control_totals.py
+python scripts/generate_reconciliation_evidence.py
+python scripts/validate_source_data.py
+python -m pytest tests/python
+```
+
+For local dbt connectivity against a real Snowflake account (not required for any check above):
 
 ```bash
 cp profiles.example.yml profiles.yml
@@ -236,39 +274,75 @@ export SNOWFLAKE_PRIVATE_KEY_PATH="<local_private_key_path>"
 dbt parse --profiles-dir .
 ```
 
-Real credentials, private keys, local profiles, and environment files must not be committed.
+Real credentials, private keys, local profiles, and environment files must never be committed --
+`profiles.yml` is gitignored; only `profiles.example.yml` (environment-variable-based) is tracked.
 
-To regenerate the synthetic airline dataset and validate it offline:
+## Known Limitations
 
-```bash
-python scripts/generate_airline_data.py
-python scripts/generate_control_totals.py
-python scripts/generate_reconciliation_evidence.py
-python scripts/validate_source_data.py
-python -m pytest tests/python
-```
+- All airline transactional data is **deterministic synthetic data**, standard-library Python,
+  fixed seed -- never real passenger, airline, or commercial data.
+- **No live Snowflake warehouse execution** is included in this repository's evidence. Every
+  contract, incremental model, snapshot, and reconciliation figure has been designed and
+  offline-validated (parse, `dbt ls`, SQLFluff, type cross-checks) but never executed against a
+  real warehouse.
+- **No BI dashboard is deployed.** The six dbt exposures document intended consumption surfaces,
+  not built ones.
+- **No route profitability metric exists**, because no route/flight cost dataset exists anywhere
+  in this project's source data -- a deliberate exclusion, not an oversight.
+- **No dbt source freshness is configured**, because no source in this project has a genuine
+  ingestion timestamp -- confirmed against the actual generator code, not assumed.
+- **Every SCD Type 2 snapshot uses the `check` strategy**, because no source entity has a
+  trustworthy `updated_at`/equivalent field -- none was fabricated to demonstrate `timestamp`
+  strategy instead.
+- The AirStats reference layer is a fixed local extract, not a live-refreshed feed -- its own
+  known limitations are documented in `docs/data_models/airstats_sources.md`.
+- **Fare/revenue recognition is computed at ticket grain**, matching the pricing grain the
+  synthetic source actually generates -- there is no per-segment fare apportionment rule to
+  recognise revenue at a finer grain than that.
+- This repository makes no production, customer-delivery, or regulatory-suitability claims of any
+  kind.
 
-## Roadmap
+## What This Supports In An Interview
 
-1. Repository Foundation - complete
-2. AirStats Source Setup - complete
-3. AirStats Staging Layer - complete
-4. AirStats Transformations - complete
-5. AirStats Incremental Airport Comments - complete
-6. AirStats SCD Type 2 Snapshots - complete
-7. AirStats Testing and Assurance - complete
-8. AirStats Documentation, Analysis Queries, Airport Marts, and Capstone Completion Evidence - complete
-9. Synthetic Airline Data Foundation - complete
-10. Airline Staging Models - complete
-11. Core Airline Operations Model - complete
-12. Booking and Ticketing - complete
-13. Products, Services, Prices and Tariffs - complete
-14. Invoices and Invoice Lines - complete
-15. Payments and Failed Payments - complete
-16. Refunds and Adjustments - complete
-17. Revenue Recognition - complete
-18. Outstanding Balances and Billing Exceptions - complete
-19. Reconciliation Controls - complete
-20. Commercial Reporting Marts - complete
-21. Production dbt Engineering - complete
-22. Final Portfolio Polish - planned
+Engineering decisions in this repository that are documented well enough to discuss in depth:
+
+- Dimensional modelling and grain design -- why each core fact's grain was chosen, and where a
+  mart deliberately mixes grains and where it deliberately does not.
+- Conforming a second source system (the synthetic airline dataset) to an existing, independently
+  built reference layer (AirStats) rather than duplicating airport-reference logic.
+- dbt project architecture -- the staging/intermediate/core/marts layering, the
+  single-generation-point convention for surrogate keys, and when to promote an intermediate model
+  to a governed core fact versus keep it internal.
+- Incremental-loading design -- choosing `merge` with a late-arrival lookback window for four
+  specific facts, and the written reasoning for why two adjacent, similar-looking facts were
+  deliberately left full-refresh instead.
+- SCD Type 2 design -- `check` versus `timestamp` strategy, and why fabricating an `updated_at`
+  field to demonstrate the latter would have been dishonest.
+- Financial reconciliation -- source-to-warehouse control design, tolerance conventions, and the
+  business-anomaly-vs-ETL-failure distinction.
+- Revenue-recognition semantics -- why recognised revenue, invoiced value, and cash collected are
+  three different numbers, and how each is kept separately queryable.
+- Rule-based exception detection at scale (14 types) without ever matching on a hardcoded record
+  ID.
+- Production CI design for a project with no live credentials -- an always-green offline lane
+  versus a credentials-gated warehouse lane, and why public CI must never require secrets to pass.
+- Business-metric governance -- a written metric-definition convention chosen deliberately over a
+  semantic-layer implementation the project's own dependencies didn't support.
+- Avoiding fabricated precision -- explicitly declining to compute route profitability, RASK/CASK,
+  or cross-currency aggregates where the underlying data cannot honestly support them.
+
+## Potential Future Extensions
+
+Optional, deliberately out of scope for this portfolio's completed roadmap:
+
+- Voucher application logic (the synthetic source generates voucher data; applying it against
+  bookings/invoices was never brought into the financial model).
+- A real Snowflake account and a first `dbt build`/`dbt docs generate`/`dbt source freshness`
+  execution, exercising the warehouse-assurance CI lane this project already has in place.
+- A real BI tool connected to one or more of the six documented exposures.
+
+---
+
+Full documentation index: [`docs/README.md`](docs/README.md). Detailed per-domain data model
+docs: [`docs/data_models/`](docs/data_models/). Production-engineering design:
+[`docs/engineering/dbt_production_engineering.md`](docs/engineering/dbt_production_engineering.md).
