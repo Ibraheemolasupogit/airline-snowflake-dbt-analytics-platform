@@ -60,5 +60,10 @@ jobs:
       - name: Parse dbt project
         run: dbt parse --profiles-dir .
 
-      - name: Lint SQL
-        run: sqlfluff lint models tests analyses macros snapshots
+      - name: Discover dbt test resources
+        run: dbt ls --profiles-dir . --resource-type test
+
+      - name: Lint SQL offline
+        run: |
+          sqlfluff lint --dialect snowflake --templater jinja models tests analyses macros
+          sqlfluff lint --dialect snowflake --templater jinja --ignore templating snapshots

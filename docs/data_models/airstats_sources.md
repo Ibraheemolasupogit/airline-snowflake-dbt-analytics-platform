@@ -183,3 +183,18 @@ With `invalidate_hard_deletes=True`, a staged airport or runway record that disa
 current source result closes the active historical version instead of deleting prior history. This
 only means the record disappeared from the ingested source snapshot; it does not prove that the
 real airport or runway ceased to exist operationally.
+
+## Testing and Assurance
+
+Milestone 7 adds focused assurance across the AirStats layers:
+
+- source-quality and staging business-key checks.
+- referential-integrity checks for intermediate geography joins.
+- business-rule checks for runway-profile aggregate consistency.
+- incremental-integrity checks for airport-comment deduplication and timestamp sanity.
+- snapshot-integrity checks for active-version uniqueness, valid SCD intervals, and non-overlap.
+- data-quality checks for comment completeness ratios.
+
+AirStats assurance failures are configured to be stored under the logical `DBT_TEST_FAILURES`
+schema during warehouse-backed test execution. This repository documents and parses the
+configuration; it does not claim that Snowflake failure tables already exist.

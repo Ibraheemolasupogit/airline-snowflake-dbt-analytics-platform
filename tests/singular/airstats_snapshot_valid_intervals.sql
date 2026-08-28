@@ -6,7 +6,9 @@ with invalid_airport_intervals as (
         dbt_valid_from,
         dbt_valid_to
     from {{ ref('snap_airports') }}
-    where dbt_valid_to < dbt_valid_from
+    where
+        dbt_valid_from is null
+        or dbt_valid_to < dbt_valid_from
 
 ),
 
@@ -18,7 +20,9 @@ invalid_runway_intervals as (
         dbt_valid_from,
         dbt_valid_to
     from {{ ref('snap_runways') }}
-    where dbt_valid_to < dbt_valid_from
+    where
+        dbt_valid_from is null
+        or dbt_valid_to < dbt_valid_from
 
 ),
 

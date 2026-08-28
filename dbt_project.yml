@@ -53,3 +53,24 @@ snapshots:
 tests:
   airline_snowflake_dbt_analytics_platform:
     +store_failures: false
+    business_rules:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
+    data_quality:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
+    incremental_integrity:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
+    referential_integrity:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
+    singular:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
+    snapshot_integrity:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
+    source_quality:
+      +store_failures: true
+      +schema: DBT_TEST_FAILURES
