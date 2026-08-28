@@ -1,0 +1,495 @@
+version: 2
+
+models:
+  - name: mart_daily_passenger_revenue
+    description: >
+      Consumption-ready daily passenger-revenue reporting mart. Grain is one row per
+      (event_date, currency). Reuses fct_revenue directly; no revenue-recognition logic is
+      recomputed. KPI naming is precise: recognised_ticket_revenue/recognised_ancillary_revenue
+      are earned-revenue figures, never invoice totals.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - event_date
+            - currency
+    columns:
+      - name: event_date
+        description: Calendar date of fct_revenue.event_date.
+        tests:
+          - not_null
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Sum of gross_recognised_amount for event_type = ticket_revenue on this date/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of gross_recognised_amount for event_type = ancillary_revenue on this date/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: reversal_or_adjustment_total
+        description: Sum of fct_revenue.reversal_or_adjustment_amount (refund reversals and revenue adjustments) on this date/currency.
+        tests:
+          - not_null
+      - name: net_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue + reversal_or_adjustment_total.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue + reversal_or_adjustment_total"
+      - name: passenger_count
+        description: Count of distinct passengers with a ticket_revenue event on this date.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_revenue_by_route
+    description: >
+      Consumption-ready route-level revenue reporting mart. Grain is one row per (route_id,
+      currency). Reuses fct_revenue directly for recognised revenue; ancillary revenue (which has
+      no route_id on fct_revenue) is attributed to the same route used for that ticket's fare
+      recognition, via int_ticket_revenue_recognition.route_id -- the established "booking outbound
+      route" convention, not re-derived. Not called "profitability": no cost data exists in this
+      repository. See mart_route_commercial_performance for the documented profitability-exclusion
+      substitute.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - route_id
+            - currency
+    columns:
+      - name: route_key
+        description: Foreign key to dim_route.
+        tests:
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: route_id
+        description: Natural route identifier and grain key.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier, sourced from dim_route.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "!= destination_ident"
+              config:
+                where: "origin_ident is not null and destination_ident is not null"
+      - name: origin_airport_name
+        description: Origin airport name, sourced from dim_route.
+      - name: destination_ident
+        description: Destination airport identifier, sourced from dim_route.
+      - name: destination_airport_name
+        description: Destination airport name, sourced from dim_route.
+      - name: distance_km
+        description: Great-circle route distance in kilometres, sourced from dim_route.
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Sum of fct_revenue.gross_recognised_amount for ticket_revenue events on this route/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of fct_revenue.gross_recognised_amount for ancillary_revenue events attributed to this route/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue"
+      - name: flight_count
+        description: Count of fct_flight_operations rows on this route (via dim_flight).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passengers_carried
+        description: Sum of fct_flight_operations.passengers_carried on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: revenue_per_passenger
+        description: total_recognised_revenue / total_passengers_carried; null when total_passengers_carried = 0.
+      - name: revenue_per_flight
+        description: total_recognised_revenue / flight_count; null when flight_count = 0.
+      - name: load_factor
+        description: total_passengers_carried / total_seats_available for this route; null when unavailable.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: load_factor is not null
+
+  - name: mart_revenue_by_airport
+    description: >
+      Consumption-ready airport-level revenue reporting mart. Grain is one row per
+      (airport_key, attribution, currency), where attribution is either 'origin' or 'destination',
+      reported as two separate rows rather than one summed row -- this avoids double-counting a
+      single route's revenue as one airport's total. Ancillary revenue is attributed via the same
+      ticket-route convention as mart_revenue_by_route.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - airport_key
+            - attribution
+            - currency
+    columns:
+      - name: airport_key
+        description: Foreign key to dim_airport.
+        tests:
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: airport_ident
+        description: Airport identifier, sourced from dim_airport.
+      - name: airport_name
+        description: Airport name, sourced from dim_airport.
+      - name: country_code
+        description: Country code, sourced from dim_airport.
+      - name: attribution
+        description: Whether this row reports the airport's revenue as route origin or destination.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - origin
+                - destination
+      - name: currency
+        description: Currency this row's revenue measure is denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: total_recognised_revenue
+        description: Sum of recognised ticket and ancillary revenue attributed to this airport in this direction/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_route_commercial_performance
+    description: >
+      Consumption-ready route commercial-performance reporting mart. Grain is one row per
+      (route_id, currency), identical to mart_revenue_by_route -- reused directly, not re-joined,
+      to avoid duplicating the same route/revenue/operations logic twice. This is the explicit,
+      documented substitute for a "route profitability" mart: the repository contains no route or
+      flight cost data (no fuel, crew, maintenance, or airport-charge cost basis anywhere in the
+      Milestone 9 specification), so profitability (revenue minus cost) cannot be defensibly
+      computed. Only revenue-per-unit commercial metrics are exposed; no cost is fabricated.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - route_id
+            - currency
+    columns:
+      - name: route_key
+        description: Foreign key to dim_route.
+        tests:
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: route_id
+        description: Natural route identifier and grain key.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier.
+      - name: origin_airport_name
+        description: Origin airport name.
+      - name: destination_ident
+        description: Destination airport identifier.
+      - name: destination_airport_name
+        description: Destination airport name.
+      - name: distance_km
+        description: Great-circle route distance in kilometres.
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: total_recognised_revenue
+        description: Total recognised ticket and ancillary revenue for this route/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: flight_count
+        description: Count of flight instances on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passengers_carried
+        description: Total passengers carried on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: load_factor
+        description: total_passengers_carried / total_seats_available for this route; null when unavailable.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: load_factor is not null
+      - name: revenue_per_passenger
+        description: total_recognised_revenue / total_passengers_carried; null when total_passengers_carried = 0. Not profitability.
+      - name: revenue_per_flight
+        description: total_recognised_revenue / flight_count; null when flight_count = 0. Not profitability.
+
+  - name: mart_revenue_by_fare_class
+    description: >
+      Consumption-ready fare-class revenue reporting mart. Grain is one row per
+      (fare_class_key, currency). Reuses fct_revenue directly for recognised revenue.
+      fare_class_code/fare_class_key are resolved via distinct ticket_id from
+      fct_ticket_segments -- safe because every ticket's segments share one fare class
+      (Milestone 12's own invariant), unlike route_id.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - fare_class_key
+            - currency
+    columns:
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: fare_class_code
+        description: Fare class code.
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Sum of gross_recognised_amount for ticket_revenue events in this fare class/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of gross_recognised_amount for ancillary_revenue events attributed to this fare class/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue"
+      - name: ticket_count
+        description: Count of distinct tickets with a ticket_revenue event in this fare class/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: average_ticket_value
+        description: total_recognised_revenue / ticket_count; null when ticket_count = 0.
+
+  - name: mart_revenue_by_cabin
+    description: >
+      Consumption-ready cabin revenue reporting mart. Grain is one row per (cabin_key, currency).
+      Reuses fct_revenue directly for recognised revenue. cabin/cabin_key are resolved via
+      distinct ticket_id from fct_ticket_segments -- safe because every ticket's segments share
+      one cabin (Milestone 12's own invariant), unlike route_id.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - cabin_key
+            - currency
+    columns:
+      - name: cabin_key
+        description: Foreign key to dim_cabin; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_cabin')
+              field: cabin_key
+      - name: cabin
+        description: Cabin name.
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Sum of gross_recognised_amount for ticket_revenue events in this cabin/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of gross_recognised_amount for ancillary_revenue events attributed to this cabin/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue"
+      - name: ticket_count
+        description: Count of distinct tickets with a ticket_revenue event in this cabin/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: average_ticket_value
+        description: total_recognised_revenue / ticket_count; null when ticket_count = 0.
+
+  - name: mart_ancillary_revenue
+    description: >
+      Consumption-ready ancillary-revenue reporting mart. Grain is one row per
+      (service_code, currency). Reuses int_ancillary_revenue_recognition (Milestone 17) directly;
+      fulfilment and recognition logic is not recomputed. Preserves the sold-vs-fulfilled
+      distinction: sold_count is every sale regardless of fulfilment; fulfilled_count/
+      unfulfilled_count partition that same population; recognised_ancillary_revenue only ever
+      reflects the fulfilled subset.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - service_code
+            - currency
+    columns:
+      - name: service_code
+        description: Ancillary service code, sourced from int_ancillary_revenue_recognition.
+        tests:
+          - not_null
+      - name: currency
+        description: Currency this row's revenue measure is denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: sold_count
+        description: Count of ancillary sales for this service/currency, regardless of fulfilment.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "= fulfilled_count + unfulfilled_count"
+      - name: fulfilled_count
+        description: Count of ancillary sales for this service/currency with fulfilment_indicator = true.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: unfulfilled_count
+        description: Count of ancillary sales for this service/currency with fulfilment_indicator = false.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of recognised_amount (fulfilled sales only) for this service/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_revenue_by_booking_channel
+    description: >
+      Consumption-ready booking-channel revenue reporting mart. Grain is one row per
+      (booking_channel_key, currency). Reuses fct_revenue directly for recognised revenue;
+      booking_channel is resolved via fct_revenue.booking_id -> fct_bookings.booking_channel_key.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - booking_channel_key
+            - currency
+    columns:
+      - name: booking_channel_key
+        description: Foreign key to dim_booking_channel.
+        tests:
+          - relationships:
+              to: ref('dim_booking_channel')
+              field: booking_channel_key
+      - name: booking_channel
+        description: Booking channel name.
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Sum of gross_recognised_amount for ticket_revenue events through this channel/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of gross_recognised_amount for ancillary_revenue events through this channel/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue"
+
+  - name: mart_revenue_by_corporate_account
+    description: >
+      Consumption-ready corporate-account revenue reporting mart. Grain is one row per
+      (corporate_account_id, currency). Reuses fct_revenue directly for recognised revenue;
+      corporate_account_id is a degenerate identifier on fct_bookings (no dim_corporate_account
+      exists), resolved via fct_revenue.booking_id. Only bookings with a non-null
+      corporate_account_id are included.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - corporate_account_id
+            - currency
+    columns:
+      - name: corporate_account_id
+        description: Corporate account identifier, sourced from fct_bookings.
+        tests:
+          - not_null
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Sum of gross_recognised_amount for ticket_revenue events for this account/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Sum of gross_recognised_amount for ancillary_revenue events for this account/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue"

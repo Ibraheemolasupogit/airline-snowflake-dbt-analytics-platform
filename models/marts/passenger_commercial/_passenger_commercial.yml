@@ -1,0 +1,268 @@
+version: 2
+
+models:
+  - name: mart_booking_performance
+    description: >
+      Consumption-ready booking-performance reporting mart. Grain is one row per
+      (booking_status, trip_type). Reuses fct_bookings directly; no booking-state or count logic
+      is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - booking_status
+            - trip_type
+    columns:
+      - name: booking_status
+        description: Current booking status, sourced from fct_bookings.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - confirmed
+                - cancelled
+      - name: trip_type
+        description: Trip type, sourced from fct_bookings.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - one_way
+                - round_trip
+      - name: booking_count
+        description: Count of bookings in this (booking_status, trip_type) bucket.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passenger_count
+        description: Sum of fct_bookings.passenger_count in this bucket.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_ticket_count
+        description: Sum of fct_bookings.ticket_count in this bucket.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_passenger_journey_performance
+    description: >
+      Consumption-ready passenger journey-completion reporting mart. Grain is one row per
+      journey_completion_status. Reuses fct_passenger_journeys directly; no completion-status
+      derivation is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - journey_completion_status
+    columns:
+      - name: journey_completion_status
+        description: Deterministic journey-leg completion category, sourced from fct_passenger_journeys.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+                - not_flown
+                - other
+      - name: journey_leg_count
+        description: Count of fct_passenger_journeys rows (journey legs) in this status.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: share_of_journey_legs
+        description: journey_leg_count / total journey-leg count across all statuses.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: share_of_journey_legs is not null
+
+  - name: mart_booking_channel_performance
+    description: >
+      Consumption-ready booking-channel performance reporting mart. Grain is one row per
+      (booking_channel_key, booking_channel). Reuses fct_bookings directly; no booking-state logic
+      is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - booking_channel_key
+    columns:
+      - name: booking_channel_key
+        description: Foreign key to dim_booking_channel and grain key.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_booking_channel')
+              field: booking_channel_key
+      - name: booking_channel
+        description: Booking channel name, sourced from fct_bookings.
+        tests:
+          - not_null
+      - name: booking_count
+        description: Count of bookings made through this channel.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_booking_count
+        description: Count of bookings made through this channel with is_cancelled = true.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passenger_count
+        description: Sum of fct_bookings.passenger_count for this channel.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_ticket_count
+        description: Sum of fct_bookings.ticket_count for this channel.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancellation_rate
+        description: cancelled_booking_count / booking_count; null when booking_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: cancellation_rate is not null
+
+  - name: mart_fare_class_performance
+    description: >
+      Consumption-ready fare-class performance reporting mart. Grain is one row per
+      (fare_class_key, fare_class_code). Reuses fct_ticket_segments directly; no segment-status
+      logic is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - fare_class_key
+    columns:
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class and grain key; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: fare_class_code
+        description: Fare class code, sourced from fct_ticket_segments.
+      - name: ticket_segment_count
+        description: Count of fct_ticket_segments rows in this fare class.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: flown_segment_count
+        description: Count of segments with segment_status = flown in this fare class.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_segment_count
+        description: Count of segments with segment_status = cancelled in this fare class.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancellation_rate
+        description: cancelled_segment_count / ticket_segment_count; null when ticket_segment_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: cancellation_rate is not null
+
+  - name: mart_cabin_performance
+    description: >
+      Consumption-ready cabin performance reporting mart. Grain is one row per
+      (cabin_key, cabin). Reuses fct_ticket_segments directly; no segment-status logic is
+      recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - cabin_key
+    columns:
+      - name: cabin_key
+        description: Foreign key to dim_cabin and grain key; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_cabin')
+              field: cabin_key
+      - name: cabin
+        description: Cabin name, sourced from fct_ticket_segments.
+      - name: ticket_segment_count
+        description: Count of fct_ticket_segments rows in this cabin.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: flown_segment_count
+        description: Count of segments with segment_status = flown in this cabin.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_segment_count
+        description: Count of segments with segment_status = cancelled in this cabin.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancellation_rate
+        description: cancelled_segment_count / ticket_segment_count; null when ticket_segment_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: cancellation_rate is not null
+
+  - name: mart_corporate_account_activity
+    description: >
+      Consumption-ready corporate-account activity reporting mart. Grain is one row per
+      (corporate_account_id, currency). Reuses int_corporate_outstanding_balances (Milestone 18)
+      directly for billing measures -- already currency-safe -- and adds currency-agnostic booking
+      counts from fct_bookings. No corporate_account_id resolves to a dim_corporate_account; none
+      exists in this repository.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - corporate_account_id
+            - currency
+    columns:
+      - name: corporate_account_id
+        description: Corporate account identifier, sourced from int_corporate_outstanding_balances.
+        tests:
+          - not_null
+      - name: company_name
+        description: Corporate account company name.
+      - name: currency
+        description: Currency this row's billing measures are denominated in.
+        tests:
+          - not_null
+      - name: invoice_count
+        description: Count of invoices for this corporate account in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_invoiced
+        description: Sum of source_invoice_total for this corporate account in this currency.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_outstanding_balance
+        description: Sum of outstanding_balance for this corporate account in this currency. Never clamped to zero.
+      - name: booking_count
+        description: Count of fct_bookings rows for this corporate account (currency-agnostic).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passenger_count
+        description: Sum of fct_bookings.passenger_count for this corporate account (currency-agnostic).
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0

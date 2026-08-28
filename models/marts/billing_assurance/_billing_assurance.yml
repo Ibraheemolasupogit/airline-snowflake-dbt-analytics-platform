@@ -1,0 +1,329 @@
+version: 2
+
+models:
+  - name: mart_daily_billing
+    description: >
+      Consumption-ready daily billing reporting mart. Grain is one row per
+      (invoice_date, currency), where invoice_date = cast(fct_invoices.invoice_date_utc as date).
+      Reuses fct_invoices directly; no invoice arithmetic or allocation logic is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - invoice_date
+            - currency
+    columns:
+      - name: invoice_date
+        description: Calendar date of fct_invoices.invoice_date_utc.
+        tests:
+          - not_null
+      - name: currency
+        description: Currency this row's measures are denominated in.
+        tests:
+          - not_null
+      - name: invoice_count
+        description: Count of invoices issued on this date in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: invoice_total_value
+        description: Sum of fct_invoices.source_invoice_total for this date and currency.
+        tests:
+          - not_null
+      - name: amount_collected_total
+        description: Sum of fct_invoices.amount_collected for this date and currency. Provisional, not a final outstanding-balance figure.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: refund_amount_total
+        description: Sum of fct_invoices.refund_amount for this date and currency.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: net_adjustment_total
+        description: Sum of fct_invoices.net_adjustment_amount for this date and currency; credit = negative.
+
+  - name: mart_invoice_status
+    description: >
+      Consumption-ready invoice-status reporting mart. Grain is one row per (status, currency).
+      Reuses fct_invoices directly; no status derivation is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - status
+            - currency
+    columns:
+      - name: status
+        description: Current invoice status, sourced from fct_invoices.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - issued
+                - paid
+                - refunded
+                - cancelled
+      - name: currency
+        description: Currency this row's measures are denominated in.
+        tests:
+          - not_null
+      - name: invoice_count
+        description: Count of invoices in this status and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: invoice_total_value
+        description: Sum of fct_invoices.source_invoice_total in this status and currency.
+        tests:
+          - not_null
+
+  - name: mart_failed_payments
+    description: >
+      Consumption-ready failed-payment reporting mart. Grain is one row per
+      (classified_failure_reason, currency). Reuses fct_payment_attempts directly, filtered to
+      attempt_classification = 'failed'; no classification logic is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - classified_failure_reason
+            - currency
+    columns:
+      - name: classified_failure_reason
+        description: Deterministic failure-reason classification, sourced from fct_payment_attempts.
+        tests:
+          - not_null
+      - name: currency
+        description: Currency this row's measures are denominated in.
+        tests:
+          - not_null
+      - name: failed_attempt_count
+        description: Count of failed payment attempts in this reason and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: failed_attempt_value
+        description: Sum of attempted amount for failed attempts in this reason and currency.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_unallocated_payments
+    description: >
+      Consumption-ready unallocated-payment reporting mart. Grain is one row per
+      (allocation_status, currency). Reuses fct_payments directly, filtered to
+      unallocated_amount > 0; no allocation logic is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - allocation_status
+            - currency
+    columns:
+      - name: allocation_status
+        description: Payment allocation status, sourced from fct_payments.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - fully_allocated
+                - overpaid_unallocated
+                - unallocated
+      - name: currency
+        description: Currency this row's measures are denominated in.
+        tests:
+          - not_null
+      - name: unallocated_payment_count
+        description: Count of payments with unallocated_amount > 0 in this status and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: unallocated_amount_total
+        description: Sum of fct_payments.unallocated_amount in this status and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_refund_performance
+    description: >
+      Consumption-ready refund reporting mart. Grain is one row per (reason, currency). Reuses
+      fct_refunds directly; no refund-limit calculation is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - reason
+            - currency
+    columns:
+      - name: reason
+        description: Refund reason, sourced from fct_refunds.
+      - name: currency
+        description: Currency this row's measures are denominated in.
+        tests:
+          - not_null
+      - name: refund_count
+        description: Count of refunds in this reason and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: refund_amount_total
+        description: Sum of fct_refunds.refund_amount in this reason and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: average_refund_amount
+        description: Average of fct_refunds.refund_amount in this reason and currency.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: over_refund_count
+        description: Count of refunds in this reason and currency with refund_limit_variance > 0 (refund exceeds amount collected).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_outstanding_balances
+    description: >
+      Consumption-ready outstanding-balance reporting mart. Grain is one row per
+      (settlement_status, currency). Reuses fct_outstanding_balances directly; no balance
+      calculation is recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - settlement_status
+            - currency
+    columns:
+      - name: settlement_status
+        description: Settlement status derived from the sign of outstanding_balance, sourced from fct_outstanding_balances.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - outstanding
+                - settled
+                - over_settled
+      - name: currency
+        description: Currency this row's measures are denominated in.
+        tests:
+          - not_null
+      - name: invoice_count
+        description: Count of invoices in this settlement status and currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: invoice_total_value
+        description: Sum of fct_outstanding_balances.source_invoice_total in this status and currency.
+        tests:
+          - not_null
+      - name: outstanding_balance_total
+        description: Sum of fct_outstanding_balances.outstanding_balance in this status and currency. Never clamped to zero.
+        tests:
+          - not_null
+
+  - name: mart_billing_exceptions
+    description: >
+      Consumption-ready billing-exception reporting mart. Grain is one row per
+      (exception_type, severity, status, currency, route_id, corporate_account_id). Reuses
+      fct_billing_exceptions directly; no exception is re-detected, reclassified, or recomputed.
+      route_id/corporate_account_id are the two additional slicing dimensions available per this
+      milestone's own instruction; both are null for exception types that are not route- or
+      booking-scoped.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - exception_type
+            - severity
+            - status
+            - currency
+            - route_id
+            - corporate_account_id
+    columns:
+      - name: exception_type
+        description: One of the fourteen detection rules from fct_billing_exceptions.
+        tests:
+          - not_null
+      - name: severity
+        description: Deterministic severity tier, sourced from fct_billing_exceptions.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - critical
+                - high
+                - medium
+                - low
+      - name: status
+        description: Deterministic current-state workflow placeholder, always 'open'.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - open
+      - name: currency
+        description: Currency this row's financial_value_at_risk_total is denominated in.
+      - name: route_id
+        description: Route this exception is scoped to, where applicable; null otherwise.
+      - name: corporate_account_id
+        description: Corporate account this exception's booking belongs to, where applicable; null otherwise.
+      - name: exception_count
+        description: Count of exceptions in this slice.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: financial_value_at_risk_total
+        description: Sum of fct_billing_exceptions.financial_value_at_risk_amount in this slice.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_billing_reconciliation
+    description: >
+      Consumption-ready reconciliation-control reporting mart. Grain is identical to
+      fct_reconciliation_controls' own grain -- one row per reconciliation control per as-of
+      period. A thin consumption-ready re-selection of that fact; no reconciliation arithmetic is
+      re-run or duplicated here.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - control_id
+            - as_of_date
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier, control_domain.control_name.
+        tests:
+          - not_null
+      - name: control_domain
+        description: Which business area this control covers, sourced from fct_reconciliation_controls.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [booking, ticket, flight_operations, invoice, payment, refund, revenue_bridge]
+      - name: control_name
+        description: Specific control name within its domain.
+        tests:
+          - not_null
+      - name: source_measure
+        description: The source-side comparison value for this control.
+      - name: warehouse_measure
+        description: The warehouse-side comparison value for this control.
+      - name: variance_amount
+        description: Warehouse-vs-source variance amount for this control, where applicable.
+      - name: variance_count
+        description: Warehouse-vs-source variance count for this control, where applicable.
+      - name: control_status
+        description: pass/fail/warning/not_applicable, sourced from fct_reconciliation_controls.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail, warning, not_applicable]
+      - name: as_of_date
+        description: The dataset's fixed synthetic as-of date, never wall-clock-dependent.
+        tests:
+          - not_null

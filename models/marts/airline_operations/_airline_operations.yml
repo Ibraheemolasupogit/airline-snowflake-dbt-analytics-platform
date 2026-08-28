@@ -1,0 +1,264 @@
+version: 2
+
+models:
+  - name: mart_daily_flight_operations
+    description: >
+      Consumption-ready daily flight-operations reporting mart. Grain is one row per flight_date.
+      Reuses fct_flight_operations directly; no operational status or passenger-count logic is
+      recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - flight_date
+    columns:
+      - name: flight_date
+        description: Calendar date of the flight occurrence and grain key.
+        tests:
+          - not_null
+      - name: scheduled_flight_count
+        description: Count of flight instances scheduled to occur on this date.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: completed_flight_count
+        description: Count of flight instances with status = completed on this date.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_flight_count
+        description: Count of flight instances with status = cancelled on this date.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: still_scheduled_flight_count
+        description: Count of flight instances with status = scheduled on this date.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passengers_carried
+        description: Sum of fct_flight_operations.passengers_carried for this date.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_seats_available
+        description: Sum of fct_flight_operations.seats_available for this date.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: average_load_factor
+        description: Average of fct_flight_operations.load_factor across this date's flight instances.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: average_load_factor is not null
+      - name: completion_rate
+        description: completed_flight_count / scheduled_flight_count; null when scheduled_flight_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: completion_rate is not null
+
+  - name: mart_route_operational_performance
+    description: >
+      Consumption-ready route-level operational-performance reporting mart. Grain is one row per
+      route_key/route_id. Joins fct_flight_operations to dim_flight (for route_key/route_id) and
+      dim_route (for origin/destination/distance context); no completion or load-factor logic is
+      recomputed.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - route_key
+      - dbt_utils.expression_is_true:
+          expression: "origin_ident != destination_ident"
+          config:
+            where: "origin_ident is not null and destination_ident is not null"
+    columns:
+      - name: route_key
+        description: Foreign key to dim_route and grain key.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: route_id
+        description: Natural route identifier, retained for lineage.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier, sourced from dim_route.
+      - name: origin_airport_name
+        description: Origin airport name, sourced from dim_route.
+      - name: destination_ident
+        description: Destination airport identifier, sourced from dim_route.
+      - name: destination_airport_name
+        description: Destination airport name, sourced from dim_route.
+      - name: distance_km
+        description: Great-circle route distance in kilometres, sourced from dim_route.
+      - name: scheduled_flight_count
+        description: Count of flight instances scheduled on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: completed_flight_count
+        description: Count of flight instances with status = completed on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_flight_count
+        description: Count of flight instances with status = cancelled on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passengers_carried
+        description: Sum of fct_flight_operations.passengers_carried for this route.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_seats_available
+        description: Sum of fct_flight_operations.seats_available for this route.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: average_load_factor
+        description: Average of fct_flight_operations.load_factor across this route's flight instances.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: average_load_factor is not null
+      - name: completion_rate
+        description: completed_flight_count / scheduled_flight_count; null when scheduled_flight_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: completion_rate is not null
+
+  - name: mart_airline_on_time_performance
+    description: >
+      Consumption-ready airline-level completion-performance reporting mart. Grain is one row per
+      airline_key. IMPORTANT: this mart reports COMPLETION performance, not timeliness/delay
+      performance -- the Milestone 9 source has no actual/observed departure or arrival timestamp
+      anywhere, only scheduled times and a final status, so no on-time/delay measure can be
+      honestly computed here. Every measure exposed is a completion-rate measure; see the model
+      SQL comment for the full explanation.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - airline_key
+    columns:
+      - name: airline_key
+        description: Foreign key to dim_airline and grain key.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: airline_code
+        description: Airline code, sourced from dim_flight.
+        tests:
+          - not_null
+      - name: scheduled_flight_count
+        description: Count of flight instances scheduled for this airline.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: completed_flight_count
+        description: Count of flight instances with status = completed for this airline.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_flight_count
+        description: Count of flight instances with status = cancelled for this airline.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: completion_rate
+        description: completed_flight_count / scheduled_flight_count; null when scheduled_flight_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: completion_rate is not null
+      - name: cancellation_rate
+        description: cancelled_flight_count / scheduled_flight_count; null when scheduled_flight_count = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: cancellation_rate is not null
+
+  - name: mart_airport_flight_activity
+    description: >
+      Consumption-ready airport flight-activity reporting mart. Grain is one row per
+      (airport_key, attribution), where attribution is either 'origin' or 'destination', reported
+      as two separate rows per airport rather than one summed row -- this avoids double-counting a
+      single flight instance (which has exactly one origin and one destination) as one airport's
+      activity.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - airport_key
+            - attribution
+    columns:
+      - name: airport_key
+        description: Foreign key to dim_airport.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: airport_ident
+        description: Airport identifier, sourced from dim_airport.
+      - name: airport_name
+        description: Airport name, sourced from dim_airport.
+      - name: country_code
+        description: Country code, sourced from dim_airport.
+      - name: attribution
+        description: Whether this row reports the airport's activity as flight origin or destination.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - origin
+                - destination
+      - name: scheduled_flight_count
+        description: Count of flight instances attributed to this airport in this direction.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: completed_flight_count
+        description: Count of flight instances with status = completed, attributed to this airport in this direction.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: cancelled_flight_count
+        description: Count of flight instances with status = cancelled, attributed to this airport in this direction.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passengers_carried
+        description: Sum of fct_flight_operations.passengers_carried, attributed to this airport in this direction.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_seats_available
+        description: Sum of fct_flight_operations.seats_available, attributed to this airport in this direction.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0

@@ -1,0 +1,199 @@
+version: 2
+
+models:
+  - name: mart_executive_airline_summary
+    description: >
+      Executive company-wide operational summary. Grain is a single row (no dimension). A
+      deliberately narrow consumption contract: reuses mart_daily_flight_operations
+      (already-aggregated) rather than re-aggregating fct_flight_operations. No
+      currency-denominated measure appears on this mart, so no cross-currency aggregation risk
+      exists here.
+    tests:
+      - dbt_expectations.expect_table_row_count_to_equal:
+          value: 1
+    columns:
+      - name: total_scheduled_flights
+        description: Company-wide sum of mart_daily_flight_operations.scheduled_flight_count.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_completed_flights
+        description: Company-wide sum of mart_daily_flight_operations.completed_flight_count.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_cancelled_flights
+        description: Company-wide sum of mart_daily_flight_operations.cancelled_flight_count.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: completion_rate
+        description: total_completed_flights / total_scheduled_flights; null when total_scheduled_flights = 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: completion_rate is not null
+      - name: total_passengers_carried
+        description: Company-wide sum of mart_daily_flight_operations.total_passengers_carried.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: average_load_factor
+        description: total_passengers_carried / total_seats_available, company-wide.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: average_load_factor is not null
+
+  - name: mart_executive_revenue_summary
+    description: >
+      Executive revenue summary. Grain is one row per currency. Reuses
+      mart_daily_passenger_revenue (already-aggregated, already currency-safe) rather than
+      re-aggregating fct_revenue. Never collapses across currency -- a single "total revenue" row
+      across currencies would not be a meaningful figure.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - currency
+    columns:
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: recognised_ticket_revenue
+        description: Company-wide sum of recognised_ticket_revenue in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: recognised_ancillary_revenue
+        description: Company-wide sum of recognised_ancillary_revenue in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: reversal_or_adjustment_total
+        description: Company-wide sum of reversal_or_adjustment_total in this currency.
+        tests:
+          - not_null
+      - name: net_recognised_revenue
+        description: recognised_ticket_revenue + recognised_ancillary_revenue + reversal_or_adjustment_total, company-wide, in this currency.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "= recognised_ticket_revenue + recognised_ancillary_revenue + reversal_or_adjustment_total"
+      - name: passenger_count
+        description: Company-wide distinct passenger count with ticket revenue in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: revenue_per_passenger
+        description: net_recognised_revenue / passenger_count; null when passenger_count = 0.
+
+  - name: mart_executive_billing_assurance
+    description: >
+      Executive billing-assurance summary. Grain is one row per currency. Reuses
+      mart_outstanding_balances and mart_billing_exceptions (both already-aggregated) rather than
+      re-aggregating fct_outstanding_balances/fct_billing_exceptions. Never collapses across
+      currency.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - currency
+    columns:
+      - name: currency
+        description: Currency this row's measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: invoice_count
+        description: Company-wide count of invoices in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: invoice_total_value
+        description: Company-wide sum of invoice value in this currency.
+        tests:
+          - not_null
+      - name: outstanding_balance_total
+        description: Company-wide sum of outstanding_balance in this currency. Never clamped to zero.
+        tests:
+          - not_null
+      - name: exception_count
+        description: Company-wide count of billing exceptions in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: financial_value_at_risk_total
+        description: Company-wide sum of financial_value_at_risk_amount in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_executive_route_performance
+    description: >
+      Executive route-performance summary. Grain is one row per (route_id, currency). A
+      deliberately narrow consumption contract: selects the top-line commercial columns from
+      mart_route_commercial_performance directly. No route profitability is exposed here for the
+      same reason it is not exposed anywhere in this milestone: no cost data exists in this
+      repository.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - route_id
+            - currency
+    columns:
+      - name: route_id
+        description: Natural route identifier and grain key.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "!= destination_ident"
+              config:
+                where: "origin_ident is not null and destination_ident is not null"
+      - name: destination_ident
+        description: Destination airport identifier.
+      - name: currency
+        description: Currency this row's revenue measures are denominated in. Never summed across currencies.
+        tests:
+          - not_null
+      - name: total_recognised_revenue
+        description: Total recognised ticket and ancillary revenue for this route/currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: flight_count
+        description: Count of flight instances on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: total_passengers_carried
+        description: Total passengers carried on this route.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: load_factor
+        description: total_passengers_carried / total_seats_available for this route; null when unavailable.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: load_factor is not null
+      - name: revenue_per_passenger
+        description: total_recognised_revenue / total_passengers_carried; null when total_passengers_carried = 0. Not profitability.
+      - name: revenue_per_flight
+        description: total_recognised_revenue / flight_count; null when flight_count = 0. Not profitability.
