@@ -464,3 +464,251 @@ models:
                 - W
                 - C
                 - F
+
+  - name: dim_fare_rule
+    description: >
+      Grain is one row per fare-class rule set. Natural key is fare_rule_id; fare_class_code is
+      unique (one rule set per fare class). Surrogate key is fare_rule_key. Rule attributes are
+      reference/eligibility data only -- none is applied as a priced charge component in this
+      milestone (see model SQL comment for why change_fee_usd is not charged).
+    columns:
+      - name: fare_rule_key
+        description: Surrogate key, generated from fare_rule_id.
+        tests:
+          - not_null
+          - unique
+      - name: fare_rule_id
+        description: Natural fare-rule identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__fare_rules')
+              field: fare_rule_id
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: fare_class_code
+        description: Fare class this rule set applies to.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: refundable
+        description: Boolean normalised from the source 'True'/'False' text.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: change_fee_usd
+        description: Illustrative change fee in USD; reference only, not charged in this milestone.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: advance_purchase_days
+        description: Minimum advance-purchase requirement in days.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: min_stay_nights
+        description: Minimum stay requirement in nights.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: dim_tax
+    description: >
+      Grain is one row per (country, tax type) -- currently one row per country (a single flat
+      "Government Passenger Tax" replicated per country). Natural key is tax_id; surrogate key is
+      tax_key. percentage_rate is a fraction applied against a ticket's pre-tax fare; see
+      int_tax_calculation for the country-applicability rule.
+    columns:
+      - name: tax_key
+        description: Surrogate key, generated from tax_id.
+        tests:
+          - not_null
+          - unique
+      - name: tax_id
+        description: Natural tax identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__taxes')
+              field: tax_id
+      - name: country_code
+        description: ISO country code the tax applies to.
+        tests:
+          - not_null
+      - name: tax_code
+        description: Tax type code.
+      - name: tax_name
+        description: Tax display name.
+      - name: percentage_rate
+        description: Fraction of a ticket's pre-tax (base + distance) fare charged as tax.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: currency_code
+        description: Currency the tax's own country denominates amounts in.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+
+  - name: dim_currency
+    description: >
+      Grain is one row per currency code. Natural key is currency_code; surrogate key is
+      currency_key. Combines stg_airline__currencies with stg_airline__exchange_rates (1:1 join).
+      rate_to_usd is a single current rate, not a time series -- see model SQL comment for why no
+      FX history is modelled. minor_unit_digits is reference-only; this pricing layer rounds every
+      amount to a flat 2 decimal places throughout, matching the Milestone 9 generator's own
+      convention (see model SQL comment).
+    columns:
+      - name: currency_key
+        description: Surrogate key, generated from currency_code.
+        tests:
+          - not_null
+          - unique
+      - name: currency_code
+        description: Natural currency identifier (ISO 4217-style code).
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: currency_name
+        description: Currency display name.
+      - name: minor_unit_digits
+        description: Reference-only; not applied dynamically in this pricing layer's rounding.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: rate_to_usd
+        description: USD value of one unit of this currency, as of rate_as_of_date.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+      - name: rate_as_of_date
+        description: The single deterministic date this rate was generated as of.
+        tests:
+          - not_null
+
+  - name: dim_discount
+    description: >
+      Grain is one row per discount code. Natural key is discount_code; surrogate key is
+      discount_key. discount_type governs how value is interpreted -- see
+      int_booking_charge_components for the exact application formula. corporate_account_id
+      restricts a CORP-* discount to one corporate account.
+    columns:
+      - name: discount_key
+        description: Surrogate key, generated from discount_code.
+        tests:
+          - not_null
+          - unique
+      - name: discount_code
+        description: Natural discount identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__discounts')
+              field: discount_code
+      - name: discount_name
+        description: Discount display name.
+      - name: discount_type
+        description: How value should be interpreted.
+        tests:
+          - accepted_values:
+              values:
+                - percentage
+                - fixed_amount
+      - name: value
+        description: >
+          Discount magnitude. A fraction (e.g. 0.10) when percentage, or a fixed USD amount when
+          fixed_amount.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: corporate_account_id
+        description: Corporate account this discount is negotiated for, if any; null otherwise.
+        tests:
+          - relationships:
+              to: ref('stg_airline__corporate_accounts')
+              field: corporate_account_id
+
+  - name: dim_service
+    description: >
+      Grain is one row per sellable ancillary/service catalog entry. Natural key is service_code;
+      surrogate key is service_key. category is retained directly on this dimension rather than
+      split into a separate dim_ancillary_type -- see model SQL comment for why.
+    columns:
+      - name: service_key
+        description: Surrogate key, generated from service_code.
+        tests:
+          - not_null
+          - unique
+      - name: service_code
+        description: Natural service identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__services')
+              field: service_code
+      - name: service_name
+        description: Service display name.
+      - name: category
+        description: Service category (e.g. baggage, seat, meal, lounge, upgrade).
+      - name: base_price_usd
+        description: Illustrative catalog price in USD, before currency conversion at time of sale.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: dim_product
+    description: >
+      Grain is one row per sellable fare bundle. Natural key is product_code; surrogate key is
+      product_key. A standalone catalog dimension: no Milestone 9 booking/ticket table carries a
+      product_code foreign key, so no fact in this milestone joins to dim_product -- see model SQL
+      comment.
+    columns:
+      - name: product_key
+        description: Surrogate key, generated from product_code.
+        tests:
+          - not_null
+          - unique
+      - name: product_code
+        description: Natural product identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__products')
+              field: product_code
+      - name: product_name
+        description: Product display name.
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class.
+        tests:
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: fare_class_code
+        description: Underlying fare class the product bundles.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: included_service_codes
+        description: Pipe-delimited service codes included in the bundle, as staged (not parsed).

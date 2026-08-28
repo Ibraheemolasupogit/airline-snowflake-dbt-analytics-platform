@@ -24,6 +24,13 @@ target = dev
 # and dim_route call dbt_utils.generate_surrogate_key(), so sqlfluff_libs/dbt_utils.py provides an
 # offline-lint-only shim for that one macro, loaded here and exposed in templates as dbt_utils.
 library_path = sqlfluff_libs
+# Milestone 13's pricing models call the project macro convert_currency() (macros/convert_currency.sql)
+# bare, with no namespace, matching real dbt project-macro call syntax exactly. Unlike dbt_utils
+# above (a package macro, always namespaced), a project macro cannot be shimmed via library_path
+# (which only exposes namespaced python modules). load_macros_from_path loads the real Jinja macro
+# file directly instead -- no shim/duplicate implementation needed, since the macro itself contains
+# no dbt-specific calls (no ref()/source()/config()).
+load_macros_from_path = macros
 
 [sqlfluff:indentation]
 tab_space_size = 4

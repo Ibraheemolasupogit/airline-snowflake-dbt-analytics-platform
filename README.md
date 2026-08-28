@@ -6,9 +6,9 @@ Production-style analytics engineering portfolio project for airline operations 
 
 This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
 
-Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completed the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. Milestone 9 added a deterministic synthetic airline operational/commercial source dataset. Milestone 10 added a dbt source and staging layer over that synthetic dataset — 31 source tables and 31 typed `stg_airline__*` staging views across reference, operations, bookings, pricing, and billing domains — with no business transformation yet. Milestone 11 adds the core airline operations model: four `int_*` intermediate transformations, six conformed core dimensions (including the first genuine `dim_airport` join to AirStats), and two core facts (`fct_flight_schedule`, `fct_flight_operations`) covering routes, airlines, aircraft, and flight schedules/instances. It does not add booking-lifecycle or pricing/invoice calculations, payment allocation, revenue recognition, exception-detection models, reconciliation, commercial marts, dashboards, or Snowflake deployment — those remain planned for later milestones.
+Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completed the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. Milestone 9 added a deterministic synthetic airline operational/commercial source dataset. Milestone 10 added a dbt source and staging layer over that synthetic dataset — 31 source tables and 31 typed `stg_airline__*` staging views across reference, operations, bookings, pricing, and billing domains — with no business transformation yet. Milestone 11 added the core airline operations model: four `int_*` intermediate transformations, six conformed core dimensions (including the first genuine `dim_airport` join to AirStats), and two core facts (`fct_flight_schedule`, `fct_flight_operations`) covering routes, airlines, aircraft, and flight schedules/instances. Milestone 12 added the booking and ticketing layer: five booking-lifecycle intermediate models, four core dimensions (`dim_passenger`, `dim_booking_channel`, `dim_fare_class`, `dim_cabin`), and four core facts (`fct_bookings`, `fct_booking_passengers`, `fct_ticket_segments`, `fct_passenger_journeys`), plus a deterministic `passengers_carried`/`load_factor` update to `fct_flight_operations`. Milestone 13 adds a deterministic pricing/tariff layer: five pricing intermediate models, six core dimensions (`dim_fare_rule`, `dim_tax`, `dim_currency`, `dim_discount`, `dim_service`, `dim_product`), one core fact (`fct_pricing_events`), and a `convert_currency` macro, covering fares, fare rules, taxes, airport charges, discounts, ancillary pricing, and currency handling. It does not add invoices/invoice-line calculations, payment allocation, refunds/adjustments, revenue recognition, billing exceptions, reconciliation, commercial marts, dashboards, or Snowflake deployment — those remain planned for later milestones.
 
-See `reports/airstats_capstone_summary.md` for a concise AirStats capstone summary, `docs/data_models/airstats_capstone_completion_evidence.md` for the full AirStats requirement-to-file mapping, `docs/data_models/airline_synthetic_source_data.md` for the Milestone 9 synthetic-data design, `docs/data_models/airline_staging_layer.md` for the Milestone 10 source/staging design, and `docs/data_models/airline_core_operations.md` for the Milestone 11 core operations model design.
+See `reports/airstats_capstone_summary.md` for a concise AirStats capstone summary, `docs/data_models/airstats_capstone_completion_evidence.md` for the full AirStats requirement-to-file mapping, `docs/data_models/airline_synthetic_source_data.md` for the Milestone 9 synthetic-data design, `docs/data_models/airline_staging_layer.md` for the Milestone 10 source/staging design, `docs/data_models/airline_core_operations.md` for the Milestone 11 core operations model design, `docs/data_models/airline_booking_ticketing.md` for the Milestone 12 booking/ticketing design, and `docs/data_models/airline_pricing_tariffs.md` for the Milestone 13 pricing/tariffs design.
 
 ## Core Stack
 
@@ -48,7 +48,9 @@ Implementation status:
 - Milestone 9 - complete
 - Milestone 10 - complete
 - Milestone 11 - complete
-- Milestone 12 and later milestones - planned
+- Milestone 12 - complete
+- Milestone 13 - complete
+- Milestone 14 and later milestones - planned
 
 Implemented (AirStats capstone, Milestones 1-8):
 
@@ -96,9 +98,27 @@ Implemented (Milestone 11, core airline operations model):
 - one singular business-rule test (`tests/business_rules/airline_route_origin_destination_distinct.sql`) plus column-level generic tests across the new intermediate/core YAML, including cross-domain `relationships` tests into `stg_airstats__airports` and `dim_airport`
 - design documentation (`docs/data_models/airline_core_operations.md`) covering grain/key decisions, the AirStats conformance implementation, and delay/completion/load-factor logic
 
-Planned (Milestone 12 onward):
+Implemented (Milestone 12, booking and ticketing):
 
-- booking-lifecycle, journey-completion, pricing, and invoice calculations
+- five reusable intermediate transformations under `models/intermediate/booking_lifecycle/`: `int_booking_current_state`, `int_booking_passengers`, `int_ticketed_segments`, `int_passenger_journey_completion`, and `int_cancelled_bookings`
+- four core dimensions: `dim_passenger`, `dim_booking_channel`, `dim_fare_class`, `dim_cabin` (the last two deliberately excluding fare/pricing monetary columns, reserved for Milestone 13)
+- four core facts: `fct_bookings`, `fct_booking_passengers`, `fct_ticket_segments`, `fct_passenger_journeys`, plus a deterministic `passengers_carried`/`load_factor` update to `fct_flight_operations` derived from completed ticket segments
+- a deterministic `journey_completion_status` derivation (scheduled/completed/cancelled/not_flown/other) reused by both the passenger-journey fact and the flight-operations passenger count
+- one singular business-rule test guarding against double-counting a passenger across a round trip's two flight instances, plus column-level generic tests across the new intermediate/core YAML
+- design documentation (`docs/data_models/airline_booking_ticketing.md`) covering grain/key decisions, journey-completion semantics, and the controlled-exception interaction with EXC-006
+
+Implemented (Milestone 13, products, services, prices and tariffs):
+
+- five reusable intermediate transformations under `models/intermediate/pricing/`: `int_fare_component_calculation`, `int_tax_calculation`, `int_airport_charge_calculation`, `int_ancillary_charge_calculation`, and `int_booking_charge_components`, all deterministically grounded in `scripts/airline_synth/build_billing.py`'s own ground-truth arithmetic
+- six core dimensions: `dim_fare_rule`, `dim_tax`, `dim_currency`, `dim_discount`, `dim_service`, `dim_product` (reusing the existing `dim_fare_class` from Milestone 12)
+- one core fact, `fct_pricing_events`: a unified, sign-conventioned charge-component structure (`base_fare`, `distance_fare`, `tax`, `airport_fee`, `ancillary`, `discount`) ready for Milestone 14 invoice-line generation without recalculating pricing
+- a narrow `convert_currency` macro using fixed-point `decimal(18, 2)` arithmetic, no floats
+- three singular business-rule tests (fare-formula sanity, fixed-point amount consistency, discount-not-exceeding-subtotal), plus column-level generic tests across the new intermediate/core YAML
+- design documentation (`docs/data_models/airline_pricing_tariffs.md`) covering the fare formula, tax/airport-fee/discount/ancillary logic, currency handling, the charge-component grain/sign convention, and controlled `incorrect_fare`-exception preservation for a future Milestone 14 exception-detection model
+
+Planned (Milestone 14 onward):
+
+- invoice and invoice-line calculations
 - payment and refund allocation
 - revenue recognition
 - outstanding balances and billing exception detection
@@ -157,8 +177,8 @@ python -m pytest tests/python
 9. Synthetic Airline Data Foundation - complete
 10. Airline Staging Models - complete
 11. Core Airline Operations Model - complete
-12. Booking and Ticketing - planned
-13. Products, Services, Prices and Tariffs - planned
+12. Booking and Ticketing - complete
+13. Products, Services, Prices and Tariffs - complete
 14. Invoices and Invoice Lines - planned
 15. Payments and Failed Payments - planned
 16. Refunds and Adjustments - planned

@@ -1,0 +1,312 @@
+version: 2
+
+models:
+  - name: int_fare_component_calculation
+    description: >
+      Deterministic fare-component calculation. Grain is one row per issued ticket (ticket_id),
+      not one row per ticket_segment -- see model SQL comment for why, verified against
+      scripts/airline_synth/build_billing.py::_fare_amount_usd. Upstream models are
+      stg_airline__tickets, int_booking_current_state (Milestone 12), stg_airline__fare_classes,
+      dim_route (Milestone 11), stg_airline__discounts, and stg_airline__exchange_rates. Formula:
+      base_fare_usd + (per_km_usd * distance_km), using the booking's outbound route distance.
+      No tax, airport fee, ancillary, or discount dollar amount is computed here.
+    columns:
+      - name: ticket_id
+        description: Natural ticket identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: booking_id
+        description: Booking this ticket belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: passenger_id
+        description: Passenger this ticket is issued to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__passengers')
+              field: passenger_id
+      - name: route_id
+        description: Booking's outbound route -- the only route used for fare distance pricing.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_route')
+              field: route_id
+      - name: fare_class_code
+        description: Fare class this ticket was sold under.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: currency
+        description: Booking's currency; the reporting currency for pre_discount_fare_local.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: discount_code
+        description: Booking's discount code, informational only; null if no discount applies.
+        tests:
+          - relationships:
+              to: ref('stg_airline__discounts')
+              field: discount_code
+      - name: base_fare_usd
+        description: fare_classes.base_fare_usd, unchanged.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: distance_component_usd
+        description: per_km_usd * distance_km, using the booking's outbound route distance.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: pre_discount_fare_usd
+        description: base_fare_usd + distance_component_usd. The "expected calculated fare" for
+          this ticket, computed independently of any billing/invoice data (see docs/data_models/
+          airline_pricing_tariffs.md's controlled-exception-preservation section).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: pre_discount_fare_local
+        description: pre_discount_fare_usd converted into the booking's currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_tax_calculation
+    description: >
+      Deterministic government passenger tax calculation. Grain is one row per issued ticket
+      (ticket_id). Upstream models are int_fare_component_calculation, dim_route, dim_airport, and
+      stg_airline__taxes. Tax country applicability is the booking's outbound-route origin
+      (departure) country -- see model SQL comment for the documented assumption.
+    columns:
+      - name: ticket_id
+        description: Natural ticket identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_fare_component_calculation')
+              field: ticket_id
+      - name: origin_country_code
+        description: ISO country of the booking's outbound route origin airport.
+        tests:
+          - not_null
+      - name: tax_id
+        description: Applicable tax row from stg_airline__taxes for origin_country_code.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__taxes')
+              field: tax_id
+      - name: percentage_rate
+        description: Fraction of pre_discount_fare_usd charged as tax.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: tax_amount_usd
+        description: pre_discount_fare_usd * percentage_rate.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: tax_amount_booking_currency
+        description: tax_amount_usd converted into the booking's currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_airport_charge_calculation
+    description: >
+      Deterministic airport-charge calculation. Grain is one row per (ticket_id, fee_code).
+      Upstream models are int_fare_component_calculation and stg_airline__airport_fees, joined on
+      the booking's outbound-route origin (departure) airport only -- see model SQL comment for
+      why destination charges are not modelled.
+    columns:
+      - name: ticket_id
+        description: Ticket this airport charge applies to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_fare_component_calculation')
+              field: ticket_id
+      - name: fee_code
+        description: Airport fee type code.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Departure airport this charge is levied at, AirStats-conformed.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_ident
+      - name: airport_fee_id
+        description: Source airport-fee row this charge was priced from.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__airport_fees')
+              field: airport_fee_id
+      - name: fee_amount
+        description: Fee amount as staged, in the departure airport's own local currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: fee_amount_booking_currency
+        description: fee_amount converted into the booking's currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ticket_id
+            - fee_code
+
+  - name: int_ancillary_charge_calculation
+    description: >
+      Deterministic ancillary-service charge calculation. Grain is one row per ancillary service
+      sold (ancillary_service_id), matching stg_airline__ancillary_services exactly. Upstream
+      models are stg_airline__ancillary_services, stg_airline__services, stg_airline__tickets, and
+      int_booking_current_state.
+    columns:
+      - name: ancillary_service_id
+        description: Natural ancillary-sale identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__ancillary_services')
+              field: ancillary_service_id
+      - name: ticket_id
+        description: Ticket this ancillary was sold against.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: service_code
+        description: Service sold.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__services')
+              field: service_code
+      - name: amount
+        description: unit_price * quantity, in ancillary_services.currency as staged.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: amount_usd
+        description: quantity * stg_airline__services.base_price_usd.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: currency
+        description: Currency of amount, as staged (always equals booking_currency in this dataset).
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: fulfilment_status
+        description: >
+          Unchanged from staging, including the two deliberately injected controlled exceptions
+          (ancillary_sold_but_not_fulfilled, ancillary_fulfilled_but_not_billed); do not filter or
+          add a test that would flag them as failures.
+        tests:
+          - accepted_values:
+              values:
+                - fulfilled
+                - not_fulfilled
+                - pending
+
+  - name: int_booking_charge_components
+    description: >
+      Unified, deterministic charge-component structure. Grain is one row per priced charge
+      component (component_key_natural), a UNION ALL of base_fare/distance_fare/tax/airport_fee
+      (from int_fare_component_calculation/int_tax_calculation/int_airport_charge_calculation, all
+      ticket-scoped) plus ancillary (int_ancillary_charge_calculation, ticket-scoped) plus discount
+      (computed here, booking-scoped). See model SQL comment for the sign convention and the exact
+      discount formula, matching scripts/airline_synth/build_billing.py.
+    columns:
+      - name: component_key_natural
+        description: Deterministic natural key -- component_type plus its owning reference id(s).
+        tests:
+          - not_null
+          - unique
+      - name: component_type
+        description: One of the six charge-component types this milestone models.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - base_fare
+                - distance_fare
+                - tax
+                - airport_fee
+                - ancillary
+                - discount
+      - name: charge_scope
+        description: Whether this component is priced per ticket or per booking.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - ticket
+                - booking
+      - name: booking_id
+        description: Booking this component belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: ticket_id
+        description: Ticket this component belongs to; null only for booking-scoped discount rows.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: currency
+        description: Booking's currency; the denomination of amount.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: amount
+        description: >
+          Signed amount in currency. Positive for base_fare/distance_fare/tax/airport_fee/
+          ancillary; negative (or zero) for discount.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+              config:
+                where: "component_type != 'discount'"
+          - dbt_utils.expression_is_true:
+              expression: "<= 0"
+              config:
+                where: "component_type = 'discount'"

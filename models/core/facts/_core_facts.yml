@@ -541,3 +541,126 @@ models:
           - accepted_values:
               values: [true, false]
               quote: false
+
+  - name: fct_pricing_events
+    description: >
+      Grain is one row per priced charge component. Natural key is component_key_natural;
+      surrogate key is charge_component_key. Foreign keys: booking_key (fct_bookings), passenger_key
+      (dim_passenger), fare_class_key (dim_fare_class), route_key (dim_route), origin_airport_key
+      (dim_airport), tax_key (dim_tax), service_key (dim_service), discount_key (dim_discount),
+      currency_key (dim_currency) -- each populated only for the component_type it applies to; see
+      int_booking_charge_components and docs/data_models/airline_pricing_tariffs.md for the full
+      grain/sign-convention rationale. No invoice, payment, refund, adjustment, or
+      revenue-recognition field exists on this fact; those remain out of scope until Milestone 14+.
+    columns:
+      - name: charge_component_key
+        description: Surrogate key, generated from component_key_natural.
+        tests:
+          - not_null
+          - unique
+      - name: component_key_natural
+        description: Deterministic natural key and grain key.
+        tests:
+          - not_null
+          - unique
+      - name: component_type
+        description: One of the six charge-component types this milestone models.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - base_fare
+                - distance_fare
+                - tax
+                - airport_fee
+                - ancillary
+                - discount
+      - name: charge_scope
+        description: Whether this component is priced per ticket or per booking.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - ticket
+                - booking
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: ticket_id
+        description: Ticket this component belongs to; null only for booking-scoped discount rows.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: passenger_key
+        description: Foreign key to dim_passenger; null only for booking-scoped discount rows.
+        tests:
+          - relationships:
+              to: ref('dim_passenger')
+              field: passenger_key
+      - name: currency_key
+        description: Foreign key to dim_currency for the currency amount is denominated in.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: amount
+        description: >
+          Signed amount in currency (the booking's own currency). Positive for base_fare/
+          distance_fare/tax/airport_fee/ancillary; negative (or zero) for discount. Summing amount
+          for a booking_id yields that booking's net payable total without recalculating pricing.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+              config:
+                where: "component_type != 'discount'"
+          - dbt_utils.expression_is_true:
+              expression: "<= 0"
+              config:
+                where: "component_type = 'discount'"
+      - name: amount_usd
+        description: The same amount re-expressed in USD, for currency-independent comparison.
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class; populated only for base_fare/distance_fare rows.
+        tests:
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: route_key
+        description: Foreign key to dim_route; populated only for base_fare/distance_fare rows.
+        tests:
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: origin_airport_key
+        description: >
+          Foreign key to dim_airport for the departure airport; populated for base_fare/
+          distance_fare/tax/airport_fee rows.
+        tests:
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: tax_key
+        description: Foreign key to dim_tax; populated only for tax rows.
+        tests:
+          - relationships:
+              to: ref('dim_tax')
+              field: tax_key
+      - name: service_key
+        description: Foreign key to dim_service; populated only for ancillary rows.
+        tests:
+          - relationships:
+              to: ref('dim_service')
+              field: service_key
+      - name: discount_key
+        description: Foreign key to dim_discount; populated only for discount rows.
+        tests:
+          - relationships:
+              to: ref('dim_discount')
+              field: discount_key
