@@ -187,8 +187,8 @@ onward.
 
 ## Judgement
 
-The AirStats capstone (Milestones 2-8) is functionally complete for a portfolio project operating
-without live Snowflake credentials: source-to-mart lineage, incremental processing, SCD history,
-assurance testing, documentation, and analysis queries are all present and offline-validated. It is
-not "deployed" in the sense of having run against a real Snowflake account, and no claim to that
-effect is made anywhere in this repository.
+The AirStats foundation is functionally complete for local validation without live Snowflake
+credentials: source-to-mart lineage, incremental processing, SCD history, assurance testing,
+documentation, and analysis queries are all present and offline-validated. It is not "deployed" in
+the sense of having run against a real Snowflake account, and no claim to that effect is made
+anywhere in this repository.

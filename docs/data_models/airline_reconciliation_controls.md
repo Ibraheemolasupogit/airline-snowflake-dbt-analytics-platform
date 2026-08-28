@@ -19,7 +19,7 @@ No pricing, invoice arithmetic, payment allocation, refund logic, or revenue-rec
 recomputed anywhere in this milestone. This milestone does **not** implement commercial reporting
 marts, route profitability, executive airline marts, dashboards, or the production dbt-engineering
 enhancements reserved for Milestone 21. Those remain planned for Milestone 20 onward (see
-"Milestone 20 Boundary" below).
+"Scope Boundary" below).
 
 ## Architecture
 
@@ -239,10 +239,9 @@ classified as an exception (see above). The remaining thirteen controlled except
 Milestone 18's own scope (billing-exception detection), not this milestone's -- see
 `docs/data_models/airline_outstanding_balances_exceptions.md` for their coverage.
 
-## Milestone 20 Boundary
+## Scope Boundary
 
-Milestone 20 (Commercial Reporting Marts) is the next planned milestone. It is expected to build
-commercial-facing marts, route profitability, and executive reporting on top of the complete,
-reconciled financial-assurance layer this milestone established. Dashboard implementation and the
-production dbt-engineering enhancements reserved for Milestone 21 remain out of scope until their
-own later milestones, per the existing roadmap.
+This document covers source-to-warehouse reconciliation, month-end assurance, revenue/cash bridge
+logic, and billing-exception control summaries. Commercial marts and executive summaries are
+documented in `docs/data_models/airline_commercial_marts.md`; production-oriented dbt engineering
+is documented in `docs/engineering/dbt_production_engineering.md`.

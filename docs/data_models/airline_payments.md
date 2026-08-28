@@ -22,7 +22,7 @@ rather than recomputing invoice arithmetic or pricing.
 This milestone does **not** implement refunds, adjustments, credit notes, vouchers, revenue
 recognition, a final outstanding-balance model, billing-exception classification, financial
 reconciliation, commercial marts, or dashboards. Those remain planned for Milestone 16 onward (see
-"Milestone 16 Boundary" below). This milestone establishes payment **structure and evidence** --
+"Scope Boundary" below). This document establishes payment **structure and evidence** --
 allocation math, yes; exception classification, no.
 
 ## Payment Architecture
@@ -90,10 +90,9 @@ produces (`card_declined`, `insufficient_funds`, `bank_rejected`):
 `card_declined` and `bank_rejected` both represent the counterparty declining/rejecting the
 attempt, so both map to `declined`; `insufficient_funds` is a materially different root cause (the
 payer's own funds, not an issuer decision) and is kept as its own category rather than folded into
-`declined`. The milestone's example categories `expired`, `reversed`, and `incomplete` are
-deliberately **not** used: no card-expiry, post-success-reversal, or attempt-never-completed
-concept exists anywhere in the Milestone 9 specification, so none of the three raw reasons can be
-honestly mapped to them.
+`declined`. The possible categories `expired`, `reversed`, and `incomplete` are deliberately
+**not** used: no card-expiry, post-success-reversal, or attempt-never-completed concept exists in
+the source specification, so none of the three raw reasons can be honestly mapped to them.
 
 `int_failed_payment_attempts` filters `int_payment_attempt_classification` to
 `attempt_classification = 'failed'` with no further derivation -- evidence only.
@@ -208,13 +207,9 @@ adjustments exist to net against it, per this milestone's own scope boundary.
 - No fraud/risk classification exists or is derived; `attempt_classification`/
   `classified_failure_reason` are purely descriptive of the outcome already recorded in source.
 
-## Milestone 16 Boundary
+## Scope Boundary
 
-Milestone 16 (Refunds and Adjustments) is the next planned milestone. It is expected to build on
-`stg_airline__{refunds,adjustments,credit_notes}` and finally model refund/adjustment amounts
-against the payment structure this milestone established -- including the
-`refund_greater_than_collected_amount` and `invalid_adjustment` controlled exceptions, and, once
-refunds/adjustments net against `amount_collected`, a trustworthy final `outstanding_balance`.
-Vouchers, revenue recognition, billing-exception classification (including formally classifying
-the anomalies preserved above and in Milestone 14), reconciliation, commercial marts, and
-dashboards remain out of scope until their own later milestones, per the existing roadmap.
+This document covers payment attempts, successful payments, invoice matching, allocation semantics,
+currency comparison, and payment-derived invoice measures. Refunds, adjustments, credit notes,
+revenue recognition, outstanding balances, billing exceptions, reconciliation, and commercial marts
+are documented in their own downstream domain files.

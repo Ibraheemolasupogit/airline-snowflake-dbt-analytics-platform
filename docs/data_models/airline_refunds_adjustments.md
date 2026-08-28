@@ -20,7 +20,7 @@ invoice arithmetic.
 
 This milestone does **not** implement voucher application, revenue recognition, a final
 outstanding-balance model, billing-exception classification, reconciliation, commercial marts, or
-dashboards. Those remain planned for Milestone 17 onward (see "Milestone 17 Boundary" below). This
+dashboards. Those are documented in their own downstream domain files. This
 milestone establishes refund/adjustment **structure and evidence** -- calculation, yes;
 exception classification, no.
 
@@ -215,13 +215,9 @@ a future change.
 - Vouchers (`stg_airline__vouchers`) are explicitly out of scope for this milestone, per the
   critical scope boundary.
 
-## Milestone 17 Boundary
+## Scope Boundary
 
-Milestone 17 (Revenue Recognition) is the next planned milestone. It is expected to build a
-recognition policy on top of the complete financial-movement picture this repository now has
-(fares/taxes/fees/ancillaries/discounts from Milestone 13, invoices from Milestone 14, payments
-from Milestone 15, and refunds/adjustments/credit notes from this milestone), translating source
-financial movements into recognised-revenue terms for the first time. A final `outstanding_balance`
-model, billing-exception classification (including formally classifying the anomalies preserved
-in Milestones 14-16), reconciliation controls, commercial marts, and dashboards remain out of
-scope until their own later milestones (18-20), per the existing roadmap.
+This document covers refunds, adjustments, credit notes, payment/refund relationships, sign
+handling, and financial-movement treatment. Revenue recognition, outstanding balances, billing
+exceptions, reconciliation controls, and commercial marts are documented in their own downstream
+domain files.

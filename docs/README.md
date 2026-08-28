@@ -1,6 +1,6 @@
 # Documentation Index
 
-The root `README.md` is the portfolio landing page. Everything below is the detailed, internal
+The root `README.md` is the public project overview. Everything below is the detailed technical
 reference it links out to.
 
 ## Architecture
@@ -49,7 +49,7 @@ sign conventions, and an explicit scope boundary at the time it was written.
 ## Reports and Evidence
 
 Not documentation, but the concrete offline evidence this platform produces -- see the root
-README's "Example Analytical Outputs" section, or browse directly:
+README's "Analytical Outputs" section, or browse directly:
 
-- [`../reports/`](../reports/) -- portfolio-facing summary reports (reconciliation, payment/refund assurance, revenue recognition).
+- [`../reports/`](../reports/) -- analytical summary reports (reconciliation, payment/refund assurance, revenue recognition).
 - [`../outputs/`](../outputs/) -- offline reconciliation-evidence CSV fixtures.

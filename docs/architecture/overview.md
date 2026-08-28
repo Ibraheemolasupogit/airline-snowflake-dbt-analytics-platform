@@ -14,9 +14,8 @@ fares/products/services -> invoices and payments -> refunds and adjustments -> s
 -> recognised revenue -> outstanding balances -> billing exceptions -> reconciliation ->
 commercial reporting.
 
-See the root `README.md` for the recruiter-facing summary of this platform, and
-`docs/README.md` for the full documentation index. This document remains the internal,
-architecture-first reference.
+See the root `README.md` for the public project overview, and `docs/README.md` for the full
+documentation index. This document remains the architecture-first reference.
 
 ## Layers
 
@@ -32,9 +31,9 @@ reference data (staged, tested, snapshotted, and exposed as consumption-ready ma
 `models/marts/airport_operations/`). It is the **sole authoritative source** for airport identity
 and geography in this platform: `dim_airport` is built directly from the AirStats marts, and every
 airline route/hub/operational airport identifier is conformed to it via `int_route_airport_pair`
-and `dim_airport` itself. The Milestone 9 synthetic airline dataset carries airport identifiers
-*styled* the way AirStats/OurAirports represents them, but the synthetic fixture itself is never
-treated as an authoritative airport reference -- only AirStats is.
+and `dim_airport` itself. The synthetic airline dataset carries airport identifiers styled the way
+AirStats/OurAirports represents them, but the synthetic fixture itself is never treated as an
+authoritative airport reference -- only AirStats is.
 
 ## Control Principles
 

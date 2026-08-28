@@ -19,7 +19,7 @@ Revenue is recognised because the underlying transport or ancillary service was 
 because a booking exists, a ticket was issued, an invoice was issued, or a payment was collected.
 This milestone does **not** implement final outstanding balances, billing-exception classification,
 reconciliation, commercial marts, route profitability, executive reporting, or dashboards. Those
-remain planned for Milestone 18 onward (see "Milestone 18 Boundary" below).
+are documented in their own downstream domain files.
 
 ## Recognition Architecture
 
@@ -138,9 +138,9 @@ can never remove more revenue than was actually recognised for its booking.
 | `reversal_or_adjustment_amount`, `revenue_adjustment` rows | Carries the adjustment's own native sign -- verified against `build_billing.py`: `credit` = negative (decreasing amount due), `debit` = positive (no such row currently exists) -- see `docs/data_models/airline_refunds_adjustments.md` |
 | `net_recognised_amount` | `gross_recognised_amount + reversal_or_adjustment_amount` -- the single signed net effect on recognised revenue for that row, directly summable across the whole fact |
 
-This directly matches the milestone's own example convention ("positive = revenue recognition,
-negative = reversal / reduction") using the real generator sign semantics as authority, not an
-imposed external accounting convention.
+This directly follows the convention "positive = revenue recognition, negative = reversal /
+reduction" using the generator sign semantics as authority, not an imposed external accounting
+convention.
 
 ## Invoice/Payment Separation
 
@@ -230,18 +230,11 @@ a future change.
   refund/adjustment in the current dataset, since normal refunds only arise from pre-flight
   cancellations (nothing was ever recognised to reverse) -- this is a property of the current
   synthetic dataset's generation logic, not a limitation of the model itself.
-- No revenue-recognition-vs-invoice or revenue-recognition-vs-payment classification/exception
-  model exists yet; this milestone exposes evidence only.
+- Revenue-recognition-vs-invoice and revenue-recognition-vs-payment classification is handled by
+  downstream billing-exception and reconciliation models.
 
-## Milestone 18 Boundary
+## Scope Boundary
 
-Milestone 18 (Outstanding Balances and Billing Exceptions) is the next planned milestone. It is
-expected to build the first true `outstanding_balance` model (netting `fct_invoices.
-amount_collected` against `fct_refunds`/`fct_adjustments`, now that both exist), and to formally
-classify the anomalies preserved across Milestones 14-17 (`missing_invoice_line`, `incorrect_fare`,
-`completed_segment_without_recognised_revenue_precursor`, `unallocated_payment`,
-`payment_without_invoice`, `currency_mismatch`, `refund_greater_than_collected_amount`,
-`invalid_adjustment`, `ancillary_sold_but_not_fulfilled`, `ancillary_fulfilled_but_not_billed`)
-into a `billing_exception_type`/severity/financial-value-at-risk model for the first time.
-Reconciliation controls, commercial reporting marts, route profitability, executive reporting, and
-dashboards remain out of scope until their own later milestones (19-20), per the existing roadmap.
+This document covers fulfilment-driven revenue recognition, refund reversals, revenue adjustments,
+sign conventions, and invoice/payment separation. Outstanding balances, billing exceptions,
+reconciliation controls, and commercial marts are documented in their own downstream domain files.

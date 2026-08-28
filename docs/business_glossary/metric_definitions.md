@@ -2,20 +2,14 @@
 
 ## Why this is a document, not a dbt Semantic Layer
 
-Milestone 21 assessed whether a proper dbt Semantic Layer (`semantic_models:`/`metrics:` YAML,
-queried via `dbt sl query`/MetricFlow) could be added cleanly. It could not, without adding an
-unsupported dependency: `dbt-semantic-interfaces` is present only as a transitive dependency of
-`dbt-core` 1.9 itself (used for internal manifest parsing), but the actual query engine package,
-`dbt-metricflow`, is **not** listed in `requirements.txt` and has never been installed or
-exercised in this repository. Declaring `semantic_models:`/`metrics:` YAML that has never been
-queried end-to-end would be decorative -- present in the repo but unverified -- which this
-milestone's own instructions explicitly reject ("prefer a stable portfolio repository over a
-decorative broken semantic layer").
+This repository defines governed metrics in documentation rather than declaring dbt Semantic Layer
+objects. The pinned dependency set includes dbt Core 1.9 but does not include `dbt-metricflow`, so
+semantic models and metrics would be unqueried configuration rather than an exercised interface.
 
 Instead, this document is the **governed metric-definition convention**: every metric a consumer
 might reasonably ask for is defined once, precisely, with its exact source column and any
-currency/grain caveat, so a future Milestone can wire it into a real semantic layer (or a BI tool's
-own metric layer) without re-deriving the definition from scratch or guessing at semantics.
+currency/grain caveat. The same definitions can be moved into a semantic layer or BI metric layer
+without changing the business meaning.
 
 ## Convention
 
@@ -71,8 +65,8 @@ direct pointer to an existing, tested column.
 
 ### recognised_revenue
 
-- **Definition**: Earned revenue per Milestone 17's fulfilment-driven recognition policy --
-  **never** an invoice total, and never revenue before the underlying service was fulfilled.
+- **Definition**: Earned revenue under the fulfilment-driven recognition policy -- **never** an
+  invoice total, and never revenue before the underlying service was fulfilled.
 - **Source**: `fct_revenue.gross_recognised_amount` / `net_recognised_amount`, or any
   `recognised_ticket_revenue` / `recognised_ancillary_revenue` / `total_recognised_revenue` /
   `net_recognised_revenue` column across the `revenue` mart domain.
@@ -133,14 +127,13 @@ direct pointer to an existing, tested column.
 ## Explicitly not defined here
 
 RASK, CASK, profit margin, contribution margin, and route profitability are deliberately absent:
-no seat-kilometre cost basis or route/flight cost data exists anywhere in the Milestone 9
-specification, so none of these can be defensibly computed. See `docs/data_models/
-airline_commercial_marts.md`'s "Route Commercial Performance and the Profitability Exclusion"
-section for the full rationale -- unchanged in Milestone 21.
+no seat-kilometre cost basis or route/flight cost data exists in the source data, so none of these
+can be defensibly computed. See `docs/data_models/airline_commercial_marts.md`'s "Route Commercial
+Performance and the Profitability Exclusion" section for the full rationale.
 
 ## Future semantic-layer path
 
-If `dbt-metricflow` is added to `requirements.txt` in a later milestone, every metric above can be
-translated directly into a `semantic_models:`/`metrics:` YAML node: the **Source** column is
-already the exact `measure`/`agg` target, and the **Currency** note is already the required
-`dimension` to group by. No metric definition would need to change; only its representation would.
+If `dbt-metricflow` is added to `requirements.txt`, every metric above can be translated directly
+into a `semantic_models:`/`metrics:` YAML node: the **Source** column is already the exact
+`measure`/`agg` target, and the **Currency** note is already the required `dimension` to group by.
+No metric definition would need to change; only its representation would.

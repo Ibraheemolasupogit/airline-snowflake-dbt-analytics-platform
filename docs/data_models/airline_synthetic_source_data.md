@@ -54,8 +54,8 @@ Only the Python standard library is used (`csv`, `random`, `math`, `datetime`,
 - Row counts are configurable via CLI flags (`--seed`, `--output-dir`,
   `--bookings`, `--passengers`) or by constructing a `GeneratorConfig` with
   different values; the default configuration is deliberately small
-  (~150 passengers, 180 bookings) to keep the dataset portfolio- and
-  git-appropriate (well under 1 MB total).
+  (~150 passengers, 180 bookings) to keep the checked-in dataset lightweight
+  (well under 1 MB total).
 
 ### Timestamps and currency
 

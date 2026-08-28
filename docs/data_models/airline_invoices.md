@@ -19,7 +19,7 @@ rather than recomputing pricing or reinventing invoice fields.
 This milestone does **not** implement payment allocation, failed-payment classification, refunds,
 adjustments, credit-note application, vouchers, revenue recognition, outstanding balances,
 billing-exception classification, reconciliation, commercial marts, or dashboards. Those remain
-planned for Milestone 15 onward (see "Milestone 15 Boundary" below). This milestone establishes
+documented in their own downstream domain files. This document establishes
 invoice **structure and validation** -- it stops at exposing comparison evidence, never at
 classifying it.
 
@@ -244,12 +244,9 @@ fields.
   references, since no `dim_corporate_account`/`dim_travel_agent` exists yet (matching
   `fct_bookings`'s Milestone 12 precedent for the same fields).
 
-## Milestone 15 Boundary
+## Scope Boundary
 
-Milestone 15 (Payments and Failed Payments) is the next planned milestone. It is expected to build
-on `stg_airline__{payment_attempts,payments}` and finally model payment allocation and
-failed-payment classification against the invoice structure this milestone established. Refunds,
-adjustments, credit-note application, vouchers, revenue recognition, outstanding balances,
-billing-exception classification (including formally classifying the anomalies preserved above),
-reconciliation, commercial marts, and dashboards remain out of scope until their own later
-milestones, per the existing roadmap.
+This document covers invoice, invoice-line, invoice arithmetic, and pricing-to-invoice comparison
+models. Payment allocation, refunds, adjustments, credit-note application, revenue recognition,
+outstanding balances, billing exceptions, reconciliation, and commercial marts are documented in
+their own downstream domain files.

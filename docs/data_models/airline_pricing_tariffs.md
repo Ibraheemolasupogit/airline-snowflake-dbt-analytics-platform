@@ -21,7 +21,7 @@ rebuilding either.
 
 This milestone does **not** implement invoices or invoice-line calculations, payment allocation,
 refunds/adjustments, revenue recognition, billing exceptions, reconciliation, commercial marts, or
-dashboards. Those remain planned for Milestone 14 onward (see "Milestone 14 Boundary" below).
+dashboards. Those are documented in their own downstream domain files.
 
 ## Pricing Architecture
 
@@ -341,12 +341,9 @@ nothing else. This milestone does not build that detection model; it only guaran
   change/re-issue transaction exists anywhere in the Milestone 9 specification to charge it
   against.
 
-## Milestone 14 Boundary
+## Scope Boundary
 
-Milestone 14 (Invoices and Invoice Lines) is the next planned milestone. It is expected to build
-on `stg_airline__{invoices,invoice_lines}` and finally join `fct_pricing_events`'s "expected
-calculated" charge components against the actual `invoice_lines` records this milestone
-deliberately left untouched -- including detecting the `incorrect_fare` and
-`completed_segment_without_recognised_revenue_precursor` controlled exceptions. Payment allocation,
-refunds/adjustments, revenue recognition, billing exceptions, reconciliation, commercial marts, and
-dashboards remain out of scope until their own later milestones, per the existing roadmap.
+This document covers products, services, fares, taxes, fees, discounts, currency handling, and
+pricing-event models. Invoicing, payment allocation, refunds/adjustments, revenue recognition,
+billing exceptions, reconciliation, and commercial marts are documented in their own downstream
+domain files.

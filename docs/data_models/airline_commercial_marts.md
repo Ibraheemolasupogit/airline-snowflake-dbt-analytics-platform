@@ -2,9 +2,8 @@
 
 ## Purpose
 
-Milestone 20 builds consumption-ready commercial reporting marts on top of the complete, reconciled
-core layer established through Milestone 19 -- entirely by reusing existing governed facts and
-dimensions:
+This document describes the consumption-ready commercial reporting marts built on top of the
+complete, reconciled core layer, reusing existing governed facts and dimensions:
 
 ```text
 models/core/dimensions/* + models/core/facts/*
@@ -16,11 +15,9 @@ models/core/dimensions/* + models/core/facts/*
 ```
 
 No operational, pricing, billing, exception-detection, revenue-recognition, or reconciliation logic
-is recomputed anywhere in this milestone. Every mart is a reporting-layer aggregation or thin
-re-selection of an existing core fact/dimension (or, for the executive domain, of another mart).
-This milestone does **not** implement dashboards, Power BI files, live BI deployment, production
-dbt contracts, incremental models, state-based CI, or semantic-layer/exposure enhancements. Those
-remain planned for Milestone 21+ (see "Milestone 21 Boundary" below).
+is recomputed in the mart layer. Every mart is a reporting-layer aggregation or thin re-selection
+of an existing core fact/dimension (or, for the executive domain, of another mart). Dashboard files
+and live BI deployment are outside the current repository scope.
 
 ## Architecture
 
@@ -333,11 +330,8 @@ validation, Milestone 19 reconciliation-evidence regeneration). No mart has been
 live warehouse; row counts, exact numeric outputs, and query performance remain unverified until a
 real `dbt run`/`dbt test` against Snowflake.
 
-## Milestone 21 Boundary
+## Scope Boundary
 
-Milestone 21 (Production dbt Engineering) is the next planned milestone. It is expected to address
-production dbt contracts, incremental model design, state-based CI (`dbt build --select
-state:modified+`), exposures/semantic-layer definitions, and any further macro/snapshot hardening --
-all explicitly out of scope here. Dashboard implementation, live BI deployment, and final portfolio
-README polish remain reserved for Milestone 22 or later, per the existing roadmap. This milestone
-does not implement any of that work.
+Dashboard implementation and live BI deployment are outside this repository's current scope. The
+commercial marts are documented as dbt models and exposures, ready for a configured BI surface
+without claiming that such a dashboard is included here.

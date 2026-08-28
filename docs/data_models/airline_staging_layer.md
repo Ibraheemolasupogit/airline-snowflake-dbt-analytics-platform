@@ -152,13 +152,12 @@ The Milestone 9 dataset deliberately contains 14 documented exceptions (see
   non-existent invoice). Each such omission is called out in the relevant column's YAML
   description.
 - Exception-*detection* logic (flagging duplicates, validating refund limits, checking invoice
-  reconciliation, etc.) is explicitly out of scope for this milestone -- it begins in Milestone
-  18 (Outstanding Balances and Billing Exceptions).
+  reconciliation, etc.) is handled in downstream billing-assurance models, not in staging.
 
-## AirStats Relationship (Documented, Not Implemented)
+## AirStats Relationship
 
 Several airline entities carry airport identifiers styled exactly like AirStats/OurAirports
-idents, preserved unchanged through staging so a future milestone can conform them:
+idents, preserved unchanged through staging so downstream models can conform them:
 
 ```text
 stg_airline__routes.origin_ident / destination_ident
@@ -167,25 +166,16 @@ stg_airline__flight_instances.origin_ident / destination_ident
 stg_airline__ticket_segments (via its flight_instance)
 stg_airline__airport_fees.airport_ident
 stg_airline__airlines.hub_ident
-  -> (future) source('airstats', 'airports').ident / ref('stg_airstats__airports').ident
+  -> source('airstats', 'airports').ident / ref('stg_airstats__airports').ident
 ```
 
-This milestone does **not** add a `relationships` test against AirStats for these columns and
-does **not** create `dim_airport` or any other conformance model. Adding such a join now would
-pull core-conformance logic into the staging layer prematurely. The join belongs to a future
-core-modelling milestone once a conformed airport dimension exists.
+The staging layer does **not** add a `relationships` test against AirStats for these columns and
+does **not** create `dim_airport` or any other conformance model. That join belongs in the core
+model where the conformed airport dimension is built.
 
-## What Comes Next
+## Scope Boundary
 
-At the time this milestone was completed, none of the following existed yet: intermediate
-transformations, core dimensions and facts, the conformed `dim_airport` join to AirStats,
-booking-lifecycle and journey logic, pricing and invoice calculations, payment allocation,
-revenue recognition, billing exception detection, reconciliation, and commercial marts. This
-milestone was a faithful, typed pass-through of the Milestone 9 source truth, including its
-deliberately planted defects.
-
-Milestone 11 has since added the intermediate transformations, core dimensions/facts, and the
-conformed `dim_airport` join described above -- see `docs/data_models/airline_core_operations.md`.
-Booking-lifecycle and journey logic, pricing and invoice calculations, payment allocation, revenue
-recognition, billing exception detection, reconciliation, and commercial marts remain planned for
-Milestone 12 onward.
+This document covers the source and staging layer: typing, naming, source-quality tests, and
+preservation of source records exactly as generated. Intermediate transformations, conformed core
+dimensions/facts, pricing, invoicing, payment allocation, revenue recognition, billing exceptions,
+reconciliation, and commercial marts are documented in their own downstream domain files.

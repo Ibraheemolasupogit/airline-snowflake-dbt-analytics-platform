@@ -11,10 +11,9 @@ models:
       dimension (no history); AirStats' own snap_airports/snap_runways snapshots remain the
       place for SCD Type 2 airport history.
 
-      Milestone 21: this model carries an enforced dbt model contract (governed consumption
-      contract for downstream marts/BI) -- every column below has a fixed data_type matching its
-      actual SQL output; no speculative precision was invented (see docs/engineering/
-      dbt_production_engineering.md for the contract policy).
+      This model carries an enforced dbt model contract for downstream marts and reporting. Every
+      column below has a fixed data_type matching its SQL output; see
+      docs/engineering/dbt_production_engineering.md for the contract policy.
     config:
       contract:
         enforced: true
@@ -232,10 +231,9 @@ models:
       Origin and destination use conformed dim_airport keys, proving the airline route layer is
       genuinely joined to AirStats rather than merely documented as compatible with it.
 
-      Milestone 21: this model carries an enforced dbt model contract (governed consumption
-      contract for downstream marts/BI) -- every column below has a fixed data_type matching its
-      actual SQL output; no speculative precision was invented (see docs/engineering/
-      dbt_production_engineering.md for the contract policy).
+      This model carries an enforced dbt model contract for downstream marts and reporting. Every
+      column below has a fixed data_type matching its SQL output; see
+      docs/engineering/dbt_production_engineering.md for the contract policy.
     config:
       contract:
         enforced: true
@@ -385,10 +383,10 @@ models:
   - name: dim_passenger
     description: >
       Grain is one row per synthetic passenger. Natural key is passenger_id; surrogate key is
-      passenger_key. Every attribute is synthetic Milestone 9 generator output -- no real
-      individuals are represented (see docs/data_models/airline_synthetic_source_data.md's
-      Privacy Statement). A future recruiter-facing mart should avoid exposing name/email/
-      date_of_birth directly; this core dimension retains them for source-lineage completeness.
+      passenger_key. Every attribute is synthetic generator output -- no real individuals are
+      represented (see docs/data_models/airline_synthetic_source_data.md's Privacy Statement).
+      Reporting marts should avoid exposing name/email/date_of_birth directly; this core dimension
+      retains them for source-lineage completeness.
     columns:
       - name: passenger_key
         description: Surrogate key, generated from passenger_id.
@@ -451,8 +449,8 @@ models:
     description: >
       Grain is one row per fare class. Natural key is fare_class_code; surrogate key is
       fare_class_key. Reuses stg_airline__fare_classes but deliberately excludes its monetary
-      columns (base_fare_usd, per_km_usd, change_fee_usd) -- fare/pricing calculations are out of
-      scope until Milestone 13 (Products, Services, Prices and Tariffs).
+      columns (base_fare_usd, per_km_usd, change_fee_usd); fare/pricing calculations are handled
+      in the pricing facts.
     columns:
       - name: fare_class_key
         description: Surrogate key, generated from fare_class_code.
@@ -491,9 +489,8 @@ models:
     description: >
       Grain is one row per cabin category. Natural key is cabin; surrogate key is cabin_key.
       Derived from the distinct cabin codes staged in stg_airline__fare_classes. No
-      human-readable cabin name is added -- that mapping exists only inside the Milestone 9
-      generator's internal Python reference data, not in any staged column (see model SQL
-      comment).
+      human-readable cabin name is added because that mapping exists only inside the generator's
+      internal Python reference data, not in any staged column (see model SQL comment).
     columns:
       - name: cabin_key
         description: Surrogate key, generated from cabin.
@@ -516,8 +513,8 @@ models:
     description: >
       Grain is one row per fare-class rule set. Natural key is fare_rule_id; fare_class_code is
       unique (one rule set per fare class). Surrogate key is fare_rule_key. Rule attributes are
-      reference/eligibility data only -- none is applied as a priced charge component in this
-      milestone (see model SQL comment for why change_fee_usd is not charged).
+      reference/eligibility data only; none is applied as a priced charge component (see model SQL
+      comment for why change_fee_usd is not charged).
     columns:
       - name: fare_rule_key
         description: Surrogate key, generated from fare_rule_id.
@@ -554,7 +551,7 @@ models:
               values: [true, false]
               quote: false
       - name: change_fee_usd
-        description: Illustrative change fee in USD; reference only, not charged in this milestone.
+        description: Illustrative change fee in USD; reference only, not charged by the pricing model.
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
@@ -616,8 +613,8 @@ models:
       currency_key. Combines stg_airline__currencies with stg_airline__exchange_rates (1:1 join).
       rate_to_usd is a single current rate, not a time series -- see model SQL comment for why no
       FX history is modelled. minor_unit_digits is reference-only; this pricing layer rounds every
-      amount to a flat 2 decimal places throughout, matching the Milestone 9 generator's own
-      convention (see model SQL comment).
+      amount to a flat 2 decimal places throughout, matching the generator's convention (see model
+      SQL comment).
     columns:
       - name: currency_key
         description: Surrogate key, generated from currency_code.
@@ -725,9 +722,8 @@ models:
   - name: dim_product
     description: >
       Grain is one row per sellable fare bundle. Natural key is product_code; surrogate key is
-      product_key. A standalone catalog dimension: no Milestone 9 booking/ticket table carries a
-      product_code foreign key, so no fact in this milestone joins to dim_product -- see model SQL
-      comment.
+      product_key. A standalone catalog dimension: no booking/ticket source table carries a
+      product_code foreign key, so no fact joins to dim_product -- see model SQL comment.
     columns:
       - name: product_key
         description: Surrogate key, generated from product_code.

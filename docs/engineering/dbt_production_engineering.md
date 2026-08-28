@@ -2,13 +2,11 @@
 
 ## Purpose
 
-Milestone 21 hardens the dbt project for production-style analytics engineering without
-pretending a live Snowflake production deployment exists. Every decision below was made against
-the actual installed dbt version (1.9.11), the actual pinned packages (`requirements.txt`,
-`packages.yml`), and the actual synthetic source data (`scripts/airline_synth/*`) -- nothing here
-is speculative. This milestone does not change core business definitions, add new business
-domains, redesign completed marts, add dashboards, or perform README polish; those are out of
-scope (dashboards/portfolio polish belong to Milestone 22).
+This document describes the production-oriented dbt engineering conventions used by the project.
+Every decision below was made against the installed dbt version (1.9.11), the pinned packages
+(`requirements.txt`, `packages.yml`), and the synthetic source data (`scripts/airline_synth/*`).
+It covers model contracts, incremental strategy, snapshots, exposures, metric governance, CI, and
+artifact handling without claiming a live Snowflake production deployment.
 
 ```mermaid
 flowchart LR
@@ -472,12 +470,10 @@ results (none were run; no warehouse was ever queried).
 - **Pruning large joins**: every core-layer join in this project narrows its join target to only
   the surrogate-key/natural-key columns needed (e.g. `dim_route`'s `origin_airport_key` lookup
   CTEs select only `airport_key, airport_ident`, never the dimension's full column set) before
-  joining -- already the established pattern this milestone's own new code (the four incremental
-  facts) follows unchanged.
+  joining.
 - **Incremental late-arriving windows**: see "Incremental Strategy" above -- the 3-day default
   lookback window is a starting point, not a measured optimum (no production traffic pattern
   exists to measure against). It is a `var`, overridable per-environment without a code change.
-- **Warehouse sizing**: explicitly left external to this repository, per the milestone's own
-  instruction -- `profiles.example.yml`'s `warehouse` field remains an environment variable,
-  never a hardcoded size, and no recommendation is made here without real query-volume data to
-  base one on.
+- **Warehouse sizing**: explicitly left external to this repository. `profiles.example.yml`'s
+  `warehouse` field remains an environment variable, never a hardcoded size, and no recommendation
+  is made here without real query-volume data to base one on.

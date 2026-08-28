@@ -6,11 +6,10 @@ exposures:
     type: dashboard
     maturity: low
     description: >
-      Logical/intended consumption surface for AirStats airport reference and operational-status
+      Reporting interface definition for AirStats airport reference and operational-status
       reporting (capacity, runway capability, geographic coverage, operational status, comment
-      activity, data quality). No live dashboard exists yet -- this exposure documents which
-      marts a future BI surface would consume, per Milestone 21's exposure-governance scope. See
-      docs/engineering/dbt_production_engineering.md.
+      activity, data quality). No live dashboard exists yet; this exposure documents the marts a BI
+      surface would consume. See docs/engineering/dbt_production_engineering.md.
     depends_on:
       - ref('mart_airport_capacity_profile')
       - ref('mart_airport_runway_capability')
@@ -26,11 +25,11 @@ exposures:
     type: dashboard
     maturity: low
     description: >
-      Logical/intended consumption surface for airline flight-operations reporting (daily
-      operations, route operational performance, airline completion performance, airport flight
-      activity). No live dashboard exists yet -- this exposure documents which marts a future BI
-      surface would consume. Completion performance only -- no on-time/delay metric exists in this
-      dataset. See docs/engineering/dbt_production_engineering.md.
+      Reporting interface definition for airline flight-operations reporting (daily operations,
+      route operational performance, airline completion performance, airport flight activity). No
+      live dashboard exists yet; this exposure documents the marts a BI surface would consume.
+      Completion performance only -- no on-time/delay metric exists in this dataset. See
+      docs/engineering/dbt_production_engineering.md.
     depends_on:
       - ref('mart_daily_flight_operations')
       - ref('mart_route_operational_performance')
@@ -44,11 +43,11 @@ exposures:
     type: dashboard
     maturity: low
     description: >
-      Logical/intended consumption surface for recognised-revenue reporting (daily revenue, by
+      Reporting interface definition for recognised-revenue reporting (daily revenue, by
       route/airport/fare-class/cabin/booking-channel/corporate-account, ancillary revenue, route
-      commercial performance). No live dashboard exists yet -- this exposure documents which marts
-      a future BI surface would consume. Route profitability is explicitly out of scope: no cost
-      data exists in this repository. See docs/engineering/dbt_production_engineering.md.
+      commercial performance). No live dashboard exists yet; this exposure documents the marts a BI
+      surface would consume. Route profitability is explicitly out of scope: no cost data exists in
+      this repository. See docs/engineering/dbt_production_engineering.md.
     depends_on:
       - ref('mart_daily_passenger_revenue')
       - ref('mart_revenue_by_route')
@@ -67,11 +66,10 @@ exposures:
     type: dashboard
     maturity: low
     description: >
-      Logical/intended consumption surface for billing-assurance reporting (daily billing,
-      invoice status, failed/unallocated payments, refunds, outstanding balances, billing
-      exceptions, reconciliation controls). No live dashboard exists yet -- this exposure
-      documents which marts a future BI surface would consume. See docs/engineering/
-      dbt_production_engineering.md.
+      Reporting interface definition for billing-assurance reporting (daily billing, invoice
+      status, failed/unallocated payments, refunds, outstanding balances, billing exceptions,
+      reconciliation controls). No live dashboard exists yet; this exposure documents the marts a BI
+      surface would consume. See docs/engineering/dbt_production_engineering.md.
     depends_on:
       - ref('mart_daily_billing')
       - ref('mart_invoice_status')
@@ -89,11 +87,11 @@ exposures:
     type: dashboard
     maturity: low
     description: >
-      Logical/intended consumption surface combining route operational performance with route
-      commercial performance -- a cross-domain view for route-level decisions. No live dashboard
-      exists yet -- this exposure documents which marts a future BI surface would consume. No
-      route profitability metric is included: no cost data exists in this repository. See
-      docs/engineering/dbt_production_engineering.md.
+      Reporting interface definition combining route operational performance with route commercial
+      performance -- a cross-domain view for route-level decisions. No live dashboard exists yet;
+      this exposure documents the marts a BI surface would consume. No route profitability metric is
+      included: no cost data exists in this repository. See docs/engineering/
+      dbt_production_engineering.md.
     depends_on:
       - ref('mart_route_operational_performance')
       - ref('mart_revenue_by_route')
@@ -107,10 +105,10 @@ exposures:
     type: dashboard
     maturity: low
     description: >
-      Logical/intended consumption surface for the narrow executive summary marts (airline
-      operations summary, revenue summary, billing-assurance summary, route performance summary).
-      No live dashboard exists yet -- this exposure documents which marts a future executive BI
-      surface would consume. See docs/engineering/dbt_production_engineering.md.
+      Reporting interface definition for the narrow executive summary marts (airline operations
+      summary, revenue summary, billing-assurance summary, route performance summary). No live
+      dashboard exists yet; this exposure documents the marts an executive BI surface would consume.
+      See docs/engineering/dbt_production_engineering.md.
     depends_on:
       - ref('mart_executive_airline_summary')
       - ref('mart_executive_revenue_summary')

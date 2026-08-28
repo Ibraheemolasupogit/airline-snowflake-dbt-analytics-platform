@@ -20,7 +20,7 @@ cancelled passenger journey, reusing the Milestone 11 operational layer
 This milestone does **not** implement fare/pricing calculations, taxes or airport-charge
 calculations, products/services pricing logic, invoice calculations, payment allocation,
 refunds/adjustments, revenue recognition, billing exceptions, reconciliation, commercial marts,
-or dashboards. Those remain planned for Milestone 13 onward (see "Milestone 13 Boundary" below).
+or dashboards. Those are documented in their own downstream domain files.
 
 ## Lifecycle Architecture
 
@@ -196,9 +196,8 @@ human-readable cabin name (e.g. "Economy"): that mapping (`CABIN_NAMES` in
 `scripts/airline_synth/reference.py`) exists only inside the Milestone 9 generator's internal
 Python reference data, never in any staged column, so reproducing it here would invent a field
 with no source-data authority. `dim_passenger` documents in its model/column descriptions that
-every attribute is synthetic and that a future recruiter-facing mart should not expose
-name/email/date_of_birth directly, even though this core dimension retains them for source
-lineage.
+every attribute is synthetic and that reporting marts should avoid exposing name/email/date_of_birth
+directly, even though this core dimension retains them for source lineage.
 
 There is no `dim_booking` dimension: a booking is transactional/event-like (see
 `fct_bookings`, `int_booking_current_state`'s current-state limitation), not a slowly-changing
@@ -280,12 +279,8 @@ invented and no status history is fabricated:
   documented in `docs/data_models/airline_synthetic_source_data.md`), so `dim_fare_class`/
   `dim_cabin` resolve cleanly with no fan-out risk anywhere in this layer.
 
-## Milestone 13 Boundary
+## Scope Boundary
 
-Milestone 13 (Products, Services, Prices and Tariffs) is the next planned milestone. It is
-expected to build on `stg_airline__{products,services,ancillary_services,fare_rules,
-airport_fees,taxes,discounts}` and finally introduce the fare/pricing calculations this milestone
-deliberately excluded from `dim_fare_class` (`base_fare_usd`, `per_km_usd`, `change_fee_usd`) and
-from every booking/ticket/segment fact here. Invoice calculations, payment allocation, refunds/
-adjustments, revenue recognition, billing exceptions, reconciliation, commercial marts, and
-dashboards remain out of scope until their own later milestones, per the existing roadmap.
+This document covers booking, passenger, ticket, segment, and journey-completion models. Pricing,
+invoicing, payment, refund/adjustment, revenue-recognition, exception, reconciliation, and
+commercial-reporting logic are documented in their own downstream domain files.

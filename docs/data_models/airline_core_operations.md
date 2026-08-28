@@ -153,14 +153,8 @@ Milestone 10 documented the future join (see "AirStats Relationship" in
   `tests/business_rules/airline_route_origin_destination_distinct.sql`, asserting no airline
   route has an identical origin and destination airport identifier.
 
-## What Comes Next
+## Scope Boundary
 
-Milestone 12 (Booking and Ticketing) is the next planned milestone. It is expected to build
-booking-lifecycle and journey-completion intermediate models and core booking/ticket
-dimensions/facts from `stg_airline__passengers`, `stg_airline__bookings`,
-`stg_airline__booking_passengers`, `stg_airline__tickets`, and `stg_airline__ticket_segments`,
-joined to the `dim_flight` / `fct_flight_operations` grain established here so
-`fct_flight_operations.passengers_carried` and `load_factor` can finally be populated. Pricing,
-invoices, payments, refunds, revenue recognition, outstanding balances/billing exceptions,
-reconciliation, and commercial marts remain out of scope until later milestones, per the existing
-roadmap.
+This document covers route, schedule, flight-operation, aircraft, and AirStats conformance models.
+Booking, ticketing, pricing, invoicing, payment, refund, revenue-recognition, reconciliation, and
+commercial-reporting logic are documented in their own domain files under `docs/data_models/`.

@@ -255,10 +255,8 @@ here (there is no source anomaly in this milestone's remaining, undetectable cat
 - Severity and financial-value-at-risk are both deterministic, documented business rules, not a
   claim of actuarial or legal precision.
 
-## Milestone 19 Boundary
+## Scope Boundary
 
-Milestone 19 (Reconciliation Controls) is the next planned milestone. It is expected to build
-formal source-to-warehouse and month-end reconciliation controls on top of the complete
-outstanding-balance and exception-detection layer this milestone established. Commercial reporting
-marts, route profitability, executive reporting, and dashboards remain out of scope until their
-own later milestones (20+), per the existing roadmap.
+This document covers outstanding balances, corporate balances, billing-exception taxonomy, severity
+logic, and financial-value-at-risk conventions. Source-to-warehouse reconciliation, commercial
+marts, and executive summaries are documented in their own downstream domain files.
