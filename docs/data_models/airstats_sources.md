@@ -12,6 +12,7 @@ Milestone 3 adds dbt staging views on top of the Milestone 2 source definitions:
 RAW_AIRSTATS
 -> source()
 -> AirStats staging views
+-> intermediate airport intelligence
 ```
 
 The staging views perform explicit column selection, Snowflake-safe typing, source-aligned
@@ -107,3 +108,26 @@ header naming differences such as camelCase to snake_case. Business cleaning bel
   `country_code`.
 - `stg_airstats__regions`: one row per source administrative subdivision. Natural key:
   `region_code`; country relationship key: `country_code`.
+
+## Intermediate Airport Intelligence
+
+Milestone 4 adds reusable intermediate AirStats transformations upstream of future dimensions,
+facts, and marts:
+
+- `int_airport_geography`: one row per airport identifier; joins staged airports to staged
+  countries and regions while preserving airports with missing geography references.
+- `int_airport_runway_profile`: one row per airport identifier; aggregates source runway counts,
+  open/closed/lighted counts, length and width summaries, and distinct surface count.
+- `int_airport_operational_status`: one row per airport identifier; creates transparent
+  source-derived analytical status categories from airport type, scheduled-service flag, and
+  runway records.
+- `int_airport_comment_activity`: one row per airport identifier; aggregates comment counts,
+  first/latest timestamps, distinct threads, distinct members, and comments with text.
+- `int_airport_comment_quality`: one row per airport identifier; measures structural comment
+  completeness for comments that can be linked to an airport.
+- `int_runway_capability`: one row per runway source identifier; categorizes runway length,
+  width, surface, endpoint completeness, and source closed/open usability.
+
+The operational-status and runway-capability fields are source-derived analytical attributes.
+They are not live operational status, NOTAM interpretation, regulatory approval, runway
+certification, landing approval, aircraft compatibility, or commercial route coverage.

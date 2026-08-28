@@ -1,0 +1,261 @@
+version: 2
+
+models:
+  - name: int_airport_geography
+    description: >
+      Reusable AirStats airport geography transformation. Grain is one row per airport identifier.
+      Primary key is ident. Upstream models are stg_airstats__airports, stg_airstats__regions,
+      and stg_airstats__countries. This model preserves airports even when region or country
+      reference records are missing.
+    columns:
+      - name: ident
+        description: Airport natural identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_source_id
+        description: Provider airport identifier retained for lineage.
+        tests:
+          - not_null
+      - name: airport_type
+        description: Source airport type from staging.
+      - name: airport_name
+        description: Source airport name from staging.
+      - name: municipality
+        description: Source municipality from staging.
+      - name: region_code
+        description: Source region code from the airport record.
+      - name: region_name
+        description: Region name when a matching staged region exists.
+      - name: country_code
+        description: Source country code from the airport record.
+      - name: country_name
+        description: Country name when a matching staged country exists.
+      - name: continent_code
+        description: Continent code selected from airport, region, then country sources.
+      - name: latitude_deg
+        description: Airport latitude from staging.
+      - name: longitude_deg
+        description: Airport longitude from staging.
+      - name: elevation_ft
+        description: Airport elevation from staging.
+
+  - name: int_airport_runway_profile
+    description: >
+      Reusable airport-level runway profile. Grain is one row per airport identifier. Primary key
+      is ident. Upstream models are stg_airstats__airports and stg_airstats__runways. Counts and
+      measurements are source-derived aggregates, not capacity or regulatory conclusions.
+    columns:
+      - name: ident
+        description: Airport natural identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: runway_count
+        description: Count of staged runway records for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: open_runway_count
+        description: Count of staged runway records whose source closed flag is false.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: closed_runway_count
+        description: Count of staged runway records whose source closed flag is true.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: lighted_runway_count
+        description: Count of staged runway records whose source lighted flag is true.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: distinct_surface_count
+        description: Count of distinct non-null source surface values.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_airport_operational_status
+    description: >
+      Source-derived analytical airport status classification. Grain is one row per airport
+      identifier. Primary key is ident. Upstream models are stg_airstats__airports and
+      int_airport_runway_profile. The status does not represent live operations, NOTAMs,
+      regulatory approval, or real-world flight suitability.
+    columns:
+      - name: ident
+        description: Airport natural identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: has_open_runway_record
+        description: True when at least one staged runway has source closed flag false.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_not_source_closed_airport
+        description: True when source airport_type is not closed_airport.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: analytical_operational_status
+        description: Deterministic category based only on staged airport type, scheduled service, and runway records.
+        tests:
+          - accepted_values:
+              values:
+                - source_closed_airport
+                - source_scheduled_service
+                - source_open_runway_recorded
+                - source_reference_only
+
+  - name: int_airport_comment_activity
+    description: >
+      Airport-level source comment activity measures. Grain is one row per airport identifier.
+      Primary key is ident. Upstream models are stg_airstats__airports and
+      stg_airstats__airport_comments. This model contains counts and timestamps only; it does
+      not perform NLP, sentiment, embeddings, or activity scoring.
+    columns:
+      - name: ident
+        description: Airport natural identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: comment_count
+        description: Count of staged comments for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: distinct_thread_count
+        description: Count of distinct non-null source thread identifiers.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: distinct_member_count
+        description: Count of distinct non-null source member nicknames.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: comments_with_text_count
+        description: Count of staged comments with non-null body text.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_airport_comment_quality
+    description: >
+      Airport-level source comment data-quality indicators. Grain is one row per airport
+      identifier. Primary key is ident. Upstream models are stg_airstats__airports and
+      stg_airstats__airport_comments. This model measures structural completeness only; it does
+      not score linguistic quality, relevance, sentiment, toxicity, or semantics.
+      Comments without airport identifiers cannot be assigned to an airport-grain row.
+    columns:
+      - name: ident
+        description: Airport natural identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: comment_count
+        description: Count of staged comments for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: complete_comment_record_ratio
+        description: Ratio of complete comment records to total comments; null when no comments exist.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: complete_comment_record_ratio is not null
+      - name: comment_completeness_status
+        description: Deterministic structural completeness category.
+        tests:
+          - accepted_values:
+              values:
+                - no_comments
+                - complete
+                - partially_complete
+                - incomplete
+
+  - name: int_runway_capability
+    description: >
+      Runway-level analytical categorisation derived from staged runway attributes. Grain is one
+      row per runway source identifier. Primary key is runway_source_id. Upstream model is
+      stg_airstats__runways. Capability categories are deterministic source-derived buckets and
+      do not represent certification, regulatory compliance, landing approval, or aircraft
+      compatibility.
+    columns:
+      - name: runway_source_id
+        description: Provider runway identifier and primary key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__runways')
+              field: runway_source_id
+      - name: airport_ident
+        description: Airport natural identifier for the runway.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: is_source_usable
+        description: True only when the staged source closed flag is false; null when closed flag is unknown.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: runway_length_category
+        description: Analytical length bucket using 4000 ft and 8000 ft thresholds.
+        tests:
+          - accepted_values:
+              values:
+                - unknown
+                - short_lt_4000_ft
+                - medium_4000_to_7999_ft
+                - long_8000_ft_plus
+      - name: runway_width_category
+        description: Analytical width bucket using 75 ft and 150 ft thresholds.
+        tests:
+          - accepted_values:
+              values:
+                - unknown
+                - narrow_lt_75_ft
+                - standard_75_to_149_ft
+                - wide_150_ft_plus
+      - name: runway_surface_category
+        description: Deterministic text-pattern category derived from the raw surface value.
+        tests:
+          - accepted_values:
+              values:
+                - unknown
+                - hard_surface
+                - soft_surface
+                - water
+                - other
+      - name: endpoint_completeness_status
+        description: Whether runway-end identifiers and coordinates are complete, partial, or missing.
+        tests:
+          - accepted_values:
+              values:
+                - complete
+                - partial
+                - missing
