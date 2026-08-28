@@ -1,0 +1,279 @@
+version: 2
+
+sources:
+  - name: airstats
+    schema: RAW_AIRSTATS
+    description: >
+      Authoritative raw airport-reference source layer for AirStats. The initial source
+      specification is based on the public OurAirports CSV downloads and is intended to
+      support later airport, runway, route, flight, and commercial analytics modelling.
+    loader: future Snowflake CSV load process
+    meta:
+      owner: analytics_engineering
+      source_provenance: OurAirports public-domain CSV downloads
+      raw_data_path: data/raw/airstats/
+      milestone: "2"
+      freshness_policy: >
+        No dbt source freshness is configured because these reference files do not provide
+        a reliable ingestion timestamp in the raw table design.
+    tables:
+      - name: airports
+        identifier: AIRPORTS
+        description: >
+          One row per airport, heliport, seaplane base, balloonport, or closed airport.
+          The AirStats natural key for joins is ident; the source id is retained as the
+          provider's internal persistent identifier.
+        columns:
+          - name: id
+            description: Persistent internal OurAirports airport identifier.
+            tests:
+              - not_null
+              - unique
+          - name: ident
+            description: >
+              Public airport identifier used by AirStats/OurAirports. This is the natural
+              key for relationships to runways.airport_ident and airport_comments.airport_ident.
+            tests:
+              - not_null
+              - unique
+          - name: type
+            description: Airport type classification from the source file.
+            tests:
+              - not_null
+              - accepted_values:
+                  values:
+                    - balloonport
+                    - closed_airport
+                    - heliport
+                    - large_airport
+                    - medium_airport
+                    - seaplane_base
+                    - small_airport
+          - name: name
+            description: Official airport name from the source file.
+          - name: latitude_deg
+            description: Airport latitude in decimal degrees.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: -90
+                  max_value: 90
+          - name: longitude_deg
+            description: Airport longitude in decimal degrees.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: -180
+                  max_value: 180
+          - name: elevation_ft
+            description: Airport elevation above mean sea level in feet, where available.
+          - name: continent
+            description: Two-character continent code supplied by the source.
+          - name: iso_country
+            description: Country code for the airport; joins to countries.code.
+          - name: iso_region
+            description: Region code for the airport; joins to regions.code.
+          - name: municipality
+            description: Municipality primarily served by the airport, where available.
+          - name: scheduled_service
+            description: Source flag indicating whether scheduled airline service is present.
+            tests:
+              - accepted_values:
+                  values:
+                    - "yes"
+                    - "no"
+          - name: gps_code
+            description: Aviation GPS code, where available.
+          - name: icao_code
+            description: ICAO airport code, where available.
+          - name: iata_code
+            description: IATA airport code, where available.
+          - name: local_code
+            description: Local airport code, where available.
+          - name: home_link
+            description: Airport website URL, where available.
+          - name: wikipedia_link
+            description: Airport Wikipedia URL, where available.
+          - name: keywords
+            description: Additional source search keywords and aliases.
+
+      - name: runways
+        identifier: RUNWAYS
+        description: >
+          One row per airport landing surface, including runways, helipads, and waterways.
+          The source id is the runway natural key for raw-source validation; airport_ident
+          links the surface to airports.ident.
+        columns:
+          - name: id
+            description: Persistent internal OurAirports runway identifier.
+            tests:
+              - not_null
+              - unique
+          - name: airport_ref
+            description: Provider internal airport id; retained for lineage but not preferred for joins.
+          - name: airport_ident
+            description: Public airport identifier for the associated airport; joins to airports.ident.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('airstats', 'airports')
+                  field: ident
+          - name: length_ft
+            description: Runway or landing-surface length in feet, where populated.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: 1
+                  row_condition: length_ft is not null
+          - name: width_ft
+            description: Runway or landing-surface width in feet, where populated.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: 1
+                  row_condition: width_ft is not null
+          - name: surface
+            description: >
+              Source runway-surface code or description. The source does not publish a separate
+              controlled runway_surfaces dataset in the raw downloads.
+          - name: lighted
+            description: Source indicator where 1 means lighted and 0 means not lighted.
+            tests:
+              - accepted_values:
+                  values: [0, 1]
+          - name: closed
+            description: Source indicator where 1 means closed and 0 means open.
+            tests:
+              - accepted_values:
+                  values: [0, 1]
+          - name: le_ident
+            description: Low-numbered runway end identifier.
+          - name: le_latitude_deg
+            description: Latitude of the low-numbered runway end, where available.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: -90
+                  max_value: 90
+                  row_condition: le_latitude_deg is not null
+          - name: le_longitude_deg
+            description: Longitude of the low-numbered runway end, where available.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: -180
+                  max_value: 180
+                  row_condition: le_longitude_deg is not null
+          - name: le_elevation_ft
+            description: Elevation of the low-numbered runway end in feet, where available.
+          - name: le_heading_degt
+            description: True heading of the low-numbered runway end in degrees, where available.
+          - name: le_displaced_threshold_ft
+            description: Displaced-threshold length for the low-numbered end in feet, where available.
+          - name: he_ident
+            description: High-numbered runway end identifier.
+          - name: he_latitude_deg
+            description: Latitude of the high-numbered runway end, where available.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: -90
+                  max_value: 90
+                  row_condition: he_latitude_deg is not null
+          - name: he_longitude_deg
+            description: Longitude of the high-numbered runway end, where available.
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  min_value: -180
+                  max_value: 180
+                  row_condition: he_longitude_deg is not null
+          - name: he_elevation_ft
+            description: Elevation of the high-numbered runway end in feet, where available.
+          - name: he_heading_degt
+            description: True heading of the high-numbered runway end in degrees, where available.
+          - name: he_displaced_threshold_ft
+            description: Displaced-threshold length for the high-numbered end in feet, where available.
+
+      - name: airport_comments
+        identifier: AIRPORT_COMMENTS
+        description: >
+          One row per source airport comment. Comment text is useful for source-quality review
+          and operational context but should not be treated as governed airport attributes without
+          later curation.
+        columns:
+          - name: id
+            description: Persistent internal OurAirports comment identifier.
+            tests:
+              - not_null
+              - unique
+          - name: thread_ref
+            description: Source discussion-thread identifier.
+          - name: airport_ref
+            description: Provider internal airport id for the commented airport.
+          - name: airport_ident
+            description: Public airport identifier for the commented airport; joins to airports.ident.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('airstats', 'airports')
+                  field: ident
+          - name: comment_date
+            description: Source comment timestamp. This is not a raw-table ingestion timestamp.
+          - name: member_nickname
+            description: Public source nickname for the commenting member.
+          - name: subject
+            description: Comment subject line.
+          - name: body
+            description: Comment body text.
+
+      - name: countries
+        identifier: COUNTRIES
+        description: >
+          Country and country-like reference entities from the AirStats/OurAirports raw downloads.
+          Included because airports.iso_country and regions.iso_country point to countries.code.
+        columns:
+          - name: id
+            description: Persistent internal OurAirports country identifier.
+            tests:
+              - not_null
+              - unique
+          - name: code
+            description: Country code referenced by airports.iso_country and regions.iso_country.
+            tests:
+              - not_null
+              - unique
+          - name: name
+            description: Common English country or country-like entity name.
+          - name: continent
+            description: Continent code for the country or country-like entity.
+          - name: wikipedia_link
+            description: Country Wikipedia URL, where available.
+          - name: keywords
+            description: Additional search keywords and aliases.
+
+      - name: regions
+        identifier: REGIONS
+        description: >
+          High-level administrative subdivisions from the AirStats/OurAirports raw downloads.
+          Included because airports.iso_region points to regions.code.
+        columns:
+          - name: id
+            description: Persistent internal OurAirports region identifier.
+            tests:
+              - not_null
+              - unique
+          - name: code
+            description: Globally unique region code referenced by airports.iso_region.
+            tests:
+              - not_null
+              - unique
+          - name: local_code
+            description: Local subdivision code within the country.
+          - name: name
+            description: Common English subdivision name.
+          - name: continent
+            description: Continent code for the region.
+          - name: iso_country
+            description: Country code for the region; joins to countries.code.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('airstats', 'countries')
+                  field: code
+          - name: wikipedia_link
+            description: Region Wikipedia URL, where available.
+          - name: keywords
+            description: Additional search keywords and aliases.

@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  foundation:
+    name: Foundation checks
+    runs-on: ubuntu-latest
+
+    env:
+      DBT_PROFILES_DIR: .
+      SNOWFLAKE_ACCOUNT: placeholder
+      SNOWFLAKE_USER: placeholder
+      SNOWFLAKE_ROLE: placeholder
+      SNOWFLAKE_WAREHOUSE: placeholder
+      SNOWFLAKE_DATABASE: placeholder
+      SNOWFLAKE_SCHEMA: analytics_ci
+      SNOWFLAKE_PRIVATE_KEY_PATH: /tmp/nonexistent_snowflake_key.p8
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Validate YAML
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          for path in Path(".").rglob("*.yml"):
+              if any(part in {"target", "dbt_packages", ".git"} for part in path.parts):
+                  continue
+              with path.open("r", encoding="utf-8") as handle:
+                  yaml.safe_load(handle)
+          PY
+
+      - name: Validate Python project metadata
+        run: python -m pip install --dry-run .
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Prepare local dbt profile
+        run: cp profiles.example.yml profiles.yml
+
+      - name: Parse dbt project
+        run: dbt parse --profiles-dir .
+
+      - name: Lint SQL
+        run: sqlfluff lint models tests analyses macros snapshots

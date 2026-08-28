@@ -1,0 +1,46 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.cache/
+*.egg-info/
+
+# dbt
+target/
+dbt_packages/
+logs/
+profiles.yml
+profiles.local.yml
+.user.yml
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.p8
+*.key
+*.crt
+*.cer
+
+# Local data and generated outputs
+data/raw/*
+data/synthetic/*
+data/sample/*
+reports/*
+outputs/*
+!data/raw/.gitkeep
+!data/raw/airstats/
+!data/raw/airstats/README.md
+!data/synthetic/.gitkeep
+!data/sample/.gitkeep
+!reports/.gitkeep
+!outputs/.gitkeep
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,31 @@
+[sqlfluff]
+dialect = snowflake
+templater = dbt
+sql_file_exts = .sql
+max_line_length = 120
+large_file_skip_byte_limit = 20000
+exclude_rules = RF04
+exclude_paths =
+    .venv
+    dbt_packages
+    target
+
+[sqlfluff:templater:dbt]
+project_dir = .
+profiles_dir = .
+profile = airline_snowflake_dbt_analytics_platform
+target = dev
+
+[sqlfluff:indentation]
+tab_space_size = 4
+indent_unit = space
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:layout.long_lines]
+ignore_comment_lines = true
+ignore_comment_clauses = true
