@@ -1,0 +1,164 @@
+version: 2
+
+models:
+  - name: int_fulfilled_flight_services
+    description: >
+      Grain is one row per passenger ticket segment / journey leg. Primary key is
+      ticket_segment_id. Upstream models are int_passenger_journey_completion (Milestone 12,
+      reused unchanged) and int_ticketed_segments. fulfilment_indicator = is_completed
+      (journey_completion_status = 'completed'); no new completion logic is defined here.
+    columns:
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_passenger_journey_completion')
+              field: ticket_segment_id
+      - name: fulfilment_indicator
+        description: True when journey_completion_status = 'completed'.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_fulfilled_ancillary_services
+    description: >
+      Grain is one row per ancillary sale/service record. Primary key is ancillary_service_id.
+      Upstream model is int_ancillary_charge_calculation (Milestone 13, reused unchanged).
+      fulfilment_indicator = (fulfilment_status = 'fulfilled') -- "sold" (is_sold) is never treated
+      as equivalent to "fulfilled".
+    columns:
+      - name: ancillary_service_id
+        description: Natural ancillary-sale identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_ancillary_charge_calculation')
+              field: ancillary_service_id
+      - name: is_sold
+        description: Always true -- every row's existence already means the ancillary was sold.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true]
+              quote: false
+      - name: fulfilment_indicator
+        description: True when fulfilment_status = 'fulfilled'.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_ticket_revenue_recognition
+    description: >
+      Grain is one row per ticket. Primary key is ticket_id -- matching Milestone 13's own
+      ticket-scoped fare-pricing grain, not ticket_segment_id (see model SQL comment for why).
+      Upstream models are int_fulfilled_flight_services, int_ticketed_segments, and
+      fct_pricing_events (Milestone 13, reused for priced_fare_amount, never recomputed).
+    columns:
+      - name: ticket_id
+        description: Natural ticket identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: is_recognition_eligible
+        description: True only when every one of this ticket's segments is fulfilled.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: recognised_amount
+        description: priced_fare_amount when is_recognition_eligible, else 0. Never negative.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_ancillary_revenue_recognition
+    description: >
+      Grain is one row per ancillary service/sale. Primary key is ancillary_service_id. Upstream
+      model is int_fulfilled_ancillary_services. Recognises only fulfilled ancillary services.
+    columns:
+      - name: ancillary_service_id
+        description: Natural ancillary-sale identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_fulfilled_ancillary_services')
+              field: ancillary_service_id
+      - name: recognised_amount
+        description: amount when fulfilment_indicator, else 0. Never negative.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_refund_revenue_reversal
+    description: >
+      Grain is one row per refund. Primary key is refund_id. Upstream models are fct_refunds
+      (Milestone 16) and int_ticket_revenue_recognition. A refund does not automatically reverse
+      already-recognised revenue -- see model SQL comment for why reversal_eligibility is false
+      for essentially every refund in the current dataset.
+    columns:
+      - name: refund_id
+        description: Natural refund identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fct_refunds')
+              field: refund_id
+      - name: reversal_eligibility
+        description: True only when related_recognised_revenue > 0.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: reversal_amount
+        description: least(refund_amount, related_recognised_revenue) when eligible, else 0.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "<= related_recognised_revenue"
+              config:
+                where: "reversal_eligibility"
+
+  - name: int_revenue_adjustments
+    description: >
+      Grain is one row per adjustment. Primary key is adjustment_id. Upstream models are
+      fct_adjustments (Milestone 16) and int_ticket_revenue_recognition. Not every adjustment is
+      revenue-affecting by default -- see model SQL comment for the eligibility rule.
+    columns:
+      - name: adjustment_id
+        description: Natural adjustment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fct_adjustments')
+              field: adjustment_id
+      - name: revenue_impact_indicator
+        description: True only when has_invoice_match and related_recognised_revenue > 0.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: recognised_adjustment_amount
+        description: >
+          Sign-preserved, magnitude-capped adjustment amount when revenue_impact_indicator, else 0.
+        tests:
+          - not_null

@@ -1291,3 +1291,98 @@ models:
           - accepted_values:
               values: [true, false]
               quote: false
+
+  - name: fct_revenue
+    description: >
+      Grain is one row per recognised revenue event. Natural key is (event_type,
+      source_event_id); surrogate key is revenue_event_key. A UNION ALL of four event types --
+      ticket_revenue, ancillary_revenue, refund_reversal, revenue_adjustment -- reusing
+      int_ticket_revenue_recognition, int_ancillary_revenue_recognition,
+      int_refund_revenue_reversal, and int_revenue_adjustments rather than re-deriving any of
+      them. Every ticket and ancillary sale produces a row regardless of whether it was actually
+      recognised (gross_recognised_amount may be 0) -- see model SQL comment. No invoice_id,
+      payment_id, outstanding-balance, or billing-exception field exists on this fact; those
+      remain out of scope until Milestone 18+.
+    columns:
+      - name: revenue_event_key
+        description: Surrogate key, generated from (event_type, source_event_id).
+        tests:
+          - not_null
+          - unique
+      - name: event_type
+        description: One of the four event types this milestone models.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - ticket_revenue
+                - ancillary_revenue
+                - refund_reversal
+                - revenue_adjustment
+      - name: source_event_id
+        description: >
+          The originating ticket_id / ancillary_service_id / refund_id / adjustment_id, depending
+          on event_type.
+        tests:
+          - not_null
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: ticket_id
+        description: >
+          Populated for ticket_revenue/ancillary_revenue rows only; null for the booking-scoped
+          refund_reversal/revenue_adjustment event types.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: passenger_key
+        description: Foreign key to dim_passenger; populated for ticket_revenue/ancillary_revenue rows only.
+        tests:
+          - relationships:
+              to: ref('dim_passenger')
+              field: passenger_key
+      - name: route_key
+        description: >
+          Foreign key to dim_route; populated only for ticket_revenue rows, via the booking's
+          outbound route (Milestone 13 convention -- no single flight exists for a round-trip
+          ticket).
+        tests:
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: gross_recognised_amount
+        description: Positive new recognition amount; 0 when ineligible/unfulfilled. Never negative.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: reversal_or_adjustment_amount
+        description: >
+          <= 0 for refund_reversal rows; carries the adjustment's own native sign for
+          revenue_adjustment rows; always 0 for ticket_revenue/ancillary_revenue rows.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "<= 0"
+              config:
+                where: "event_type = 'refund_reversal'"
+          - dbt_utils.expression_is_true:
+              expression: "= 0"
+              config:
+                where: "event_type in ('ticket_revenue', 'ancillary_revenue')"
+      - name: net_recognised_amount
+        description: gross_recognised_amount + reversal_or_adjustment_amount.
+        tests:
+          - not_null
