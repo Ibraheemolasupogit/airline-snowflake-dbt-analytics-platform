@@ -1,0 +1,320 @@
+version: 2
+
+models:
+  - name: int_booking_current_state
+    description: >
+      Current-state booking lifecycle model. Grain is one row per booking. Primary key is
+      booking_id. Upstream models are stg_airline__bookings, stg_airline__booking_passengers, and
+      stg_airline__tickets. Named "current_state" rather than "status_history" because the source
+      has no booking-status-change history table -- only a current status column. No fare,
+      invoice, or revenue measures.
+    columns:
+      - name: booking_id
+        description: Natural booking identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: airline_code
+        description: Operating/marketing airline.
+        tests:
+          - not_null
+      - name: route_id
+        description: Outbound route.
+        tests:
+          - not_null
+      - name: trip_type
+        description: Trip type.
+        tests:
+          - accepted_values:
+              values:
+                - one_way
+                - round_trip
+      - name: booking_channel
+        description: Sales channel the booking was made through.
+      - name: booking_status
+        description: Current booking status; see model description for why no history is modelled.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - cancelled
+      - name: passenger_count
+        description: Count of booking_passengers rows for this booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: ticket_count
+        description: Count of tickets rows for this booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: is_cancelled
+        description: True when booking_status = 'cancelled'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_booking_passengers
+    description: >
+      Reusable booking-passenger relationship model. Grain is one row per booking-passenger
+      association. Primary key is booking_passenger_id. Upstream models are
+      stg_airline__bookings, stg_airline__booking_passengers, stg_airline__passengers,
+      stg_airline__tickets, and stg_airline__fare_classes (for cabin only). No fare values are
+      introduced.
+    columns:
+      - name: booking_passenger_id
+        description: Natural booking-passenger association identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__booking_passengers')
+              field: booking_passenger_id
+      - name: booking_id
+        description: Booking this passenger is associated with.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: passenger_id
+        description: Passenger associated with the booking.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__passengers')
+              field: passenger_id
+      - name: passenger_type
+        description: Passenger fare type.
+        tests:
+          - accepted_values:
+              values:
+                - adult
+                - child
+                - infant
+      - name: booking_status
+        description: Current status of the parent booking.
+      - name: ticket_id
+        description: This passenger's single ticket for this booking; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: fare_class_code
+        description: Fare class purchased on this passenger's ticket.
+        tests:
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: cabin
+        description: Cabin code, from the ticket's fare class.
+        tests:
+          - accepted_values:
+              values:
+                - Y
+                - W
+                - C
+                - F
+
+  - name: int_ticketed_segments
+    description: >
+      Reusable ticketed passenger flight-segment transformation. Grain is one row per ticketed
+      passenger flight segment. Primary key is ticket_segment_id. Upstream models are
+      stg_airline__ticket_segments, stg_airline__tickets, and the Milestone 11 operational layer
+      (int_operated_flight_segments), reused rather than rebuilt. No fares, taxes, or revenue.
+    columns:
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__ticket_segments')
+              field: ticket_segment_id
+      - name: ticket_id
+        description: Ticket this segment belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: booking_id
+        description: Booking this segment's ticket belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: passenger_id
+        description: Passenger this segment's ticket is issued to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__passengers')
+              field: passenger_id
+      - name: flight_instance_id
+        description: Flight instance this segment is booked on.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_operated_flight_segments')
+              field: flight_instance_id
+      - name: origin_ident
+        description: Origin airport identifier, AirStats-conformed via the Milestone 11 layer.
+        tests:
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: destination_ident
+        description: Destination airport identifier, AirStats-conformed via the Milestone 11 layer.
+        tests:
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: fare_class_code
+        description: Fare class purchased on this segment's ticket.
+        tests:
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: cabin
+        description: Cabin code for this segment.
+        tests:
+          - accepted_values:
+              values:
+                - Y
+                - W
+                - C
+                - F
+      - name: ticket_status
+        description: Status of the parent ticket.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - cancelled
+      - name: segment_status
+        description: >
+          Segment status. One row carries a deliberately injected controlled exception
+          (completed_segment_without_recognised_revenue_precursor); do not filter it out.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - flown
+                - cancelled
+      - name: flight_instance_status
+        description: Status of the linked flight instance, unchanged from the Milestone 11 layer.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+      - name: operational_completion_status
+        description: Deterministic flight-instance completion category from the Milestone 11 layer.
+
+  - name: int_passenger_journey_completion
+    description: >
+      Deterministic passenger journey-completion classification. Grain is one row per passenger
+      ticket segment / journey leg. Primary key is ticket_segment_id. Upstream model is
+      int_ticketed_segments. Named int_passenger_journey_completion (not the originally suggested
+      int_completed_passenger_journeys) because it classifies every segment's completion status,
+      not only completed ones -- see model SQL comment for the full derivation rule and its
+      interaction with controlled exception EXC-006.
+    columns:
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_ticketed_segments')
+              field: ticket_segment_id
+      - name: ticket_id
+        description: Ticket this journey leg belongs to.
+        tests:
+          - not_null
+      - name: booking_id
+        description: Booking this journey leg's ticket belongs to.
+        tests:
+          - not_null
+      - name: passenger_id
+        description: Passenger flying this journey leg.
+        tests:
+          - not_null
+      - name: flight_instance_id
+        description: Flight instance this journey leg is booked on.
+        tests:
+          - not_null
+      - name: journey_completion_status
+        description: >
+          Deterministic completion category derived from segment_status and the linked flight
+          instance's operational_completion_status. 'not_flown' is a structurally defensible
+          category that currently yields zero rows in this dataset -- see model SQL comment.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+                - not_flown
+                - other
+      - name: is_completed
+        description: True when journey_completion_status = 'completed'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_cancelled
+        description: True when journey_completion_status = 'cancelled'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_cancelled_bookings
+    description: >
+      Current-state cancelled-booking model. Grain is one row per cancelled booking. Primary key
+      is booking_id. Upstream models are int_booking_current_state and int_ticketed_segments. No
+      refund-eligibility, fare, or monetary logic; see model SQL comment for why no
+      cancellation_date column exists.
+    columns:
+      - name: booking_id
+        description: Natural booking identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_booking_current_state')
+              field: booking_id
+      - name: booking_status
+        description: Always 'cancelled' at this model's grain.
+        tests:
+          - accepted_values:
+              values:
+                - cancelled
+      - name: passenger_count
+        description: Count of booking_passengers rows for this booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: ticket_count
+        description: Count of tickets rows for this booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: affected_ticket_count
+        description: Count of this booking's tickets with ticket_status = 'cancelled'.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: affected_ticket_segment_count
+        description: Count of this booking's ticket_segments with segment_status = 'cancelled'.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0

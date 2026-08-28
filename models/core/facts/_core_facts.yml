@@ -67,10 +67,11 @@ models:
       Grain is one row per dated flight instance. Natural key is flight_instance_id. Foreign
       keys: flight_key (dim_flight), airline_key (dim_airline), origin_airport_key and
       destination_airport_key (dim_airport), aircraft_key (dim_aircraft), actual_aircraft_type_key
-      (dim_aircraft_type, the type of the aircraft that actually operated the flight). Uses only
-      flight-instance operational data -- no booking or ticket data. passengers_carried and
-      load_factor are structurally present but always null in this milestone; see
-      docs/data_models/airline_core_operations.md for why.
+      (dim_aircraft_type, the type of the aircraft that actually operated the flight).
+      passengers_carried and load_factor are populated as of Milestone 12 from completed
+      passenger ticket segments (int_passenger_journey_completion); see model SQL comment and
+      docs/data_models/airline_booking_ticketing.md for the counting rule. No fare, invoice, or
+      revenue data is used.
     columns:
       - name: flight_instance_id
         description: Natural flight-instance identifier and grain key.
@@ -157,15 +158,386 @@ models:
               row_condition: seats_available is not null
       - name: passengers_carried
         description: >
-          Always null in this milestone. Populating this requires ticket-level passenger counts,
-          which are explicitly out of scope until Milestone 12+; this column exists as a stable,
-          documented placeholder rather than a schema change later milestones must retrofit.
+          Count of this flight instance's ticket segments with
+          journey_completion_status = 'completed' (int_passenger_journey_completion) -- i.e.
+          actually flown. Cancelled and not-yet-flown segments are excluded. 0, not null, for
+          flight instances with no completed segments (still-scheduled or cancelled flights).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "<= seats_available"
+              config:
+                where: "seats_available is not null"
       - name: load_factor
         description: >
-          passengers_carried / seats_available, guarded to compute only when seats_available > 0.
-          Always null in this milestone because passengers_carried is always null.
+          passengers_carried / seats_available, guarded to compute only when seats_available > 0;
+          null when seats_available is null or 0.
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
               max_value: 1
               row_condition: load_factor is not null
+
+  - name: fct_bookings
+    description: >
+      Grain is one row per booking. Natural key is booking_id; surrogate key is booking_key.
+      Foreign keys: airline_key (dim_airline), route_key (dim_route),
+      booking_channel_key (dim_booking_channel). No fare, invoice, or revenue measures --
+      passenger_count and ticket_count are structural counts from int_booking_current_state.
+    columns:
+      - name: booking_key
+        description: Surrogate key, generated from booking_id.
+        tests:
+          - not_null
+          - unique
+      - name: booking_id
+        description: Natural booking identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_booking_current_state')
+              field: booking_id
+      - name: booking_reference
+        description: Passenger-facing booking reference code.
+        tests:
+          - not_null
+      - name: airline_key
+        description: Foreign key to dim_airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: route_key
+        description: Foreign key to dim_route for the outbound route.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: trip_type
+        description: Trip type.
+        tests:
+          - accepted_values:
+              values:
+                - one_way
+                - round_trip
+      - name: booking_channel_key
+        description: Foreign key to dim_booking_channel.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_booking_channel')
+              field: booking_channel_key
+      - name: booking_date_utc
+        description: Booking creation timestamp in UTC.
+        tests:
+          - not_null
+      - name: booking_status
+        description: Current booking status; see int_booking_current_state for why no history is modelled.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - cancelled
+      - name: corporate_account_id
+        description: Corporate account, if this is a corporate booking; null otherwise. No dim_corporate_account exists yet.
+      - name: travel_agent_id
+        description: Travel agent, if this booking was made through an agent; null otherwise. No dim_travel_agent exists yet.
+      - name: outbound_flight_instance_id
+        description: Outbound flight instance.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_operated_flight_segments')
+              field: flight_instance_id
+      - name: return_flight_instance_id
+        description: Return flight instance for round-trip bookings; null for one-way bookings.
+        tests:
+          - relationships:
+              to: ref('int_operated_flight_segments')
+              field: flight_instance_id
+      - name: passenger_count
+        description: Count of booking_passengers rows for this booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: ticket_count
+        description: Count of tickets rows for this booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: is_cancelled
+        description: True when booking_status = 'cancelled'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: fct_booking_passengers
+    description: >
+      Grain is one row per booking-passenger association. Natural key is booking_passenger_id;
+      surrogate key is booking_passenger_key. Foreign keys: booking_key (fct_bookings, reused
+      rather than regenerated -- see model SQL comment), passenger_key (dim_passenger),
+      fare_class_key (dim_fare_class), cabin_key (dim_cabin). No fare values.
+    columns:
+      - name: booking_passenger_key
+        description: Surrogate key, generated from booking_passenger_id.
+        tests:
+          - not_null
+          - unique
+      - name: booking_passenger_id
+        description: Natural booking-passenger association identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_booking_passengers')
+              field: booking_passenger_id
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: passenger_key
+        description: Foreign key to dim_passenger.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_passenger')
+              field: passenger_key
+      - name: passenger_type
+        description: Passenger fare type.
+        tests:
+          - accepted_values:
+              values:
+                - adult
+                - child
+                - infant
+      - name: booking_status
+        description: Current status of the parent booking.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - cancelled
+      - name: ticket_status
+        description: Status of this passenger's ticket for this booking; null if unresolved.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - cancelled
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: cabin_key
+        description: Foreign key to dim_cabin; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_cabin')
+              field: cabin_key
+
+  - name: fct_ticket_segments
+    description: >
+      Grain is one row per ticketed passenger flight segment. Natural key is ticket_segment_id;
+      surrogate key is ticket_segment_key. Foreign keys: booking_key (fct_bookings),
+      passenger_key (dim_passenger), flight_key (dim_flight), route_key (dim_route),
+      origin_airport_key/destination_airport_key (dim_airport), fare_class_key (dim_fare_class),
+      cabin_key (dim_cabin). No pricing/revenue values.
+    columns:
+      - name: ticket_segment_key
+        description: Surrogate key, generated from ticket_segment_id.
+        tests:
+          - not_null
+          - unique
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_ticketed_segments')
+              field: ticket_segment_id
+      - name: ticket_id
+        description: Ticket this segment belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: passenger_key
+        description: Foreign key to dim_passenger.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_passenger')
+              field: passenger_key
+      - name: flight_key
+        description: Foreign key to dim_flight.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_flight')
+              field: flight_key
+      - name: route_key
+        description: Foreign key to dim_route.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: origin_airport_key
+        description: Foreign key to dim_airport for the origin.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: destination_airport_key
+        description: Foreign key to dim_airport for the destination.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: fare_class_key
+        description: Foreign key to dim_fare_class; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_fare_class')
+              field: fare_class_key
+      - name: cabin_key
+        description: Foreign key to dim_cabin; null if unresolved.
+        tests:
+          - relationships:
+              to: ref('dim_cabin')
+              field: cabin_key
+      - name: ticket_status
+        description: Status of the parent ticket.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - cancelled
+      - name: segment_status
+        description: >
+          Segment status. One row carries a deliberately injected controlled exception
+          (completed_segment_without_recognised_revenue_precursor); do not filter it out.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - flown
+                - cancelled
+      - name: flight_instance_status
+        description: Status of the linked flight instance, unchanged from the Milestone 11 layer.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+      - name: operational_completion_status
+        description: Deterministic flight-instance completion category from the Milestone 11 layer.
+
+  - name: fct_passenger_journeys
+    description: >
+      Grain is one row per passenger flight segment / journey leg (ticket_segment_id) -- the same
+      grain as fct_ticket_segments, but deliberately narrower and focused only on
+      journey-completion semantics; see model SQL comment for why multi-leg journeys are not
+      collapsed into one row. Surrogate key is passenger_journey_key. Foreign keys: booking_key
+      (fct_bookings), passenger_key (dim_passenger), flight_key (dim_flight),
+      origin_airport_key/destination_airport_key (dim_airport). No revenue-fulfilment inference.
+    columns:
+      - name: passenger_journey_key
+        description: Surrogate key, generated from ticket_segment_id.
+        tests:
+          - not_null
+          - unique
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_passenger_journey_completion')
+              field: ticket_segment_id
+      - name: ticket_id
+        description: Ticket this journey leg belongs to.
+        tests:
+          - not_null
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: passenger_key
+        description: Foreign key to dim_passenger.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_passenger')
+              field: passenger_key
+      - name: flight_key
+        description: Foreign key to dim_flight.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_flight')
+              field: flight_key
+      - name: origin_airport_key
+        description: Foreign key to dim_airport for the origin.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: destination_airport_key
+        description: Foreign key to dim_airport for the destination.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: journey_completion_status
+        description: >
+          Deterministic completion category; see int_passenger_journey_completion for the full
+          derivation rule.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+                - not_flown
+                - other
+      - name: is_completed
+        description: True when journey_completion_status = 'completed'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_cancelled
+        description: True when journey_completion_status = 'cancelled'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
