@@ -6,9 +6,9 @@ Production-style analytics engineering portfolio project for airline operations 
 
 This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
 
-Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completed the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. Milestone 9 added a deterministic synthetic airline operational/commercial source dataset. Milestone 10 added a dbt source and staging layer over that synthetic dataset — 31 source tables and 31 typed `stg_airline__*` staging views across reference, operations, bookings, pricing, and billing domains — with no business transformation yet. Milestone 11 added the core airline operations model: four `int_*` intermediate transformations, six conformed core dimensions (including the first genuine `dim_airport` join to AirStats), and two core facts (`fct_flight_schedule`, `fct_flight_operations`) covering routes, airlines, aircraft, and flight schedules/instances. Milestone 12 added the booking and ticketing layer: five booking-lifecycle intermediate models, four core dimensions (`dim_passenger`, `dim_booking_channel`, `dim_fare_class`, `dim_cabin`), and four core facts (`fct_bookings`, `fct_booking_passengers`, `fct_ticket_segments`, `fct_passenger_journeys`), plus a deterministic `passengers_carried`/`load_factor` update to `fct_flight_operations`. Milestone 13 adds a deterministic pricing/tariff layer: five pricing intermediate models, six core dimensions (`dim_fare_rule`, `dim_tax`, `dim_currency`, `dim_discount`, `dim_service`, `dim_product`), one core fact (`fct_pricing_events`), and a `convert_currency` macro, covering fares, fare rules, taxes, airport charges, discounts, ancillary pricing, and currency handling. It does not add invoices/invoice-line calculations, payment allocation, refunds/adjustments, revenue recognition, billing exceptions, reconciliation, commercial marts, dashboards, or Snowflake deployment — those remain planned for later milestones.
+Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completed the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. Milestone 9 added a deterministic synthetic airline operational/commercial source dataset. Milestone 10 added a dbt source and staging layer over that synthetic dataset — 31 source tables and 31 typed `stg_airline__*` staging views across reference, operations, bookings, pricing, and billing domains — with no business transformation yet. Milestone 11 added the core airline operations model: four `int_*` intermediate transformations, six conformed core dimensions (including the first genuine `dim_airport` join to AirStats), and two core facts (`fct_flight_schedule`, `fct_flight_operations`) covering routes, airlines, aircraft, and flight schedules/instances. Milestone 12 added the booking and ticketing layer: five booking-lifecycle intermediate models, four core dimensions (`dim_passenger`, `dim_booking_channel`, `dim_fare_class`, `dim_cabin`), and four core facts (`fct_bookings`, `fct_booking_passengers`, `fct_ticket_segments`, `fct_passenger_journeys`), plus a deterministic `passengers_carried`/`load_factor` update to `fct_flight_operations`. Milestone 13 added a deterministic pricing/tariff layer: five pricing intermediate models, six core dimensions (`dim_fare_rule`, `dim_tax`, `dim_currency`, `dim_discount`, `dim_service`, `dim_product`), one core fact (`fct_pricing_events`), and a `convert_currency` macro, covering fares, fare rules, taxes, airport charges, discounts, ancillary pricing, and currency handling. Milestone 14 adds a trustworthy invoice layer: four billing intermediate models (`int_invoice_status`, `int_invoice_calculation`, `int_invoice_charge_comparison`, `int_invoice_line_validation`) and two core facts (`fct_invoices`, `fct_invoice_lines`), covering invoice/invoice-line structure, an internal header-vs-lines arithmetic control, and an external pricing-vs-invoice comparison against Milestone 13's `fct_pricing_events` — evidence only, with no billing-exception classification yet. It does not add payment allocation, failed-payment classification, refunds, adjustments, credit-note application, vouchers, revenue recognition, outstanding balances, billing-exception classification, reconciliation, commercial marts, dashboards, or Snowflake deployment — those remain planned for later milestones.
 
-See `reports/airstats_capstone_summary.md` for a concise AirStats capstone summary, `docs/data_models/airstats_capstone_completion_evidence.md` for the full AirStats requirement-to-file mapping, `docs/data_models/airline_synthetic_source_data.md` for the Milestone 9 synthetic-data design, `docs/data_models/airline_staging_layer.md` for the Milestone 10 source/staging design, `docs/data_models/airline_core_operations.md` for the Milestone 11 core operations model design, `docs/data_models/airline_booking_ticketing.md` for the Milestone 12 booking/ticketing design, and `docs/data_models/airline_pricing_tariffs.md` for the Milestone 13 pricing/tariffs design.
+See `reports/airstats_capstone_summary.md` for a concise AirStats capstone summary, `docs/data_models/airstats_capstone_completion_evidence.md` for the full AirStats requirement-to-file mapping, `docs/data_models/airline_synthetic_source_data.md` for the Milestone 9 synthetic-data design, `docs/data_models/airline_staging_layer.md` for the Milestone 10 source/staging design, `docs/data_models/airline_core_operations.md` for the Milestone 11 core operations model design, `docs/data_models/airline_booking_ticketing.md` for the Milestone 12 booking/ticketing design, `docs/data_models/airline_pricing_tariffs.md` for the Milestone 13 pricing/tariffs design, and `docs/data_models/airline_invoices.md` for the Milestone 14 invoice design.
 
 ## Core Stack
 
@@ -50,7 +50,8 @@ Implementation status:
 - Milestone 11 - complete
 - Milestone 12 - complete
 - Milestone 13 - complete
-- Milestone 14 and later milestones - planned
+- Milestone 14 - complete
+- Milestone 15 and later milestones - planned
 
 Implemented (AirStats capstone, Milestones 1-8):
 
@@ -116,12 +117,21 @@ Implemented (Milestone 13, products, services, prices and tariffs):
 - three singular business-rule tests (fare-formula sanity, fixed-point amount consistency, discount-not-exceeding-subtotal), plus column-level generic tests across the new intermediate/core YAML
 - design documentation (`docs/data_models/airline_pricing_tariffs.md`) covering the fare formula, tax/airport-fee/discount/ancillary logic, currency handling, the charge-component grain/sign convention, and controlled `incorrect_fare`-exception preservation for a future Milestone 14 exception-detection model
 
-Planned (Milestone 14 onward):
+Implemented (Milestone 14, invoices and invoice lines):
 
-- invoice and invoice-line calculations
-- payment and refund allocation
+- four reusable intermediate transformations under `models/intermediate/billing/`: `int_invoice_status` (current-state status), `int_invoice_calculation` (internal header-vs-lines arithmetic control), `int_invoice_charge_comparison` (external pricing-vs-invoice comparison against Milestone 13's `fct_pricing_events`), and `int_invoice_line_validation` (structural validation signals only)
+- two core facts: `fct_invoices` (grain: `invoice_id`) and `fct_invoice_lines` (grain: `invoice_line_id`), each keeping both `source_*` and `calculated_*`/`expected_*` amounts side by side rather than overwriting either, plus a consistently signed `invoice_total_variance`/`pricing_variance_amount`
+- a deterministic `reference_code`-based alignment between `fct_pricing_events` and `stg_airline__invoice_lines` (verified against `scripts/airline_synth/build_billing.py`) that lets the pricing-vs-invoice comparison work without a shared ID between the two independently generated tables
+- three singular business-rule tests (invoice-arithmetic sanity, fixed-point amount consistency, and a controlled-anomaly-presence guard covering all four invoice-affecting Milestone 9 exceptions), plus column-level generic tests across the new intermediate/core YAML
+- evidence only, no classification: no `is_incorrect_fare`, `billing_exception_type`, or `financial_value_at_risk` field exists anywhere in this milestone -- that belongs to Milestone 18
+- design documentation (`docs/data_models/airline_invoices.md`) covering the invoice architecture, the pricing-to-invoice relationship, invoice arithmetic, source-vs-calculated totals, variance semantics, and controlled anomaly preservation
+
+Planned (Milestone 15 onward):
+
+- payment allocation and failed-payment classification
+- refunds, adjustments, credit-note application, and vouchers
 - revenue recognition
-- outstanding balances and billing exception detection
+- outstanding balances and billing exception classification
 - reconciliation controls
 - commercial reporting marts
 - credential-backed Snowflake dbt runs, `dbt docs generate`, and dashboards
@@ -179,7 +189,7 @@ python -m pytest tests/python
 11. Core Airline Operations Model - complete
 12. Booking and Ticketing - complete
 13. Products, Services, Prices and Tariffs - complete
-14. Invoices and Invoice Lines - planned
+14. Invoices and Invoice Lines - complete
 15. Payments and Failed Payments - planned
 16. Refunds and Adjustments - planned
 17. Revenue Recognition - planned

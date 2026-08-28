@@ -664,3 +664,175 @@ models:
           - relationships:
               to: ref('dim_discount')
               field: discount_key
+
+  - name: fct_invoices
+    description: >
+      Grain is one row per invoice. Natural key is invoice_id; surrogate key is invoice_key.
+      Foreign keys: booking_key (fct_bookings), currency_key (dim_currency). Reuses
+      int_invoice_calculation (arithmetic) and int_invoice_status (current-state status). No
+      amount_paid, outstanding balance, refund amount, or recognised-revenue field exists on this
+      fact; those remain out of scope until Milestone 15+. booking_id is deliberately not
+      unique-tested: the duplicate_invoice controlled exception produces two invoice_id rows for
+      the same booking_id, preserved unchanged -- see docs/data_models/airline_invoices.md.
+    columns:
+      - name: invoice_key
+        description: Surrogate key, generated from invoice_id.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        description: Natural invoice identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: bill_to_type
+        description: Who the invoice is billed to.
+        tests:
+          - accepted_values:
+              values:
+                - passenger
+                - corporate
+                - travel_agent
+      - name: status
+        description: Current invoice status, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - paid
+                - refunded
+                - cancelled
+      - name: is_cancelled
+        description: True when status = 'cancelled'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: source_invoice_total
+        description: invoices.total_amount, unchanged from source. Never overwritten.
+      - name: line_count
+        description: Count of this invoice's fct_invoice_lines rows.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: calculated_invoice_line_total
+        description: sum(invoice line amounts) for this invoice, using the actual sign convention.
+        tests:
+          - not_null
+      - name: invoice_total_variance
+        description: >
+          source_invoice_total - calculated_invoice_line_total. Nonzero for the deliberately
+          injected missing_invoice_line, incorrect_fare, and completed_segment_without_recognised_
+          revenue_precursor controlled exceptions; not repaired or classified here.
+        tests:
+          - not_null
+
+  - name: fct_invoice_lines
+    description: >
+      Grain is one row per invoice line. Natural key is invoice_line_id; surrogate key is
+      invoice_line_key. Foreign keys: invoice_key (fct_invoices), booking_key (fct_bookings),
+      currency_key (dim_currency). Reuses int_invoice_line_validation (structural validation) and
+      int_invoice_charge_comparison (pricing-vs-invoice evidence). No payment/refund/revenue field
+      exists on this fact; those remain out of scope until Milestone 15+.
+    columns:
+      - name: invoice_line_key
+        description: Surrogate key, generated from invoice_line_id.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_line_id
+        description: Natural invoice-line identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__invoice_lines')
+              field: invoice_line_id
+      - name: invoice_key
+        description: Foreign key to fct_invoices.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: ticket_id
+        description: Ticket this line relates to; null for booking-level discount lines.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: line_type
+        description: Type of charge component, unchanged from source.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - base_fare
+                - tax
+                - airport_fee
+                - ancillary
+                - discount
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: amount
+        description: Source line amount, unchanged. One row carries the incorrect_fare exception.
+        tests:
+          - not_null
+      - name: has_invoice_parent
+        description: Validation signal -- true when invoice_id resolves to a real invoice.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_supported_line_type
+        description: Validation signal -- true when line_type is one of the five known types.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: expected_pricing_component_available
+        description: >
+          Validation signal -- true when a matching fct_pricing_events component exists for this
+          line. Not a billing-exception classification.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: expected_amount
+        description: >
+          Sum of fct_pricing_events.amount matching this line's (ticket/booking, line_type,
+          reference_code); null when no matching pricing component exists.
+      - name: pricing_variance_amount
+        description: >
+          expected-vs-invoiced variance for this line's comparable_line_type bucket (see
+          int_invoice_charge_comparison); positive means the invoice charged more than expected.
+          Not a billing-exception classification.

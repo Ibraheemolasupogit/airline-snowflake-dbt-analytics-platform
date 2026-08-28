@@ -1,0 +1,218 @@
+version: 2
+
+models:
+  - name: int_invoice_status
+    description: >
+      Current-state invoice status model. Grain is one row per invoice. Primary key is invoice_id.
+      Upstream model is stg_airline__invoices. Named "status" not "status_history" because the
+      source has no status-change history table -- only a current status column, matching
+      int_booking_current_state's (Milestone 12) precedent. status values already partially
+      reflect payment/refund outcomes baked into the Milestone 9 generator; no new payment-based
+      logic is derived here.
+    columns:
+      - name: invoice_id
+        description: Natural invoice identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: status
+        description: Current invoice status, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - paid
+                - refunded
+                - cancelled
+      - name: is_cancelled
+        description: True when status = 'cancelled'.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_invoice_calculation
+    description: >
+      Deterministic invoice arithmetic control. Grain is one row per invoice. Primary key is
+      invoice_id. Upstream models are stg_airline__invoices and stg_airline__invoice_lines. Purely
+      an internal source-to-source reconciliation (header vs. its own lines) -- independent of
+      Milestone 13 pricing; see int_invoice_charge_comparison for the separate pricing-vs-invoice
+      control. See model SQL comment for the sign convention and the exact discount-amount
+      relationship.
+    columns:
+      - name: invoice_id
+        description: Natural invoice identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: booking_id
+        description: Booking this invoice bills. Deliberately not unique (duplicate_invoice).
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: currency
+        description: Invoice currency.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: source_invoice_total
+        description: invoices.total_amount, unchanged from source. Never overwritten.
+      - name: line_count
+        description: Count of stg_airline__invoice_lines rows for this invoice.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: calculated_invoice_line_total
+        description: >
+          sum(invoice_lines.amount) for this invoice, using the actual invoice-line sign
+          convention (discount lines already negative). Kept alongside source_invoice_total, never
+          overwriting it, so later assurance can compare them.
+        tests:
+          - not_null
+      - name: invoice_total_variance
+        description: >
+          source_invoice_total - calculated_invoice_line_total. Nonzero for the deliberately
+          injected missing_invoice_line, incorrect_fare, and completed_segment_without_recognised_
+          revenue_precursor controlled exceptions (see docs/data_models/airline_synthetic_
+          exception_catalogue.md); this model does not repair or classify that condition.
+        tests:
+          - not_null
+
+  - name: int_invoice_charge_comparison
+    description: >
+      Pricing-vs-invoice comparison evidence. Grain is one row per (invoice_id,
+      comparable_line_type, reference_code, ticket_id) -- ticket_id is null only for the
+      booking-scoped discount type. Upstream models are fct_pricing_events (Milestone 13),
+      stg_airline__invoices, stg_airline__tickets, and stg_airline__invoice_lines. Exposes
+      comparison evidence only -- no billing-exception classification. See model SQL comment for
+      the comparable_line_type bucket mapping, the reference_code alignment, and the sign
+      convention.
+    columns:
+      - name: invoice_id
+        description: Invoice this comparison row is evidence for.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: comparable_line_type
+        description: Bucketed component/line type this row compares.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - base_fare
+                - tax
+                - airport_fee
+                - ancillary
+                - discount
+      - name: ticket_id
+        description: Ticket this comparison row is scoped to; null only for the discount type.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: expected_amount
+        description: >
+          Sum of fct_pricing_events.amount for this (ticket/booking, comparable_line_type,
+          reference_code); null when no matching pricing component exists.
+      - name: invoiced_amount
+        description: >
+          Sum of stg_airline__invoice_lines.amount for this (invoice, ticket, line_type,
+          reference_code); null when no matching invoice line exists.
+      - name: variance_amount
+        description: >
+          invoiced_amount - expected_amount (nulls treated as 0 for this subtraction only).
+          Positive means the invoice charged more than expected; negative means less, including a
+          component missing entirely from the invoice.
+        tests:
+          - not_null
+
+  - name: int_invoice_line_validation
+    description: >
+      Structural validation of invoice lines. Grain is one row per invoice line. Primary key is
+      invoice_line_id. Upstream models are stg_airline__invoice_lines, stg_airline__invoices, and
+      fct_pricing_events. Adds structural validation SIGNALS only (has_invoice_parent,
+      has_supported_line_type, has_currency, has_non_null_amount,
+      expected_pricing_component_available) -- not billing-exception classifications.
+    columns:
+      - name: invoice_line_id
+        description: Natural invoice-line identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__invoice_lines')
+              field: invoice_line_id
+      - name: invoice_id
+        description: Invoice this line belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: ticket_id
+        description: Ticket this line relates to; null for booking-level discount lines.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: line_type
+        description: Type of charge component, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - base_fare
+                - tax
+                - airport_fee
+                - ancillary
+                - discount
+      - name: currency
+        description: Line currency.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: has_invoice_parent
+        description: Validation signal -- true when invoice_id resolves to a real invoice.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_supported_line_type
+        description: Validation signal -- true when line_type is one of the five known types.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_currency
+        description: Validation signal -- true when currency is not null.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_non_null_amount
+        description: Validation signal -- true when amount is not null.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: expected_pricing_component_available
+        description: >
+          Validation signal -- true when a matching fct_pricing_events component exists for this
+          line's (ticket/booking, line_type, reference_code). False does not by itself mean the
+          line is wrong; see int_invoice_charge_comparison for the actual amount comparison.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
