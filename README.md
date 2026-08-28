@@ -6,7 +6,7 @@ Production-style analytics engineering portfolio project for airline operations 
 
 This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
 
-Milestone 1 established the repository foundation. Milestone 2 adds AirStats raw-data conventions and dbt source metadata only; it does not yet include staging models, synthetic airline data, billing models, marts, dashboards, or Snowflake deployment.
+Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 adds AirStats staging views only; it does not include synthetic airline data, billing models, marts, dashboards, or Snowflake deployment.
 
 ## Core Stack
 
@@ -35,7 +35,8 @@ Implementation status:
 
 - Milestone 1 - complete
 - Milestone 2 - complete
-- Milestone 3 and later milestones - planned
+- Milestone 3 - complete
+- Milestone 4 and later milestones - planned
 
 Implemented:
 
@@ -47,10 +48,11 @@ Implemented:
 - initial architecture, development standards, and ADR documentation
 - AirStats raw-data convention for airport-reference CSV sources
 - dbt source metadata and source-level tests for AirStats raw tables
+- AirStats staging views with typing, minimal cleanup, and lineage-preserving identifiers
 
 Not yet implemented:
 
-- AirStats staging models or Snowflake ingestion automation
+- AirStats intermediate transformations or Snowflake ingestion automation
 - airline operational or commercial models
 - billing, revenue-recognition, reconciliation, or mart logic
 - credential-backed Snowflake dbt runs
@@ -89,10 +91,11 @@ Real credentials, private keys, local profiles, and environment files must not b
 
 1. Repository Foundation - complete
 2. AirStats Source Setup - complete
-3. AirStats Staging Layer - planned
-4. Airline Operational Source Modelling
-5. Bookings, Ticketing, and Commercial Data Modelling
-6. Billing, Revenue Recognition, and Reconciliation Controls
-7. Core Dimensions and Facts
-8. Commercial Marts and Reporting Outputs
-9. Documentation, Quality Gates, and Portfolio Polish
+3. AirStats Staging Layer - complete
+4. AirStats Transformations - planned
+5. Airline Operational Source Modelling
+6. Bookings, Ticketing, and Commercial Data Modelling
+7. Billing, Revenue Recognition, and Reconciliation Controls
+8. Core Dimensions and Facts
+9. Commercial Marts and Reporting Outputs
+10. Documentation, Quality Gates, and Portfolio Polish

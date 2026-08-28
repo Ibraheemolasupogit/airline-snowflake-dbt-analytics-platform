@@ -1,0 +1,251 @@
+version: 2
+
+models:
+  - name: stg_airstats__airports
+    description: >
+      Typed and lightly cleaned AirStats airport staging view. Grain is one row per source
+      airport-like facility. Natural key is ident. Lineage is preserved through
+      airport_source_id and ident from source('airstats', 'airports').
+    columns:
+      - name: airport_source_id
+        description: Persistent provider airport identifier retained for lineage.
+        tests:
+          - not_null
+          - unique
+      - name: ident
+        description: Natural airport identifier used for AirStats airport relationships.
+        tests:
+          - not_null
+          - unique
+      - name: airport_type
+        description: Source airport type with surrounding whitespace removed.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - balloonport
+                - closed_airport
+                - heliport
+                - large_airport
+                - medium_airport
+                - seaplane_base
+                - small_airport
+      - name: airport_name
+        description: Source airport name with blank strings normalized to null.
+      - name: latitude_deg
+        description: Airport latitude cast to float.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -90
+              max_value: 90
+      - name: longitude_deg
+        description: Airport longitude cast to float.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -180
+              max_value: 180
+      - name: elevation_ft
+        description: Airport elevation cast to integer feet where populated.
+      - name: continent_code
+        description: Source continent code with blank strings normalized to null.
+      - name: iso_country
+        description: Source country code with blank strings normalized to null.
+        tests:
+          - relationships:
+              to: ref('stg_airstats__countries')
+              field: country_code
+      - name: iso_region
+        description: Source region code with blank strings normalized to null.
+        tests:
+          - relationships:
+              to: ref('stg_airstats__regions')
+              field: region_code
+      - name: municipality
+        description: Source municipality with blank strings normalized to null.
+      - name: has_scheduled_service
+        description: Boolean normalized from source yes/no scheduled_service values.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: gps_code
+        description: Source GPS code with blank strings normalized to null.
+      - name: icao_code
+        description: Source ICAO code with blank strings normalized to null.
+      - name: iata_code
+        description: Source IATA code with blank strings normalized to null.
+      - name: local_code
+        description: Source local code with blank strings normalized to null.
+      - name: home_link
+        description: Source airport website URL with blank strings normalized to null.
+      - name: wikipedia_link
+        description: Source Wikipedia URL with blank strings normalized to null.
+      - name: keywords
+        description: Source search keywords and aliases with blank strings normalized to null.
+
+  - name: stg_airstats__runways
+    description: >
+      Typed and lightly cleaned AirStats runway staging view. Grain is one row per source
+      landing surface. Natural key is runway_source_id. Airport lineage is preserved through
+      airport_source_id and airport_ident from source('airstats', 'runways').
+    columns:
+      - name: runway_source_id
+        description: Persistent provider runway identifier and staging natural key.
+        tests:
+          - not_null
+          - unique
+      - name: airport_source_id
+        description: Provider internal airport identifier retained for source lineage.
+      - name: airport_ident
+        description: Airport natural identifier relating each runway to stg_airstats__airports.ident.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: length_ft
+        description: Landing-surface length cast to integer feet where populated.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              row_condition: length_ft is not null
+      - name: width_ft
+        description: Landing-surface width cast to integer feet where populated.
+      - name: surface
+        description: Source surface code or description with blank strings normalized to null.
+      - name: is_lighted
+        description: Boolean normalized from source 1/0 lighted indicator.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_closed
+        description: Boolean normalized from source 1/0 closed indicator.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: le_ident
+        description: Low-numbered runway end identifier with blank strings normalized to null.
+      - name: le_latitude_deg
+        description: Low-numbered runway end latitude cast to float where populated.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -90
+              max_value: 90
+              row_condition: le_latitude_deg is not null
+      - name: le_longitude_deg
+        description: Low-numbered runway end longitude cast to float where populated.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: -180
+              max_value: 180
+              row_condition: le_longitude_deg is not null
+      - name: le_elevation_ft
+        description: Low-numbered runway end elevation cast to integer feet where populated.
+      - name: le_heading_degt
+        description: Low-numbered runway end true heading cast to float where populated.
+      - name: le_displaced_threshold_ft
+        description: Low-numbered runway end displaced-threshold length cast to integer feet.
+      - name: he_ident
+        description: High-numbered runway end identifier with blank strings normalized to null.
+      - name: he_latitude_deg
+        description: High-numbered runway end latitude cast to float where populated.
+      - name: he_longitude_deg
+        description: High-numbered runway end longitude cast to float where populated.
+      - name: he_elevation_ft
+        description: High-numbered runway end elevation cast to integer feet where populated.
+      - name: he_heading_degt
+        description: High-numbered runway end true heading cast to float where populated.
+      - name: he_displaced_threshold_ft
+        description: High-numbered runway end displaced-threshold length cast to integer feet.
+
+  - name: stg_airstats__airport_comments
+    description: >
+      Typed and lightly cleaned AirStats airport-comment staging view. Grain is one row per
+      source comment. Natural key is airport_comment_source_id. Airport lineage is preserved
+      through airport_source_id and airport_ident from source('airstats', 'airport_comments').
+    columns:
+      - name: airport_comment_source_id
+        description: Persistent provider comment identifier and staging natural key.
+        tests:
+          - not_null
+          - unique
+      - name: thread_source_id
+        description: Provider discussion-thread identifier.
+      - name: airport_source_id
+        description: Provider internal airport identifier retained for source lineage.
+      - name: airport_ident
+        description: Airport natural identifier relating comments to stg_airstats__airports.ident.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: comment_at
+        description: Source comment timestamp cast to Snowflake timestamp_ntz.
+      - name: member_nickname
+        description: Source commenter nickname with blank strings normalized to null.
+      - name: subject
+        description: Source comment subject with blank strings normalized to null.
+      - name: body
+        description: Source comment body with blank strings normalized to null.
+
+  - name: stg_airstats__countries
+    description: >
+      Typed and lightly cleaned AirStats country staging view. Grain is one row per source
+      country or country-like entity. Natural key is country_code. Lineage is preserved through
+      country_source_id and country_code from source('airstats', 'countries').
+    columns:
+      - name: country_source_id
+        description: Persistent provider country identifier retained for lineage.
+        tests:
+          - not_null
+          - unique
+      - name: country_code
+        description: Natural country code referenced by AirStats airport and region sources.
+        tests:
+          - not_null
+          - unique
+      - name: country_name
+        description: Source country or country-like entity name with blank strings normalized to null.
+      - name: continent_code
+        description: Source continent code with blank strings normalized to null.
+      - name: wikipedia_link
+        description: Source Wikipedia URL with blank strings normalized to null.
+      - name: keywords
+        description: Source search keywords and aliases with blank strings normalized to null.
+
+  - name: stg_airstats__regions
+    description: >
+      Typed and lightly cleaned AirStats region staging view. Grain is one row per source
+      administrative subdivision. Natural key is region_code. Country relationship is preserved
+      through country_code from source('airstats', 'regions').
+    columns:
+      - name: region_source_id
+        description: Persistent provider region identifier retained for lineage.
+        tests:
+          - not_null
+          - unique
+      - name: region_code
+        description: Natural region code referenced by AirStats airport sources.
+        tests:
+          - not_null
+          - unique
+      - name: local_region_code
+        description: Source local subdivision code with blank strings normalized to null.
+      - name: region_name
+        description: Source region name with blank strings normalized to null.
+      - name: continent_code
+        description: Source continent code with blank strings normalized to null.
+      - name: country_code
+        description: Country code relating each region to stg_airstats__countries.country_code.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__countries')
+              field: country_code
+      - name: wikipedia_link
+        description: Source Wikipedia URL with blank strings normalized to null.
+      - name: keywords
+        description: Source search keywords and aliases with blank strings normalized to null.

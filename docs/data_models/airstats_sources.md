@@ -6,6 +6,19 @@ AirStats is the authoritative airport-reference source foundation for this platf
 airport, runway, country, region, and comment context that later milestones can conform for route
 and flight modelling, then downstream operational and commercial analytics.
 
+Milestone 3 adds dbt staging views on top of the Milestone 2 source definitions:
+
+```text
+RAW_AIRSTATS
+-> source()
+-> AirStats staging views
+```
+
+The staging views perform explicit column selection, Snowflake-safe typing, source-aligned
+renaming, blank-string-to-null handling, simple boolean normalization, and lineage preservation.
+They do not implement intermediate transformations, conformed dimensions, marts, route modelling,
+flight modelling, or commercial analytics.
+
 ## Entities
 
 - `airports`: one row per airport-like facility. Natural key: `ident`.
@@ -82,3 +95,15 @@ Future load automation should stage dated CSV files from `data/raw/airstats/` or
 object store, load them into `RAW_AIRSTATS`, preserve provider keys, and normalize only mechanical
 header naming differences such as camelCase to snake_case. Business cleaning belongs in Milestone
 3 staging models, not in the raw/source definition.
+
+## Staging Views
+
+- `stg_airstats__airports`: one row per source airport-like facility. Natural key: `ident`.
+- `stg_airstats__runways`: one row per source landing surface. Natural key:
+  `runway_source_id`; airport relationship key: `airport_ident`.
+- `stg_airstats__airport_comments`: one row per source comment. Natural key:
+  `airport_comment_source_id`; airport relationship key: `airport_ident`.
+- `stg_airstats__countries`: one row per source country or country-like entity. Natural key:
+  `country_code`.
+- `stg_airstats__regions`: one row per source administrative subdivision. Natural key:
+  `region_code`; country relationship key: `country_code`.
