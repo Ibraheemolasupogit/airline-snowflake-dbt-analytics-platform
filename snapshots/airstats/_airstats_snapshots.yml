@@ -1,0 +1,108 @@
+version: 2
+
+snapshots:
+  - name: snap_airports
+    description: >
+      SCD Type 2 snapshot of staged AirStats airports. Historical grain is one row per airport
+      version over time. Unique key is ident. The snapshot uses dbt's check strategy because the
+      source does not provide a trustworthy row-level updated_at timestamp. Hard deletes are
+      invalidated so disappeared source records close the active historical version rather than
+      deleting prior history.
+    columns:
+      - name: ident
+        description: Airport natural identifier and snapshot unique key.
+        tests:
+          - not_null
+      - name: airport_type
+        description: Tracked airport type attribute.
+      - name: airport_name
+        description: Tracked airport name attribute.
+      - name: latitude_deg
+        description: Tracked airport latitude.
+      - name: longitude_deg
+        description: Tracked airport longitude.
+      - name: elevation_ft
+        description: Tracked airport elevation.
+      - name: continent_code
+        description: Tracked source continent code.
+      - name: iso_country
+        description: Tracked source country code.
+      - name: iso_region
+        description: Tracked source region code.
+      - name: municipality
+        description: Tracked source municipality.
+      - name: has_scheduled_service
+        description: Tracked source-derived scheduled-service flag.
+      - name: gps_code
+        description: Tracked GPS code.
+      - name: icao_code
+        description: Tracked ICAO code.
+      - name: iata_code
+        description: Tracked IATA code.
+      - name: local_code
+        description: Tracked local airport code.
+      - name: dbt_scd_id
+        description: dbt-generated SCD version identifier.
+      - name: dbt_updated_at
+        description: dbt-generated timestamp representing when dbt observed the snapshot change.
+      - name: dbt_valid_from
+        description: dbt-generated start timestamp for the historical version.
+      - name: dbt_valid_to
+        description: dbt-generated end timestamp for the historical version; null means active.
+
+  - name: snap_runways
+    description: >
+      SCD Type 2 snapshot of staged AirStats runways. Historical grain is one row per runway
+      version over time. Unique key is runway_source_id. The snapshot uses dbt's check strategy
+      because the source does not provide a trustworthy row-level updated_at timestamp. Hard
+      deletes are invalidated so disappeared source records close the active historical version
+      rather than deleting prior history.
+    columns:
+      - name: runway_source_id
+        description: Provider runway identifier and snapshot unique key.
+        tests:
+          - not_null
+      - name: airport_ident
+        description: Tracked airport natural identifier for the runway.
+      - name: length_ft
+        description: Tracked runway length in feet.
+      - name: width_ft
+        description: Tracked runway width in feet.
+      - name: surface
+        description: Tracked runway surface code or description.
+      - name: is_lighted
+        description: Tracked source-derived lighted flag.
+      - name: is_closed
+        description: Tracked source-derived closed flag.
+      - name: le_ident
+        description: Tracked low-numbered runway end identifier.
+      - name: le_latitude_deg
+        description: Tracked low-numbered runway end latitude.
+      - name: le_longitude_deg
+        description: Tracked low-numbered runway end longitude.
+      - name: le_elevation_ft
+        description: Tracked low-numbered runway end elevation.
+      - name: le_heading_degt
+        description: Tracked low-numbered runway end true heading.
+      - name: le_displaced_threshold_ft
+        description: Tracked low-numbered runway end displaced threshold.
+      - name: he_ident
+        description: Tracked high-numbered runway end identifier.
+      - name: he_latitude_deg
+        description: Tracked high-numbered runway end latitude.
+      - name: he_longitude_deg
+        description: Tracked high-numbered runway end longitude.
+      - name: he_elevation_ft
+        description: Tracked high-numbered runway end elevation.
+      - name: he_heading_degt
+        description: Tracked high-numbered runway end true heading.
+      - name: he_displaced_threshold_ft
+        description: Tracked high-numbered runway end displaced threshold.
+      - name: dbt_scd_id
+        description: dbt-generated SCD version identifier.
+      - name: dbt_updated_at
+        description: dbt-generated timestamp representing when dbt observed the snapshot change.
+      - name: dbt_valid_from
+        description: dbt-generated start timestamp for the historical version.
+      - name: dbt_valid_to
+        description: dbt-generated end timestamp for the historical version; null means active.

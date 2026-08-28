@@ -14,6 +14,8 @@ RAW_AIRSTATS
 -> AirStats staging views
 -> intermediate airport intelligence
 -> incremental airport comments
+-> AirStats snapshots
+-> historical airport/runway reference
 ```
 
 The staging views perform explicit column selection, Snowflake-safe typing, source-aligned
@@ -155,3 +157,29 @@ aggregates.
 The source does not provide a reliable update timestamp. Corrected or reprocessed comments whose
 `comment_at` is older than the lookback cannot be distinguished during a normal incremental run;
 those cases require full refresh or a deliberately wider lookback.
+
+## AirStats Snapshots
+
+Milestone 6 adds dbt SCD Type 2 snapshots for slowly changing AirStats reference entities:
+
+- `snap_airports`: one row per airport version over time. Unique key: `ident`.
+- `snap_runways`: one row per runway version over time. Unique key: `runway_source_id`.
+
+Both snapshots use dbt's `check` strategy because the staged AirStats airport and runway records
+do not include a trustworthy row-level update timestamp. A timestamp strategy is deferred to a
+future source domain that provides reliable update metadata.
+
+The snapshots track meaningful mutable reference attributes such as airport type, name,
+coordinates, geography codes, scheduled-service flag, airport codes, runway dimensions, runway
+surface, source-derived runway flags, and runway endpoint details. Lineage-only identifiers such
+as `airport_source_id` are retained in the snapshot output but are not used as change-detection
+columns.
+
+dbt manages the SCD metadata columns, including `dbt_scd_id`, `dbt_updated_at`,
+`dbt_valid_from`, and `dbt_valid_to`. These columns represent historical warehouse state observed
+by dbt snapshots. They are not live operational history from airport systems.
+
+With `invalidate_hard_deletes=True`, a staged airport or runway record that disappears from the
+current source result closes the active historical version instead of deleting prior history. This
+only means the record disappeared from the ingested source snapshot; it does not prove that the
+real airport or runway ceased to exist operationally.
