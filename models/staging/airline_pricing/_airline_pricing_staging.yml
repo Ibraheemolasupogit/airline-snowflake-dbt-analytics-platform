@@ -1,0 +1,272 @@
+version: 2
+
+models:
+  - name: stg_airline__products
+    description: >
+      Typed product staging view. Grain is one row per sellable fare bundle. Natural key is
+      product_code.
+    columns:
+      - name: product_code
+        description: Natural product identifier.
+        tests:
+          - not_null
+          - unique
+      - name: product_name
+        description: Product display name.
+      - name: fare_class_code
+        description: Underlying fare class the product bundles.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: included_service_codes
+        description: Pipe-delimited service codes included in the bundle. Not parsed into an array at this layer.
+
+  - name: stg_airline__services
+    description: >
+      Typed service catalog staging view. Grain is one row per sellable ancillary/service
+      catalog entry. Natural key is service_code.
+    columns:
+      - name: service_code
+        description: Natural service identifier.
+        tests:
+          - not_null
+          - unique
+      - name: service_name
+        description: Service display name.
+      - name: category
+        description: Service category.
+      - name: base_price_usd
+        description: Illustrative catalog price in USD, before currency conversion at time of sale.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: stg_airline__ancillary_services
+    description: >
+      Typed ancillary-service-sale staging view. Grain is one row per ancillary service sold
+      against a ticket. Natural key is ancillary_service_id. This dataset deliberately contains
+      one ancillary_sold_but_not_fulfilled and one ancillary_fulfilled_but_not_billed controlled
+      exception (exception_manifest.csv); this view preserves both unchanged.
+    columns:
+      - name: ancillary_service_id
+        description: Natural ancillary-sale identifier.
+        tests:
+          - not_null
+          - unique
+      - name: ticket_id
+        description: Ticket the ancillary was sold against.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: service_code
+        description: Service sold.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__services')
+              field: service_code
+      - name: quantity
+        description: Quantity purchased.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+      - name: unit_price
+        description: Unit price actually charged, in the ticket's currency.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: currency
+        description: Currency of unit_price.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: fulfilment_status
+        description: >
+          Whether the ancillary was actually delivered. Two rows are deliberately injected
+          controlled exceptions; do not filter them out or add a test that would flag them as
+          failures.
+        tests:
+          - accepted_values:
+              values:
+                - fulfilled
+                - not_fulfilled
+                - pending
+      - name: purchase_date_utc
+        description: Purchase timestamp in UTC.
+
+  - name: stg_airline__fare_classes
+    description: >
+      Typed fare-class staging view. Grain is one row per sellable fare class. Natural key is
+      fare_class_code.
+    columns:
+      - name: fare_class_code
+        description: Natural fare class identifier.
+        tests:
+          - not_null
+          - unique
+      - name: cabin
+        description: Cabin code the fare class sells in.
+        tests:
+          - accepted_values:
+              values: ["Y", "W", "C", "F"]
+      - name: fare_basis_code
+        description: Fare basis code.
+      - name: refundable
+        description: Boolean normalised from the source 'True'/'False' text.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: change_fee_usd
+        description: Illustrative change fee in USD.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: base_fare_usd
+        description: Illustrative base fare component in USD, before distance-based pricing.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: per_km_usd
+        description: Illustrative per-kilometre fare rate in USD.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: description
+        description: Fare class display description.
+
+  - name: stg_airline__fare_rules
+    description: >
+      Typed fare-rule staging view. Grain is one row per fare-class rule set. Natural key is
+      fare_rule_id.
+    columns:
+      - name: fare_rule_id
+        description: Natural fare-rule identifier.
+        tests:
+          - not_null
+          - unique
+      - name: fare_class_code
+        description: Fare class the rule set applies to.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: refundable
+        description: Boolean normalised from the source 'True'/'False' text.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: change_fee_usd
+        description: Illustrative change fee in USD.
+      - name: advance_purchase_days
+        description: Minimum advance-purchase requirement in days.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: min_stay_nights
+        description: Minimum stay requirement in nights.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: stg_airline__airport_fees
+    description: >
+      Typed airport-fee staging view. Grain is one row per (airport, fee type). Natural key is
+      airport_fee_id. airport_ident is preserved exactly for a future AirStats conformance join;
+      no such join exists yet.
+    columns:
+      - name: airport_fee_id
+        description: Natural airport-fee identifier.
+        tests:
+          - not_null
+          - unique
+      - name: airport_ident
+        description: Airport the fee applies to, AirStats-style. Not yet joined to AirStats.
+        tests:
+          - not_null
+      - name: fee_code
+        description: Fee type code.
+      - name: fee_name
+        description: Fee display name.
+      - name: currency_code
+        description: Currency of amount.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: amount
+        description: Illustrative flat fee amount, applied per departing passenger.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: stg_airline__taxes
+    description: >
+      Typed tax staging view. Grain is one row per (country, tax type). Natural key is tax_id.
+    columns:
+      - name: tax_id
+        description: Natural tax identifier.
+        tests:
+          - not_null
+          - unique
+      - name: country_code
+        description: ISO country code the tax applies to.
+        tests:
+          - not_null
+      - name: tax_code
+        description: Tax type code.
+      - name: tax_name
+        description: Tax display name.
+      - name: percentage_rate
+        description: Illustrative tax rate as a fraction of base fare.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: currency_code
+        description: Currency the tax is denominated in.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+
+  - name: stg_airline__discounts
+    description: >
+      Typed discount staging view. Grain is one row per discount code. Natural key is
+      discount_code.
+    columns:
+      - name: discount_code
+        description: Natural discount identifier.
+        tests:
+          - not_null
+          - unique
+      - name: discount_name
+        description: Discount display name.
+      - name: discount_type
+        description: How value should be interpreted.
+        tests:
+          - accepted_values:
+              values:
+                - percentage
+                - fixed_amount
+      - name: value
+        description: >
+          Discount magnitude. Interpretation depends on discount_type: a fraction (e.g. 0.10)
+          when percentage, or a fixed USD amount when fixed_amount.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: corporate_account_id
+        description: Corporate account this discount is negotiated for, if any; null otherwise.
+        tests:
+          - relationships:
+              to: ref('stg_airline__corporate_accounts')
+              field: corporate_account_id

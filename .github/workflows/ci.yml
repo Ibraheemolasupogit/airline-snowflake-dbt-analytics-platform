@@ -63,6 +63,20 @@ jobs:
       - name: Discover dbt test resources
         run: dbt ls --profiles-dir . --resource-type test
 
+      - name: Discover airline source tables
+        run: |
+          dbt ls --profiles-dir . --resource-type source --select "source:airline_reference"
+          dbt ls --profiles-dir . --resource-type source --select "source:airline_operations"
+          dbt ls --profiles-dir . --resource-type source --select "source:airline_bookings"
+          dbt ls --profiles-dir . --resource-type source --select "source:airline_pricing"
+          dbt ls --profiles-dir . --resource-type source --select "source:airline_billing"
+
+      - name: Discover airline staging models
+        run: dbt ls --profiles-dir . --resource-type model --select "models/staging/airline_*"
+
+      - name: Discover airline staging tests
+        run: dbt ls --profiles-dir . --resource-type test --select "models/staging/airline_*"
+
       - name: Lint SQL offline
         run: |
           sqlfluff lint --dialect snowflake --templater jinja models tests analyses macros

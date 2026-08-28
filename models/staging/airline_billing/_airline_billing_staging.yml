@@ -1,0 +1,423 @@
+version: 2
+
+models:
+  - name: stg_airline__corporate_accounts
+    description: >
+      Typed corporate-account staging view. Grain is one row per corporate account. Natural key
+      is corporate_account_id.
+    columns:
+      - name: corporate_account_id
+        description: Natural corporate account identifier.
+        tests:
+          - not_null
+          - unique
+      - name: company_name
+        description: Synthetic company display name.
+      - name: country
+        description: ISO country code of the corporate account.
+      - name: negotiated_discount_pct
+        description: Negotiated discount rate as a fraction.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+      - name: default_currency
+        description: Default billing currency for the account.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+
+  - name: stg_airline__travel_agents
+    description: >
+      Typed travel-agent staging view. Grain is one row per travel agent. Natural key is
+      travel_agent_id.
+    columns:
+      - name: travel_agent_id
+        description: Natural travel agent identifier.
+        tests:
+          - not_null
+          - unique
+      - name: agency_name
+        description: Synthetic agency display name.
+      - name: iata_number
+        description: Synthetic IATA-style agency number.
+      - name: country
+        description: ISO country code of the agency.
+      - name: commission_pct
+        description: Commission rate as a fraction.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+
+  - name: stg_airline__invoices
+    description: >
+      Typed invoice staging view. Grain is one row per invoice. Natural key is invoice_id. This
+      dataset deliberately contains one duplicate invoice (a second invoice_id for the same
+      booking_id) and one invoice whose total_amount no longer reconciles to its lines
+      (missing_invoice_line), both documented in exception_manifest.csv; this view preserves
+      both unchanged and does not test booking_id for uniqueness.
+    columns:
+      - name: invoice_id
+        description: Natural invoice identifier.
+        tests:
+          - not_null
+          - unique
+      - name: booking_id
+        description: >
+          Booking this invoice bills. Deliberately not unique across invoices because of the
+          duplicate_invoice controlled exception.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: invoice_date_utc
+        description: Invoice creation timestamp in UTC.
+      - name: currency
+        description: Invoice currency.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: bill_to_type
+        description: Who the invoice is billed to.
+        tests:
+          - accepted_values:
+              values:
+                - passenger
+                - corporate
+                - travel_agent
+      - name: bill_to_id
+        description: Identifier of the passenger, corporate account, or travel agent billed.
+      - name: subtotal_amount
+        description: Sum of base_fare invoice lines.
+      - name: tax_amount
+        description: Sum of tax invoice lines.
+      - name: fee_amount
+        description: Sum of airport_fee invoice lines.
+      - name: ancillary_amount
+        description: Sum of ancillary invoice lines.
+      - name: discount_amount
+        description: Discount applied, as a positive magnitude.
+      - name: total_amount
+        description: >
+          Invoice header total. One invoice's total_amount is a deliberately injected controlled
+          exception and no longer reconciles to sum(invoice_lines.amount); this view does not
+          correct or flag it.
+      - name: status
+        description: Invoice status.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - paid
+                - refunded
+                - cancelled
+
+  - name: stg_airline__invoice_lines
+    description: >
+      Typed invoice-line staging view. Grain is one row per invoice charge component. Natural
+      key is invoice_line_id. One row's amount is a deliberately injected incorrect_fare
+      controlled exception; this view preserves it unchanged.
+    columns:
+      - name: invoice_line_id
+        description: Natural invoice-line identifier.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        description: Invoice this line belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: ticket_id
+        description: Ticket this line relates to, if applicable; null for booking-level discount lines.
+        tests:
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: line_type
+        description: Type of charge component.
+        tests:
+          - accepted_values:
+              values:
+                - base_fare
+                - tax
+                - airport_fee
+                - ancillary
+                - discount
+      - name: reference_code
+        description: Code of the underlying fare class, tax, fee, service, or discount this line represents.
+      - name: description
+        description: Human-readable line description.
+      - name: amount
+        description: >
+          Line amount. One row is a deliberately injected incorrect_fare controlled exception;
+          this view does not correct or flag it.
+      - name: currency
+        description: Line currency.
+
+  - name: stg_airline__payment_attempts
+    description: >
+      Typed payment-attempt staging view. Grain is one row per payment attempt. Natural key is
+      payment_attempt_id.
+    columns:
+      - name: payment_attempt_id
+        description: Natural payment-attempt identifier.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        description: Invoice the attempt is for.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: attempt_datetime_utc
+        description: Attempt timestamp in UTC.
+      - name: method
+        description: Payment method attempted.
+        tests:
+          - accepted_values:
+              values:
+                - card
+                - bank_transfer
+                - voucher
+      - name: amount
+        description: Amount attempted.
+      - name: currency
+        description: Currency of amount.
+      - name: result
+        description: Outcome of the attempt.
+        tests:
+          - accepted_values:
+              values:
+                - success
+                - failed
+      - name: failure_reason
+        description: Failure reason, populated only when result='failed'.
+
+  - name: stg_airline__payments
+    description: >
+      Typed payment staging view. Grain is one row per successful payment transaction. Natural
+      key is payment_id. This dataset deliberately contains one orphaned payment referencing a
+      non-existent invoice_id (payment_without_invoice), one overpaid payment
+      (unallocated_payment), one late-arriving payment, and one currency-mismatched payment, all
+      documented in exception_manifest.csv; this view preserves every one of them unchanged and
+      deliberately does not test invoice_id for referential resolution.
+    columns:
+      - name: payment_id
+        description: Natural payment identifier.
+        tests:
+          - not_null
+          - unique
+      - name: payment_attempt_id
+        description: >
+          Originating payment attempt; null for the deliberately injected
+          payment_without_invoice exception row, which has no corresponding attempt.
+      - name: invoice_id
+        description: >
+          Invoice this payment is for. One row deliberately references a non-existent
+          invoice_id as a controlled payment_without_invoice exception; no relationship test is
+          applied here for that reason -- it would fail by design.
+        tests:
+          - not_null
+      - name: payment_datetime_utc
+        description: Payment timestamp in UTC.
+      - name: method
+        description: Payment method used.
+        tests:
+          - accepted_values:
+              values:
+                - card
+                - bank_transfer
+                - voucher
+      - name: amount
+        description: >
+          Amount collected. One row's amount deliberately exceeds its invoice total as a
+          controlled unallocated_payment exception; this view does not correct it.
+      - name: currency
+        description: >
+          Currency of amount. One row deliberately differs from its invoice's currency as a
+          controlled currency_mismatch exception.
+      - name: allocation_status
+        description: Allocation status of the payment against its invoice.
+        tests:
+          - accepted_values:
+              values:
+                - fully_allocated
+                - overpaid_unallocated
+                - unallocated
+
+  - name: stg_airline__refunds
+    description: >
+      Typed refund staging view. Grain is one row per refund transaction. Natural key is
+      refund_id. One row's amount deliberately exceeds the amount collected on its linked
+      payment (refund_greater_than_collected_amount); this view preserves it unchanged.
+    columns:
+      - name: refund_id
+        description: Natural refund identifier.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        description: Invoice the refund relates to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: booking_id
+        description: Booking the refund relates to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: payment_id
+        description: Original payment being refunded.
+        tests:
+          - relationships:
+              to: ref('stg_airline__payments')
+              field: payment_id
+      - name: refund_datetime_utc
+        description: Refund timestamp in UTC.
+      - name: reason
+        description: Refund reason.
+      - name: amount
+        description: >
+          Refund amount. One row deliberately exceeds the amount collected on its linked
+          payment; this view does not correct or flag it.
+      - name: currency
+        description: Refund currency.
+      - name: method
+        description: Refund method.
+      - name: status
+        description: Refund status.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - pending
+
+  - name: stg_airline__adjustments
+    description: >
+      Typed adjustment staging view. Grain is one row per manual invoice adjustment. Natural key
+      is adjustment_id. One row deliberately references a non-existent invoice_id with an
+      implausibly large amount (invalid_adjustment); this view preserves it unchanged and
+      deliberately does not test invoice_id for referential resolution.
+    columns:
+      - name: adjustment_id
+        description: Natural adjustment identifier.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        description: >
+          Invoice the adjustment relates to. One row deliberately references a non-existent
+          invoice_id as a controlled invalid_adjustment exception; no relationship test is
+          applied here for that reason -- it would fail by design.
+        tests:
+          - not_null
+      - name: adjustment_type
+        description: Adjustment direction.
+        tests:
+          - accepted_values:
+              values:
+                - credit
+                - debit
+      - name: amount
+        description: Adjustment amount.
+      - name: currency
+        description: Adjustment currency.
+      - name: reason
+        description: Adjustment reason.
+      - name: created_at_utc
+        description: Adjustment creation timestamp in UTC.
+
+  - name: stg_airline__credit_notes
+    description: >
+      Typed credit-note staging view. Grain is one row per credit note. Natural key is
+      credit_note_id.
+    columns:
+      - name: credit_note_id
+        description: Natural credit-note identifier.
+        tests:
+          - not_null
+          - unique
+      - name: invoice_id
+        description: Invoice the credit note relates to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: refund_id
+        description: Refund the credit note evidences, if any.
+        tests:
+          - relationships:
+              to: ref('stg_airline__refunds')
+              field: refund_id
+      - name: adjustment_id
+        description: Adjustment the credit note evidences, if any.
+        tests:
+          - relationships:
+              to: ref('stg_airline__adjustments')
+              field: adjustment_id
+      - name: amount
+        description: Credit note amount.
+      - name: currency
+        description: Credit note currency.
+      - name: issued_at_utc
+        description: Issuance timestamp in UTC.
+      - name: status
+        description: Credit note status.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+
+  - name: stg_airline__vouchers
+    description: >
+      Typed voucher staging view. Grain is one row per issued travel voucher. Natural key is
+      voucher_id.
+    columns:
+      - name: voucher_id
+        description: Natural voucher identifier.
+        tests:
+          - not_null
+          - unique
+      - name: passenger_id
+        description: Passenger the voucher was issued to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__passengers')
+              field: passenger_id
+      - name: issued_from
+        description: Reason the voucher was issued.
+      - name: amount
+        description: Voucher amount.
+      - name: currency
+        description: Voucher currency.
+      - name: issued_at_utc
+        description: Issuance timestamp in UTC.
+      - name: expiry_date
+        description: Voucher expiry date.
+      - name: status
+        description: Voucher status.
+        tests:
+          - accepted_values:
+              values:
+                - active
+      - name: redeemed_booking_id
+        description: Booking the voucher was redeemed against, if any.
+        tests:
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id

@@ -1,0 +1,273 @@
+version: 2
+
+models:
+  - name: stg_airline__passengers
+    description: >
+      Typed passenger staging view. Grain is one row per synthetic passenger. Natural key is
+      passenger_id. All names, dates of birth, and emails are synthetic (Milestone 9 generator
+      output); no real individuals are represented.
+    columns:
+      - name: passenger_id
+        description: Natural passenger identifier.
+        tests:
+          - not_null
+          - unique
+      - name: first_name
+        description: Synthetic first name.
+      - name: last_name
+        description: Synthetic last name.
+      - name: date_of_birth
+        description: Synthetic date of birth.
+      - name: nationality
+        description: Synthetic ISO country code.
+      - name: email
+        description: Synthetic email address on the .invalid reserved test domain.
+      - name: loyalty_tier
+        description: Synthetic loyalty program tier.
+        tests:
+          - accepted_values:
+              values:
+                - none
+                - silver
+                - gold
+                - platinum
+
+  - name: stg_airline__bookings
+    description: >
+      Typed booking staging view. Grain is one row per booking reference. Natural key is
+      booking_id. This dataset deliberately contains one duplicate-invoice exception (at the
+      invoice layer, sharing this table's booking_id) and several cancelled bookings used by
+      other controlled exceptions; this view preserves every row unchanged.
+    columns:
+      - name: booking_id
+        description: Natural booking identifier.
+        tests:
+          - not_null
+          - unique
+      - name: booking_reference
+        description: Passenger-facing booking reference code (PNR-style).
+        tests:
+          - not_null
+      - name: airline_code
+        description: Operating/marketing airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__airlines')
+              field: airline_code
+      - name: route_id
+        description: Outbound route.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__routes')
+              field: route_id
+      - name: return_route_id
+        description: Return route for round-trip bookings; null for one-way bookings.
+        tests:
+          - relationships:
+              to: ref('stg_airline__routes')
+              field: route_id
+      - name: trip_type
+        description: Trip type.
+        tests:
+          - accepted_values:
+              values:
+                - one_way
+                - round_trip
+      - name: booking_channel
+        description: Sales channel the booking was made through.
+        tests:
+          - accepted_values:
+              values:
+                - direct_website
+                - mobile_app
+                - call_center
+                - travel_agent
+                - corporate_portal
+      - name: booking_date_utc
+        description: Booking creation timestamp in UTC.
+      - name: point_of_sale_country
+        description: ISO country code of the point of sale, used to derive the booking currency.
+      - name: currency
+        description: Currency code for this booking's invoice/payments.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: status
+        description: Booking status.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - cancelled
+      - name: corporate_account_id
+        description: Corporate account, if this is a corporate booking; null otherwise.
+        tests:
+          - relationships:
+              to: ref('stg_airline__corporate_accounts')
+              field: corporate_account_id
+      - name: travel_agent_id
+        description: Travel agent, if this booking was made through an agent; null otherwise.
+        tests:
+          - relationships:
+              to: ref('stg_airline__travel_agents')
+              field: travel_agent_id
+      - name: discount_code
+        description: Discount code applied, if any; null otherwise.
+        tests:
+          - relationships:
+              to: ref('stg_airline__discounts')
+              field: discount_code
+      - name: outbound_flight_instance_id
+        description: Outbound flight instance.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__flight_instances')
+              field: flight_instance_id
+      - name: return_flight_instance_id
+        description: Return flight instance for round-trip bookings; null for one-way bookings.
+        tests:
+          - relationships:
+              to: ref('stg_airline__flight_instances')
+              field: flight_instance_id
+
+  - name: stg_airline__booking_passengers
+    description: >
+      Typed booking-passenger association staging view. Grain is one row per booking-passenger
+      association. Natural key is booking_passenger_id.
+    columns:
+      - name: booking_passenger_id
+        description: Natural booking-passenger association identifier.
+        tests:
+          - not_null
+          - unique
+      - name: booking_id
+        description: Booking the passenger is associated with.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: passenger_id
+        description: Passenger associated with the booking.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__passengers')
+              field: passenger_id
+      - name: passenger_type
+        description: Passenger fare type.
+        tests:
+          - accepted_values:
+              values:
+                - adult
+                - child
+                - infant
+      - name: seq_in_booking
+        description: 1-based ordering of the passenger within the booking.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+
+  - name: stg_airline__tickets
+    description: >
+      Typed ticket staging view. Grain is one row per issued passenger ticket. Natural key is
+      ticket_id.
+    columns:
+      - name: ticket_id
+        description: Natural ticket identifier.
+        tests:
+          - not_null
+          - unique
+      - name: ticket_number
+        description: Synthetic airline-style ticket number.
+        tests:
+          - not_null
+      - name: booking_id
+        description: Booking this ticket belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: passenger_id
+        description: Passenger this ticket is issued to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__passengers')
+              field: passenger_id
+      - name: fare_class_code
+        description: Fare class purchased.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__fare_classes')
+              field: fare_class_code
+      - name: issue_date_utc
+        description: Ticket issue timestamp in UTC.
+      - name: ticket_status
+        description: Ticket status.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - cancelled
+
+  - name: stg_airline__ticket_segments
+    description: >
+      Typed ticket-segment staging view. Grain is one row per ticketed passenger flight segment.
+      Natural key is ticket_segment_id. One segment is a deliberately injected controlled
+      exception (exception_manifest.csv,
+      exception_type='completed_segment_without_recognised_revenue_precursor'); this view
+      preserves it unchanged.
+    columns:
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier.
+        tests:
+          - not_null
+          - unique
+      - name: ticket_id
+        description: Ticket this segment belongs to.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__tickets')
+              field: ticket_id
+      - name: segment_sequence
+        description: 1-based ordering of the segment within the ticket.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+      - name: flight_instance_id
+        description: Flight instance this segment is booked on.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__flight_instances')
+              field: flight_instance_id
+      - name: cabin
+        description: Cabin code for this segment.
+        tests:
+          - accepted_values:
+              values:
+                - Y
+                - W
+                - C
+                - F
+      - name: fare_basis_code
+        description: Fare basis code for this segment.
+      - name: segment_status
+        description: >
+          Segment status, used by later milestones to determine fulfilment. One row is a
+          deliberately injected controlled exception; do not filter it out or add a test that
+          would flag it as a failure.
+        tests:
+          - accepted_values:
+              values:
+                - confirmed
+                - flown
+                - cancelled

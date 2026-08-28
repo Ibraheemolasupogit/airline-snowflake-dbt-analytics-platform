@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: stg_airline__airlines
+    description: >
+      Typed airline reference staging view. Grain is one row per airline. Natural key is
+      airline_code. Source data is deterministic synthetic output from Milestone 9
+      (scripts/generate_airline_data.py); airline names are fictional.
+    columns:
+      - name: airline_code
+        description: Natural airline identifier.
+        tests:
+          - not_null
+          - unique
+      - name: airline_name
+        description: Airline display name (synthetic, fictional).
+      - name: home_country
+        description: ISO country code of the airline's home market.
+      - name: hub_ident
+        description: >
+          Hub airport identifier. Future conformance target for a join to the AirStats airport
+          layer: source('airstats', 'airports').ident. Not joined in this milestone.
+
+  - name: stg_airline__aircraft_types
+    description: >
+      Typed aircraft-type reference staging view. Grain is one row per aircraft type. Natural
+      key is aircraft_type_code.
+    columns:
+      - name: aircraft_type_code
+        description: Natural aircraft type identifier.
+        tests:
+          - not_null
+          - unique
+      - name: type_name
+        description: Manufacturer/model display name.
+      - name: body_type
+        description: Airframe category.
+        tests:
+          - accepted_values:
+              values:
+                - narrowbody
+                - widebody
+                - regional
+      - name: typical_seats
+        description: Typical total seat count for the type.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              row_condition: typical_seats is not null
+      - name: cabins
+        description: Pipe-delimited ordered list of cabin codes the type supports (e.g. Y|C). Not parsed into an array at this layer.
+      - name: cruise_speed_kmh
+        description: Assumed cruise speed in km/h used by the generator to derive flight duration.
+
+  - name: stg_airline__currencies
+    description: >
+      Typed currency reference staging view. Grain is one row per currency code. Natural key is
+      currency_code.
+    columns:
+      - name: currency_code
+        description: Currency code.
+        tests:
+          - not_null
+          - unique
+      - name: currency_name
+        description: Currency display name.
+      - name: minor_unit_digits
+        description: Number of minor-unit decimal digits for the currency.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 4
+
+  - name: stg_airline__exchange_rates
+    description: >
+      Typed exchange-rate staging view. Grain is one row per currency, rate to USD as of the
+      synthetic anchor date. Natural key is currency_code. Rates are illustrative fixture values
+      for relational realism, not live market rates.
+    columns:
+      - name: currency_code
+        description: Currency the rate applies to.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: rate_to_usd
+        description: Illustrative fixed rate of one unit of currency_code to USD.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              row_condition: rate_to_usd is not null
+      - name: as_of_date
+        description: Synthetic anchor date the rate is dated as of.

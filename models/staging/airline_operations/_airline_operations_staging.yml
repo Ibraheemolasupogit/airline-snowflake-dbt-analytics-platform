@@ -1,0 +1,168 @@
+version: 2
+
+models:
+  - name: stg_airline__aircraft
+    description: >
+      Typed aircraft staging view. Grain is one row per aircraft (tail). Natural key is
+      aircraft_registration.
+    columns:
+      - name: aircraft_registration
+        description: Natural aircraft tail identifier.
+        tests:
+          - not_null
+          - unique
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__airlines')
+              field: airline_code
+      - name: aircraft_type_code
+        description: Aircraft type.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__aircraft_types')
+              field: aircraft_type_code
+      - name: manufactured_year
+        description: Synthetic manufacture year for the airframe.
+
+  - name: stg_airline__routes
+    description: >
+      Typed route staging view. Grain is one row per directional airport pair / airline route.
+      Natural key is route_id. origin_ident/destination_ident are preserved exactly as generated
+      so a later milestone can join them to the AirStats airport layer; no such join exists yet.
+    columns:
+      - name: route_id
+        description: Natural route identifier.
+        tests:
+          - not_null
+          - unique
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__airlines')
+              field: airline_code
+      - name: origin_ident
+        description: Origin airport identifier, AirStats-style. Not yet joined to AirStats.
+        tests:
+          - not_null
+      - name: destination_ident
+        description: Destination airport identifier, AirStats-style. Not yet joined to AirStats.
+        tests:
+          - not_null
+      - name: distance_km
+        description: Great-circle distance between origin and destination in kilometres.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              row_condition: distance_km is not null
+
+  - name: stg_airline__flight_schedules
+    description: >
+      Typed flight-schedule staging view. Grain is one row per scheduled flight service. Natural
+      key is schedule_id.
+    columns:
+      - name: schedule_id
+        description: Natural flight-schedule identifier.
+        tests:
+          - not_null
+          - unique
+      - name: route_id
+        description: Route this schedule operates.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__routes')
+              field: route_id
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__airlines')
+              field: airline_code
+      - name: flight_number
+        description: Marketing/operating flight number.
+      - name: origin_ident
+        description: Origin airport identifier (denormalised from the route).
+        tests:
+          - not_null
+      - name: destination_ident
+        description: Destination airport identifier (denormalised from the route).
+        tests:
+          - not_null
+      - name: aircraft_type_code
+        description: Assigned equipment type.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__aircraft_types')
+              field: aircraft_type_code
+      - name: scheduled_departure_local_time
+        description: Scheduled local departure time of day (HH:MM) at the origin airport.
+      - name: scheduled_duration_minutes
+        description: Scheduled flight duration in minutes.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              row_condition: scheduled_duration_minutes is not null
+      - name: operating_days_of_week
+        description: Pipe-delimited three-letter day-of-week codes the schedule operates on. Not parsed into an array at this layer.
+
+  - name: stg_airline__flight_instances
+    description: >
+      Typed flight-instance staging view. Grain is one row per dated flight occurrence. Natural
+      key is flight_instance_id. This dataset deliberately contains one flight instance flipped
+      to status='cancelled' after ticketing as a controlled exception (exception_manifest.csv,
+      exception_type='cancelled_flight_without_refund'); this staging view preserves it unchanged.
+    columns:
+      - name: flight_instance_id
+        description: Natural flight-instance identifier.
+        tests:
+          - not_null
+          - unique
+      - name: schedule_id
+        description: Flight schedule this instance realises.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__flight_schedules')
+              field: schedule_id
+      - name: flight_number
+        description: Flight number (denormalised from the schedule).
+      - name: flight_date
+        description: Calendar date of the flight occurrence.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier (denormalised from the schedule).
+        tests:
+          - not_null
+      - name: destination_ident
+        description: Destination airport identifier (denormalised from the schedule).
+        tests:
+          - not_null
+      - name: aircraft_registration
+        description: Operating aircraft tail.
+        tests:
+          - relationships:
+              to: ref('stg_airline__aircraft')
+              field: aircraft_registration
+      - name: scheduled_departure_utc
+        description: Scheduled departure timestamp in UTC.
+      - name: scheduled_arrival_utc
+        description: Scheduled arrival timestamp in UTC.
+      - name: status
+        description: >
+          Flight-instance status. One row is a deliberately injected controlled exception; do
+          not filter it out or add a test that would flag it as a failure.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
