@@ -216,3 +216,170 @@ models:
           - accepted_values:
               values: [true, false]
               quote: false
+
+  - name: int_payment_attempt_classification
+    description: >
+      Deterministic payment-attempt classification. Grain is one row per payment attempt. Primary
+      key is payment_attempt_id. Upstream models are stg_airline__payment_attempts and
+      stg_airline__invoices (booking_id only). See model SQL comment for why 'pending' is not used
+      as an attempt_classification value and for the classified_failure_reason bucketing rule.
+    columns:
+      - name: payment_attempt_id
+        description: Natural payment-attempt identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__payment_attempts')
+              field: payment_attempt_id
+      - name: invoice_id
+        description: Invoice the attempt is for.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: currency
+        description: Currency of amount.
+        tests:
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: method
+        description: Payment method attempted.
+        tests:
+          - accepted_values:
+              values:
+                - card
+                - bank_transfer
+                - voucher
+      - name: amount
+        description: Amount attempted.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: attempt_classification
+        description: >
+          Deterministic classification derived from result. 'pending' is deliberately not a
+          possible value -- see model SQL comment.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - successful
+                - failed
+                - other
+      - name: classified_failure_reason
+        description: >
+          Bucketed raw_failure_reason; null for successful attempts. See model SQL comment for the
+          bucketing rule and why 'expired'/'reversed'/'incomplete' are not used.
+        tests:
+          - accepted_values:
+              values:
+                - declined
+                - insufficient_funds
+                - other
+
+  - name: int_failed_payment_attempts
+    description: >
+      Grain is one row per failed payment attempt. Primary key is payment_attempt_id. Filters
+      int_payment_attempt_classification to attempt_classification = 'failed'. Evidence only -- not
+      a billing-exception classification.
+    columns:
+      - name: payment_attempt_id
+        description: Natural payment-attempt identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_payment_attempt_classification')
+              field: payment_attempt_id
+
+  - name: int_invoice_payment_matching
+    description: >
+      Grain is one row per payment transaction. Primary key is payment_id. Upstream models are
+      stg_airline__payments and stg_airline__invoices, LEFT JOINed so an unmatched payment
+      (payment_without_invoice) is preserved, not dropped. See model SQL comment for the
+      is_currency_match and payment_delay_days semantics.
+    columns:
+      - name: payment_id
+        description: Natural payment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__payments')
+              field: payment_id
+      - name: has_invoice_match
+        description: True when invoice_id resolves to a real invoice.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: >
+          True when transaction_currency equals invoice_currency; null when there is no invoice to
+          compare against (has_invoice_match = false). No conversion is attempted.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: match_status
+        description: Either matched or unmatched_invoice_missing.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - matched
+                - unmatched_invoice_missing
+
+  - name: int_payment_allocation
+    description: >
+      Grain is one row per payment-to-invoice allocation (identical to payment_id in this
+      dataset -- see model SQL comment for why). Primary key is payment_id. Upstream models are
+      int_invoice_payment_matching and stg_airline__invoices (total_amount only).
+    columns:
+      - name: payment_id
+        description: Natural payment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_invoice_payment_matching')
+              field: payment_id
+      - name: allocated_amount
+        description: least(payment_amount, invoice total_amount) when matched, else 0.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "<= payment_amount"
+      - name: unallocated_amount
+        description: payment_amount - allocated_amount.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: int_unallocated_payments
+    description: >
+      Grain is one row per payment with a positive unallocated amount. Primary key is payment_id.
+      Filters int_payment_allocation to unallocated_amount > 0. Evidence only -- not a
+      billing-exception classification.
+    columns:
+      - name: payment_id
+        description: Natural payment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_payment_allocation')
+              field: payment_id
+      - name: unallocated_amount
+        description: Always positive at this model's grain.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"

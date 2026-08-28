@@ -1,8 +1,18 @@
--- Grain is one row per invoice (invoice_id). Reuses int_invoice_calculation (arithmetic) and
--- int_invoice_status (current-state status) rather than re-deriving either, and adds surrogate
--- dimension keys, following the established core-layer pattern. No amount_paid, outstanding
--- balance, refund amount, or recognised-revenue field exists on this fact -- those remain out of
--- scope until Milestone 15+.
+-- Grain is one row per invoice (invoice_id). Reuses int_invoice_calculation (arithmetic),
+-- int_invoice_status (current-state status), and int_payment_allocation (Milestone 15, payment
+-- aggregation) rather than re-deriving any of them, and adds surrogate dimension keys, following
+-- the established core-layer pattern. No refund amount or recognised-revenue field exists on this
+-- fact -- those remain out of scope until Milestone 16+.
+--
+-- amount_collected/payment_count (Milestone 15) are provisional collected-amount measures, NOT an
+-- outstanding-balance calculation: amount_collected sums int_payment_allocation.allocated_amount
+-- (the portion of each matched payment actually applied to this invoice, capped at
+-- source_invoice_total -- see that model for why) across every payment matched to this invoice_id;
+-- it deliberately excludes any payment_without_invoice row, which by definition cannot match an
+-- invoice_id. Refunds, credits, and adjustments are not yet modelled anywhere in this repository,
+-- so amount_collected - source_invoice_total is NOT a final outstanding_balance and this fact does
+-- not expose one; that calculation is reserved for a later milestone once refunds/adjustments
+-- exist to net against it.
 --
 -- The duplicate_invoice controlled exception (see docs/data_models/airline_synthetic_exception_
 -- catalogue.md) produces two distinct invoice_id rows sharing the same booking_id; both are
@@ -62,6 +72,18 @@ currencies as (
 
 ),
 
+payment_aggregates as (
+
+    select
+        invoice_id,
+        count(*) as payment_count,
+        sum(allocated_amount) as amount_collected
+    from {{ ref('int_payment_allocation') }}
+    where has_invoice_match
+    group by invoice_id
+
+),
+
 joined as (
 
     select
@@ -88,7 +110,9 @@ joined as (
         invoice_calculation.calculated_ancillary_total,
         invoice_calculation.calculated_discount_total,
         invoice_calculation.calculated_invoice_line_total,
-        invoice_calculation.invoice_total_variance
+        invoice_calculation.invoice_total_variance,
+        coalesce(payment_aggregates.payment_count, 0) as payment_count,
+        coalesce(payment_aggregates.amount_collected, 0) as amount_collected
     from invoice_calculation
     left join invoice_status
         on invoice_calculation.invoice_id = invoice_status.invoice_id
@@ -96,6 +120,8 @@ joined as (
         on invoice_calculation.booking_id = bookings.booking_id
     left join currencies
         on invoice_calculation.currency = currencies.currency_code
+    left join payment_aggregates
+        on invoice_calculation.invoice_id = payment_aggregates.invoice_id
 
 ),
 
@@ -126,7 +152,9 @@ final as (
         calculated_ancillary_total,
         calculated_discount_total,
         calculated_invoice_line_total,
-        invoice_total_variance
+        invoice_total_variance,
+        payment_count,
+        cast(amount_collected as decimal(18, 2)) as amount_collected
     from joined
 
 )
@@ -156,5 +184,7 @@ select
     calculated_ancillary_total,
     calculated_discount_total,
     calculated_invoice_line_total,
-    invoice_total_variance
+    invoice_total_variance,
+    payment_count,
+    amount_collected
 from final

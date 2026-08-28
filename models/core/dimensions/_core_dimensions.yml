@@ -712,3 +712,26 @@ models:
               field: fare_class_code
       - name: included_service_codes
         description: Pipe-delimited service codes included in the bundle, as staged (not parsed).
+
+  - name: dim_payment_method
+    description: >
+      Grain is one row per payment method. Natural key is method; surrogate key is
+      payment_method_key. No standalone source table exists -- derived from the distinct values
+      staged in stg_airline__payment_attempts.method and stg_airline__payments.method, reused
+      across both fct_payment_attempts and fct_payments.
+    columns:
+      - name: payment_method_key
+        description: Surrogate key, generated from method.
+        tests:
+          - not_null
+          - unique
+      - name: method
+        description: Natural payment-method identifier.
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              values:
+                - card
+                - bank_transfer
+                - voucher

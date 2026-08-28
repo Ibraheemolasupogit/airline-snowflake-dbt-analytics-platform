@@ -669,11 +669,13 @@ models:
     description: >
       Grain is one row per invoice. Natural key is invoice_id; surrogate key is invoice_key.
       Foreign keys: booking_key (fct_bookings), currency_key (dim_currency). Reuses
-      int_invoice_calculation (arithmetic) and int_invoice_status (current-state status). No
-      amount_paid, outstanding balance, refund amount, or recognised-revenue field exists on this
-      fact; those remain out of scope until Milestone 15+. booking_id is deliberately not
-      unique-tested: the duplicate_invoice controlled exception produces two invoice_id rows for
-      the same booking_id, preserved unchanged -- see docs/data_models/airline_invoices.md.
+      int_invoice_calculation (arithmetic), int_invoice_status (current-state status), and
+      int_payment_allocation (Milestone 15, payment aggregation). amount_collected/payment_count
+      are provisional collected-amount measures, NOT an outstanding-balance calculation -- see
+      model SQL comment. No refund amount or recognised-revenue field exists on this fact; those
+      remain out of scope until Milestone 16+. booking_id is deliberately not unique-tested: the
+      duplicate_invoice controlled exception produces two invoice_id rows for the same booking_id,
+      preserved unchanged -- see docs/data_models/airline_invoices.md.
     columns:
       - name: invoice_key
         description: Surrogate key, generated from invoice_id.
@@ -744,14 +746,30 @@ models:
           revenue_precursor controlled exceptions; not repaired or classified here.
         tests:
           - not_null
+      - name: payment_count
+        description: Count of fct_payments rows matched to this invoice_id (Milestone 15).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: amount_collected
+        description: >
+          sum(int_payment_allocation.allocated_amount) across every payment matched to this
+          invoice. Provisional -- NOT a final outstanding_balance; refunds/credits/adjustments are
+          not yet modelled. See model SQL comment.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
 
   - name: fct_invoice_lines
     description: >
       Grain is one row per invoice line. Natural key is invoice_line_id; surrogate key is
       invoice_line_key. Foreign keys: invoice_key (fct_invoices), booking_key (fct_bookings),
       currency_key (dim_currency). Reuses int_invoice_line_validation (structural validation) and
-      int_invoice_charge_comparison (pricing-vs-invoice evidence). No payment/refund/revenue field
-      exists on this fact; those remain out of scope until Milestone 15+.
+      int_invoice_charge_comparison (pricing-vs-invoice evidence). Payment-level detail lives on
+      fct_payments (Milestone 15), not here; no refund or revenue field exists on this fact -- those
+      remain out of scope until Milestone 16+.
     columns:
       - name: invoice_line_key
         description: Surrogate key, generated from invoice_line_id.
@@ -836,3 +854,167 @@ models:
           expected-vs-invoiced variance for this line's comparable_line_type bucket (see
           int_invoice_charge_comparison); positive means the invoice charged more than expected.
           Not a billing-exception classification.
+
+  - name: fct_payment_attempts
+    description: >
+      Grain is one row per payment attempt. Natural key is payment_attempt_id; surrogate key is
+      payment_attempt_key. Foreign keys: invoice_key (fct_invoices), booking_key (fct_bookings),
+      payment_method_key (dim_payment_method), currency_key (dim_currency). Reuses
+      int_payment_attempt_classification. No refund or revenue-recognition field exists on this
+      fact; those remain out of scope until Milestone 16+.
+    columns:
+      - name: payment_attempt_key
+        description: Surrogate key, generated from payment_attempt_id.
+        tests:
+          - not_null
+          - unique
+      - name: payment_attempt_id
+        description: Natural payment-attempt identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__payment_attempts')
+              field: payment_attempt_id
+      - name: invoice_key
+        description: Foreign key to fct_invoices.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: payment_method_key
+        description: Foreign key to dim_payment_method.
+        tests:
+          - relationships:
+              to: ref('dim_payment_method')
+              field: payment_method_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: amount
+        description: Amount attempted.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: result
+        description: Outcome of the attempt, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - success
+                - failed
+      - name: attempt_classification
+        description: Deterministic classification derived from result.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - successful
+                - failed
+                - other
+
+  - name: fct_payments
+    description: >
+      Grain is one row per successful payment transaction. Natural key is payment_id; surrogate
+      key is payment_key. Foreign keys: invoice_key (fct_invoices, null for an unmatched payment),
+      booking_key (fct_bookings, null for an unmatched payment), payment_method_key
+      (dim_payment_method), currency_key (dim_currency). Reuses int_payment_allocation (which
+      reuses int_invoice_payment_matching). No refunded-amount or revenue-recognition field exists
+      on this fact; those remain out of scope until Milestone 16+. The deliberately injected
+      payment_without_invoice controlled exception (see docs/data_models/airline_synthetic_
+      exception_catalogue.md) surfaces here with has_invoice_match = false and null invoice_key/
+      booking_key -- preserved, never repaired or dropped.
+    columns:
+      - name: payment_key
+        description: Surrogate key, generated from payment_id.
+        tests:
+          - not_null
+          - unique
+      - name: payment_id
+        description: Natural payment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__payments')
+              field: payment_id
+      - name: invoice_key
+        description: Foreign key to fct_invoices; null for an unmatched (payment_without_invoice) payment.
+        tests:
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: booking_key
+        description: Foreign key to fct_bookings; null for an unmatched payment.
+        tests:
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: payment_method_key
+        description: Foreign key to dim_payment_method.
+        tests:
+          - relationships:
+              to: ref('dim_payment_method')
+              field: payment_method_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: payment_amount
+        description: Amount collected, unchanged from source.
+        tests:
+          - not_null
+      - name: allocated_amount
+        description: least(payment_amount, invoice total_amount) when matched, else 0.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+          - dbt_utils.expression_is_true:
+              expression: "<= payment_amount"
+      - name: unallocated_amount
+        description: payment_amount - allocated_amount.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: allocation_status
+        description: Allocation status of the payment against its invoice, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - fully_allocated
+                - overpaid_unallocated
+                - unallocated
+      - name: has_invoice_match
+        description: True when invoice_id resolves to a real invoice.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: >
+          True when currency equals invoice_currency; null when there is no invoice to compare
+          against.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: payment_delay_days
+        description: >
+          payment_datetime_utc - invoice_date_utc, in days; null when unmatched. No fixed "late"
+          threshold is defined -- see docs/data_models/airline_payments.md.
