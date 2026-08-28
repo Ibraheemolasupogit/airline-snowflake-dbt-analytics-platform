@@ -13,6 +13,7 @@ RAW_AIRSTATS
 -> source()
 -> AirStats staging views
 -> intermediate airport intelligence
+-> incremental airport comments
 ```
 
 The staging views perform explicit column selection, Snowflake-safe typing, source-aligned
@@ -131,3 +132,26 @@ facts, and marts:
 The operational-status and runway-capability fields are source-derived analytical attributes.
 They are not live operational status, NOTAM interpretation, regulatory approval, runway
 certification, landing approval, aircraft compatibility, or commercial route coverage.
+
+## Incremental Airport Comments
+
+Milestone 5 adds `int_airport_comments_incremental` as a dedicated incremental model for source
+airport comments. It remains separate from the airport-grain comment activity and quality
+aggregates.
+
+- Grain: one row per source airport comment.
+- Unique key: `airport_comment_source_id`.
+- Materialization: dbt incremental with Snowflake `merge`.
+- Schema changes: append new columns without silently dropping existing target columns.
+- Watermark: `comment_at`, the strongest available source recency field in staging.
+- Lookback: seven days from the current target maximum `comment_at` during incremental runs.
+- Deduplication: one record per `airport_comment_source_id`, preferring the latest `comment_at`.
+- Late-arriving comments: captured when their `comment_at` falls within the lookback window.
+- Null timestamp comments: reprocessed on each incremental run because they cannot be watermarked.
+- Repeated source rows: collapsed by the stable source comment identifier before merge.
+- Out-of-order records: handled when they are inside the lookback window.
+- Full refresh/backfill: rebuilds from all staged airport comments.
+
+The source does not provide a reliable update timestamp. Corrected or reprocessed comments whose
+`comment_at` is older than the lookback cannot be distinguished during a normal incremental run;
+those cases require full refresh or a deliberately wider lookback.

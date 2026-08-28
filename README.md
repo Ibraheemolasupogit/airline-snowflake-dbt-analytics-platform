@@ -6,7 +6,7 @@ Production-style analytics engineering portfolio project for airline operations 
 
 This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
 
-Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 adds AirStats intermediate transformations only; it does not include synthetic airline data, billing models, marts, dashboards, or Snowflake deployment.
+Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 adds an AirStats incremental airport-comments model only; it does not include synthetic airline data, billing models, marts, dashboards, or Snowflake deployment.
 
 ## Core Stack
 
@@ -37,7 +37,8 @@ Implementation status:
 - Milestone 2 - complete
 - Milestone 3 - complete
 - Milestone 4 - complete
-- Milestone 5 and later milestones - planned
+- Milestone 5 - complete
+- Milestone 6 and later milestones - planned
 
 Implemented:
 
@@ -51,10 +52,11 @@ Implemented:
 - dbt source metadata and source-level tests for AirStats raw tables
 - AirStats staging views with typing, minimal cleanup, and lineage-preserving identifiers
 - AirStats intermediate transformations for geography, runway profile, source-derived status, comment activity, comment quality, and runway capability
+- AirStats incremental airport-comments model using comment timestamp watermarking and merge semantics
 
 Not yet implemented:
 
-- AirStats incremental models or Snowflake ingestion automation
+- AirStats SCD Type 2 snapshots or Snowflake ingestion automation
 - airline operational or commercial models
 - billing, revenue-recognition, reconciliation, or mart logic
 - credential-backed Snowflake dbt runs
@@ -95,10 +97,11 @@ Real credentials, private keys, local profiles, and environment files must not b
 2. AirStats Source Setup - complete
 3. AirStats Staging Layer - complete
 4. AirStats Transformations - complete
-5. AirStats Incremental Model - planned
-6. Airline Operational Source Modelling
-7. Bookings, Ticketing, and Commercial Data Modelling
-8. Billing, Revenue Recognition, and Reconciliation Controls
-9. Core Dimensions and Facts
-10. Commercial Marts and Reporting Outputs
-11. Documentation, Quality Gates, and Portfolio Polish
+5. AirStats Incremental Airport Comments - complete
+6. AirStats SCD Type 2 Snapshots - planned
+7. Airline Operational Source Modelling
+8. Bookings, Ticketing, and Commercial Data Modelling
+9. Billing, Revenue Recognition, and Reconciliation Controls
+10. Core Dimensions and Facts
+11. Commercial Marts and Reporting Outputs
+12. Documentation, Quality Gates, and Portfolio Polish
