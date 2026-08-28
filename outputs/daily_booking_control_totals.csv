@@ -1,0 +1,10 @@
+control_id,control_domain,control_name,source_measure,warehouse_measure,variance_amount,variance_count,control_status,materiality_threshold,as_of_date,notes
+booking.booking_count,booking,booking_count,180,180,,0,pass,0,2026-01-15,fct_bookings row count (1:1 with bookings.csv).
+booking.booking_confirmed_count,booking,booking_confirmed_count,173,173,,0,pass,0,2026-01-15,count(*) from fct_bookings where not is_cancelled.
+booking.booking_cancelled_count,booking,booking_cancelled_count,7,7,,0,pass,0,2026-01-15,count(*) from fct_bookings where is_cancelled.
+ticket.ticket_count,ticket,ticket_count,290,290,,0,pass,0,2026-01-15,"count(distinct ticket_id) from fct_ticket_segments -- independently recomputed from ticket_segments.csv, not tickets.csv, for genuine cross-validation."
+flight_operations.flight_instance_count,flight_operations,flight_instance_count,864,864,,0,pass,0,2026-01-15,fct_flight_operations row count (1:1 with flight_instances.csv).
+flight_operations.flight_instance_completed_count,flight_operations,flight_instance_completed_count,623,623,,0,pass,0,2026-01-15,"count(*) from fct_flight_operations where status = 'completed' (raw status, not operational_completion_status)."
+flight_operations.flight_instance_cancelled_count,flight_operations,flight_instance_cancelled_count,1,1,,0,pass,0,2026-01-15,count(*) from fct_flight_operations where status = 'cancelled'.
+flight_operations.flight_instance_scheduled_count,flight_operations,flight_instance_scheduled_count,240,240,,0,pass,0,2026-01-15,count(*) from fct_flight_operations where status = 'scheduled'.
+ticket.ticket_count_cross_check,ticket,ticket_count_cross_check,290,290,,0,pass,0,2026-01-15,"Informational: count(distinct ticket_id) from ticket_segments.csv vs. len(tickets.csv), both source-side -- confirms full ticket/segment coverage independently of control_totals.json."

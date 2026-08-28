@@ -1,0 +1,3 @@
+control_id,control_domain,control_name,source_measure,warehouse_measure,variance_amount,variance_count,control_status,materiality_threshold,as_of_date,notes
+refund.refund_count,refund,refund_count,7,7,,0,pass,0,2026-01-15,fct_refunds row count (1:1 with refunds.csv).
+refund.refund_total_value,refund,refund_total_value,67888.54,67888.54,0.0,,pass,0.01,2026-01-15,"sum(fct_refunds.refund_amount), UNCAPPED -- includes the refund_greater_than_collected_amount controlled exception's full inflated amount. This is expected to reconcile exactly even though the underlying transaction is intentionally anomalous: a data-quality/business anomaly is different from a source-to-warehouse reconciliation failure. See docs/data_models/airline_reconciliation_controls.md."

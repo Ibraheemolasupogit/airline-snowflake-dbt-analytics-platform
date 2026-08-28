@@ -1,0 +1,4 @@
+control_id,control_domain,control_name,source_measure,warehouse_measure,variance_amount,variance_count,control_status,materiality_threshold,as_of_date,notes
+payment.successful_payment_count,payment,successful_payment_count,171,171,,0,pass,0,2026-01-15,fct_payments row count (1:1 with payments.csv -- every row is a successful transaction by construction).
+payment.successful_payment_total_value,payment,successful_payment_total_value,7986366.42,7986366.42,0.0,,pass,0.01,2026-01-15,"sum(fct_payments.payment_amount), the raw uncapped amount -- not allocated_amount."
+payment.failed_attempt_count,payment,failed_attempt_count,,25,,25,not_applicable,0,2026-01-15,"Supplementary, NOT a source-to-warehouse control: control_totals.json has no failed-attempt total to compare against. count(*) from fct_payment_attempts where attempt_classification = 'failed'."

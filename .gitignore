@@ -47,7 +47,18 @@ outputs/*
 !data/sample/.gitkeep
 !reports/.gitkeep
 !reports/airstats_capstone_summary.md
+!reports/billing_reconciliation_report.md
+!reports/payment_assurance_report.md
+!reports/refund_assurance_report.md
+!reports/revenue_recognition_report.md
+!reports/month_end_revenue_reconciliation.md
 !outputs/.gitkeep
+!outputs/daily_booking_control_totals.csv
+!outputs/daily_invoice_control_totals.csv
+!outputs/daily_payment_control_totals.csv
+!outputs/daily_refund_control_totals.csv
+!outputs/revenue_reconciliation.csv
+!outputs/billing_exceptions.csv
 
 # OS and editor files
 .DS_Store

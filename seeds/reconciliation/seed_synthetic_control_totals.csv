@@ -1,0 +1,15 @@
+metric_name,metric_value,as_of_date
+booking_cancelled_count,7,2026-01-15
+booking_confirmed_count,173,2026-01-15
+booking_count,180,2026-01-15
+flight_instance_cancelled_count,1,2026-01-15
+flight_instance_completed_count,623,2026-01-15
+flight_instance_count,864,2026-01-15
+flight_instance_scheduled_count,240,2026-01-15
+invoice_count,181,2026-01-15
+invoice_total_value,8117998.23,2026-01-15
+refund_count,7,2026-01-15
+refund_total_value,67888.54,2026-01-15
+successful_payment_count,171,2026-01-15
+successful_payment_total_value,7986366.42,2026-01-15
+ticket_count,290,2026-01-15

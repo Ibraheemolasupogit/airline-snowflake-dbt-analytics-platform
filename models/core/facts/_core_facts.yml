@@ -1535,3 +1535,45 @@ models:
           combination_of_columns:
             - exception_type
             - source_record_id
+
+  - name: fct_reconciliation_controls
+    description: >
+      Grain is one row per reconciliation control per as-of period. Natural key is
+      (control_id, as_of_date); surrogate key is control_key. Reuses int_financial_control_summary
+      unchanged -- no new comparison or calculation. See model SQL comment for why this milestone's
+      final control contract is promoted to core while int_billing_exception_control_summary and
+      int_month_end_financial_assurance remain intermediate-only reporting models.
+    columns:
+      - name: control_key
+        description: Surrogate key, generated from (control_id, as_of_date).
+        tests:
+          - not_null
+          - unique
+      - name: control_id
+        description: Deterministic natural identifier, control_domain.control_name.
+        tests:
+          - not_null
+      - name: control_domain
+        description: Which business area this control covers.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [booking, ticket, flight_operations, invoice, payment, refund, revenue_bridge]
+      - name: control_status
+        description: >
+          pass = exact/tolerance-bounded agreement; fail = disagreement; warning = informational,
+          known, non-ETL divergence; not_applicable = no source-side comparison exists for this
+          row.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail, warning, not_applicable]
+      - name: as_of_date
+        description: The dataset's fixed synthetic as-of date, never wall-clock-dependent.
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - control_id
+            - as_of_date

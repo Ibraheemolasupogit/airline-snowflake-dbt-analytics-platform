@@ -1,0 +1,184 @@
+version: 2
+
+models:
+  - name: int_booking_reconciliation
+    description: >
+      Grain is one row per reconciliation control. Primary key is control_id. Upstream models are
+      seed_synthetic_control_totals and fct_bookings/fct_ticket_segments/fct_flight_operations.
+      See model SQL comment for the exact per-control rationale (in particular why
+      flight_instance_* controls use the raw status column, not operational_completion_status).
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier, control_domain.control_name.
+        tests:
+          - not_null
+          - unique
+      - name: control_domain
+        description: Which business area this control covers.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [booking, ticket, flight_operations]
+      - name: control_status
+        description: pass = exact-match variance; fail otherwise. No tolerance on counts.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail]
+      - name: variance_count
+        description: warehouse_measure - source_measure. 0 for every passing control.
+        tests:
+          - not_null
+
+  - name: int_invoice_reconciliation
+    description: >
+      Grain is one row per reconciliation control. Primary key is control_id. Upstream models are
+      seed_synthetic_control_totals and fct_invoices. invoice_total_value compares against
+      sum(source_invoice_total), not calculated_invoice_line_total -- see model SQL comment.
+      invoice_line_arithmetic_consistency is informational only (control_status = 'warning', never
+      'fail') -- see model SQL comment.
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier and grain key.
+        tests:
+          - not_null
+          - unique
+      - name: control_status
+        description: >
+          pass/fail for invoice_count and invoice_total_value (exact-match / 0.01 monetary
+          tolerance); warning/pass for invoice_line_arithmetic_consistency (informational only,
+          never fail).
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail, warning]
+
+  - name: int_payment_reconciliation
+    description: >
+      Grain is one row per reconciliation control. Primary key is control_id. Upstream models are
+      seed_synthetic_control_totals and fct_payments/fct_payment_attempts.
+      successful_payment_total_value compares against sum(payment_amount), the raw uncapped
+      amount, not allocated_amount. failed_attempt_count is supplementary
+      (control_status = 'not_applicable', no source_measure) -- see model SQL comment.
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier and grain key.
+        tests:
+          - not_null
+          - unique
+      - name: control_status
+        description: pass/fail for the two source-to-warehouse controls; not_applicable for the
+          supplementary failed_attempt_count row.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail, not_applicable]
+
+  - name: int_refund_reconciliation
+    description: >
+      Grain is one row per reconciliation control. Primary key is control_id. Upstream models are
+      seed_synthetic_control_totals and fct_refunds. refund_total_value is UNCAPPED (sum of the
+      raw fct_refunds.refund_amount) -- the refund_greater_than_collected_amount controlled
+      exception is expected to reconcile exactly here, per this milestone's explicit requirement
+      that a business anomaly is different from a reconciliation failure -- see model SQL comment.
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier and grain key.
+        tests:
+          - not_null
+          - unique
+      - name: control_status
+        description: pass/fail; expected to be 'pass' for both controls even though refund_amount
+          includes the deliberately injected over-refund exception.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail]
+
+  - name: int_revenue_reconciliation
+    description: >
+      Grain is one row per financial-bridge measure. Primary key is control_id. Deliberately NOT a
+      source-to-warehouse comparison -- every row has control_status = 'not_applicable' and a null
+      source_measure. Explains differences between invoiced value, collected cash, refunds,
+      adjustments, recognised revenue, and outstanding balance without forcing a false equality
+      between them -- see model SQL comment.
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier and grain key.
+        tests:
+          - not_null
+          - unique
+      - name: control_status
+        description: Always not_applicable -- this is a bridge, not a pass/fail control.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [not_applicable]
+
+  - name: int_financial_control_summary
+    description: >
+      Grain is one row per reconciliation control. Primary key is control_id. A UNION ALL of every
+      domain reconciliation model -- no new comparison introduced.
+    columns:
+      - name: control_id
+        description: Deterministic natural identifier and grain key.
+        tests:
+          - not_null
+          - unique
+      - name: control_domain
+        description: Which business area this control covers.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [booking, ticket, flight_operations, invoice, payment, refund, revenue_bridge]
+      - name: control_status
+        description: Deterministic status; see each domain model for exact semantics.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [pass, fail, warning, not_applicable]
+
+  - name: int_billing_exception_control_summary
+    description: >
+      Grain is one row per (exception_type, severity, status, currency). Aggregates
+      fct_billing_exceptions (Milestone 18) exactly as generated -- no exception is re-detected or
+      reclassified here.
+    columns:
+      - name: exception_type
+        description: One of the fourteen Milestone 18 detection rules.
+        tests:
+          - not_null
+      - name: exception_count
+        description: Count of fct_billing_exceptions rows in this group.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: financial_value_at_risk_total
+        description: sum(fct_billing_exceptions.financial_value_at_risk_amount) for this group.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - exception_type
+            - severity
+            - status
+            - currency
+
+  - name: int_month_end_financial_assurance
+    description: >
+      Grain is one row -- a single month-end-style snapshot as of the dataset's fixed synthetic
+      as_of_date. Every measure reuses an existing fact's own column unchanged; a reporting
+      summary, not a new calculation.
+    columns:
+      - name: as_of_date
+        description: The dataset's fixed synthetic as-of date, never wall-clock-dependent.
+        tests:
+          - not_null
+      - name: booking_count
+        description: count(*) from fct_bookings.
+        tests:
+          - not_null
