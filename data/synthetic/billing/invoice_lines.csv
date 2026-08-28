@@ -1,0 +1,1379 @@
+invoice_line_id,invoice_id,ticket_id,line_type,reference_code,description,amount,currency
+INL-00001,INV-00001,TKT-00001,base_fare,BIZFL,Base fare: Business Flex,1698.46,EUR
+INL-00002,INV-00001,TKT-00001,tax,GVT,Government Passenger Tax,118.89,EUR
+INL-00003,INV-00001,TKT-00001,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00004,INV-00001,TKT-00001,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00005,INV-00002,TKT-00002,base_fare,ECOFL,Base fare: Economy Flex,208497.08,JPY
+INL-00006,INV-00002,TKT-00002,tax,GVT,Government Passenger Tax,4864.54,JPY
+INL-00007,INV-00002,TKT-00002,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00008,INV-00002,TKT-00002,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00009,INV-00003,TKT-00003,base_fare,PREMY,Base fare: Premium Economy,9541.51,BRL
+INL-00010,INV-00003,TKT-00003,tax,GVT,Government Passenger Tax,667.91,BRL
+INL-00011,INV-00003,TKT-00003,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00012,INV-00003,TKT-00003,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00013,INV-00004,TKT-00004,base_fare,ECOSV,Base fare: Economy Saver,724.53,USD
+INL-00014,INV-00004,TKT-00004,tax,GVT,Government Passenger Tax,50.72,USD
+INL-00015,INV-00004,TKT-00004,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00016,INV-00004,TKT-00004,airport_fee,SEC,Security Fee,12.0,USD
+INL-00017,INV-00004,TKT-00004,ancillary,UPGCB,Ancillary service: UPGCB,220.0,USD
+INL-00018,INV-00004,TKT-00005,base_fare,ECOSV,Base fare: Economy Saver,724.53,USD
+INL-00019,INV-00004,TKT-00005,tax,GVT,Government Passenger Tax,50.72,USD
+INL-00020,INV-00004,TKT-00005,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00021,INV-00004,TKT-00005,airport_fee,SEC,Security Fee,12.0,USD
+INL-00022,INV-00004,TKT-00005,ancillary,WIFI,Ancillary service: WIFI,15.0,USD
+INL-00023,INV-00004,TKT-00005,ancillary,UPGCB,Ancillary service: UPGCB,220.0,USD
+INL-00024,INV-00005,TKT-00006,base_fare,PREMY,Base fare: Premium Economy,1341.07,CAD
+INL-00025,INV-00005,TKT-00006,tax,GVT,Government Passenger Tax,93.88,CAD
+INL-00026,INV-00005,TKT-00006,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00027,INV-00005,TKT-00006,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00028,INV-00005,TKT-00006,ancillary,MEALSP,Ancillary service: MEALSP,27.03,CAD
+INL-00029,INV-00005,TKT-00006,ancillary,BAG20,Ancillary service: BAG20,60.81,CAD
+INL-00030,INV-00005,TKT-00007,base_fare,PREMY,Base fare: Premium Economy,1341.07,CAD
+INL-00031,INV-00005,TKT-00007,tax,GVT,Government Passenger Tax,93.88,CAD
+INL-00032,INV-00005,TKT-00007,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00033,INV-00005,TKT-00007,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00036,INV-00006,TKT-00008,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00037,INV-00006,TKT-00008,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00038,INV-00006,TKT-00008,ancillary,WIFI,Ancillary service: WIFI,11.81,GBP
+INL-00039,INV-00006,TKT-00009,base_fare,ECOFL,Base fare: Economy Flex,631.82,GBP
+INL-00040,INV-00006,TKT-00009,tax,GVT,Government Passenger Tax,44.23,GBP
+INL-00041,INV-00006,TKT-00009,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00042,INV-00006,TKT-00009,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00043,INV-00007,TKT-00010,base_fare,ECOFL,Base fare: Economy Flex,427.16,EUR
+INL-00044,INV-00007,TKT-00010,tax,GVT,Government Passenger Tax,29.9,EUR
+INL-00045,INV-00007,TKT-00010,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00046,INV-00007,TKT-00010,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00047,INV-00008,TKT-00011,base_fare,FIRST,Base fare: First,1940.79,USD
+INL-00048,INV-00008,TKT-00011,tax,GVT,Government Passenger Tax,135.86,USD
+INL-00049,INV-00008,TKT-00011,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00050,INV-00008,TKT-00011,airport_fee,SEC,Security Fee,12.0,USD
+INL-00051,INV-00008,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-194.08,USD
+INL-00052,INV-00009,TKT-00012,base_fare,ECOSV,Base fare: Economy Saver,759.82,CNY
+INL-00053,INV-00009,TKT-00012,tax,GVT,Government Passenger Tax,53.19,CNY
+INL-00054,INV-00009,TKT-00012,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00055,INV-00009,TKT-00012,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00057,INV-00009,TKT-00012,ancillary,WIFI,Ancillary service: WIFI,107.91,CNY
+INL-00058,INV-00009,TKT-00013,base_fare,ECOSV,Base fare: Economy Saver,759.82,CNY
+INL-00059,INV-00009,TKT-00013,tax,GVT,Government Passenger Tax,53.19,CNY
+INL-00060,INV-00009,TKT-00013,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00061,INV-00009,TKT-00013,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00062,INV-00009,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-121.57,CNY
+INL-00063,INV-00010,TKT-00014,base_fare,ECOSV,Base fare: Economy Saver,614.37,GBP
+INL-00064,INV-00010,TKT-00014,tax,GVT,Government Passenger Tax,43.01,GBP
+INL-00065,INV-00010,TKT-00014,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00066,INV-00010,TKT-00014,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00067,INV-00010,TKT-00015,base_fare,ECOSV,Base fare: Economy Saver,614.37,GBP
+INL-00068,INV-00010,TKT-00015,tax,GVT,Government Passenger Tax,43.01,GBP
+INL-00069,INV-00010,TKT-00015,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00070,INV-00010,TKT-00015,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00071,INV-00010,TKT-00015,ancillary,LOUNGE,Ancillary service: LOUNGE,43.31,GBP
+INL-00072,INV-00010,TKT-00016,base_fare,ECOSV,Base fare: Economy Saver,614.37,GBP
+INL-00073,INV-00010,TKT-00016,tax,GVT,Government Passenger Tax,43.01,GBP
+INL-00074,INV-00010,TKT-00016,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00075,INV-00010,TKT-00016,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00076,INV-00010,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-184.31,GBP
+INL-00077,INV-00011,TKT-00017,base_fare,ECOFL,Base fare: Economy Flex,929.98,SGD
+INL-00078,INV-00011,TKT-00017,tax,GVT,Government Passenger Tax,65.1,SGD
+INL-00079,INV-00011,TKT-00017,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-00080,INV-00011,TKT-00017,airport_fee,SEC,Security Fee,16.11,SGD
+INL-00081,INV-00011,,discount,LOYALTY5,Discount: Loyalty 5 Percent,-46.5,SGD
+INL-00082,INV-00012,TKT-00018,base_fare,ECOSV,Base fare: Economy Saver,14449.17,ZAR
+INL-00083,INV-00012,TKT-00018,tax,GVT,Government Passenger Tax,1011.44,ZAR
+INL-00084,INV-00012,TKT-00018,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00085,INV-00012,TKT-00018,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00086,INV-00012,TKT-00019,base_fare,ECOSV,Base fare: Economy Saver,14449.17,ZAR
+INL-00087,INV-00012,TKT-00019,tax,GVT,Government Passenger Tax,1011.44,ZAR
+INL-00088,INV-00012,TKT-00019,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00089,INV-00012,TKT-00019,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00090,INV-00012,TKT-00019,ancillary,WIFI,Ancillary service: WIFI,277.78,ZAR
+INL-00091,INV-00012,TKT-00019,ancillary,MEALSP,Ancillary service: MEALSP,370.37,ZAR
+INL-00092,INV-00013,TKT-00020,base_fare,BIZFL,Base fare: Business Flex,1938.4,EUR
+INL-00093,INV-00013,TKT-00020,tax,GVT,Government Passenger Tax,135.69,EUR
+INL-00094,INV-00013,TKT-00020,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00095,INV-00013,TKT-00020,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00096,INV-00013,TKT-00020,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-00097,INV-00013,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-193.84,EUR
+INL-00098,INV-00014,TKT-00021,base_fare,BIZFL,Base fare: Business Flex,6798.82,AED
+INL-00099,INV-00014,TKT-00021,tax,GVT,Government Passenger Tax,475.92,AED
+INL-00100,INV-00014,TKT-00021,airport_fee,PSC,Passenger Service Charge,128.53,AED
+INL-00101,INV-00014,TKT-00021,airport_fee,SEC,Security Fee,44.07,AED
+INL-00102,INV-00014,TKT-00021,ancillary,SEATXL,Ancillary service: SEATXL,220.35,AED
+INL-00103,INV-00015,TKT-00022,base_fare,ECOSV,Base fare: Economy Saver,542.32,USD
+INL-00104,INV-00015,TKT-00022,tax,GVT,Government Passenger Tax,37.96,USD
+INL-00105,INV-00015,TKT-00022,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00106,INV-00015,TKT-00022,airport_fee,SEC,Security Fee,12.0,USD
+INL-00107,INV-00015,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-54.23,USD
+INL-00108,INV-00016,TKT-00023,base_fare,BIZFL,Base fare: Business Flex,18009.21,CNY
+INL-00109,INV-00016,TKT-00023,tax,GVT,Government Passenger Tax,1260.64,CNY
+INL-00110,INV-00016,TKT-00023,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00111,INV-00016,TKT-00023,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00112,INV-00016,TKT-00023,ancillary,SEATPR,Ancillary service: SEATPR,179.86,CNY
+INL-00113,INV-00016,TKT-00024,base_fare,BIZFL,Base fare: Business Flex,18009.21,CNY
+INL-00114,INV-00016,TKT-00024,tax,GVT,Government Passenger Tax,1260.64,CNY
+INL-00115,INV-00016,TKT-00024,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00116,INV-00016,TKT-00024,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00117,INV-00016,TKT-00024,ancillary,SEATPR,Ancillary service: SEATPR,179.86,CNY
+INL-00118,INV-00017,TKT-00025,base_fare,FIRST,Base fare: First,10905.01,BRL
+INL-00119,INV-00017,TKT-00025,tax,GVT,Government Passenger Tax,763.35,BRL
+INL-00120,INV-00017,TKT-00025,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00121,INV-00017,TKT-00025,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00122,INV-00017,TKT-00026,base_fare,FIRST,Base fare: First,10905.01,BRL
+INL-00123,INV-00017,TKT-00026,tax,GVT,Government Passenger Tax,763.35,BRL
+INL-00124,INV-00017,TKT-00026,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00125,INV-00017,TKT-00026,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00126,INV-00017,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-2181.0,BRL
+INL-00127,INV-00018,TKT-00027,base_fare,BIZSV,Base fare: Business Saver,1741.86,EUR
+INL-00128,INV-00018,TKT-00027,tax,GVT,Government Passenger Tax,121.93,EUR
+INL-00129,INV-00018,TKT-00027,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00130,INV-00018,TKT-00027,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00131,INV-00019,TKT-00028,base_fare,BIZSV,Base fare: Business Saver,1284.02,EUR
+INL-00132,INV-00019,TKT-00028,tax,GVT,Government Passenger Tax,89.88,EUR
+INL-00133,INV-00019,TKT-00028,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00134,INV-00019,TKT-00028,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00135,INV-00019,TKT-00028,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00136,INV-00019,TKT-00028,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00137,INV-00020,TKT-00029,base_fare,ECOFL,Base fare: Economy Flex,4984.45,CNY
+INL-00138,INV-00020,TKT-00029,tax,GVT,Government Passenger Tax,348.91,CNY
+INL-00139,INV-00020,TKT-00029,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00140,INV-00020,TKT-00029,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00141,INV-00020,TKT-00029,ancillary,UPGCB,Ancillary service: UPGCB,1582.73,CNY
+INL-00142,INV-00020,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-498.44,CNY
+INL-00143,INV-00021,TKT-00030,base_fare,ECOSV,Base fare: Economy Saver,2902.37,BRL
+INL-00144,INV-00021,TKT-00030,tax,GVT,Government Passenger Tax,203.17,BRL
+INL-00145,INV-00021,TKT-00030,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00146,INV-00021,TKT-00030,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00147,INV-00021,TKT-00031,base_fare,ECOSV,Base fare: Economy Saver,2902.37,BRL
+INL-00148,INV-00021,TKT-00031,tax,GVT,Government Passenger Tax,203.17,BRL
+INL-00149,INV-00021,TKT-00031,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00150,INV-00021,TKT-00031,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00151,INV-00021,TKT-00031,ancillary,BAG20,Ancillary service: BAG20,264.71,BRL
+INL-00152,INV-00021,TKT-00032,base_fare,ECOSV,Base fare: Economy Saver,2902.37,BRL
+INL-00153,INV-00021,TKT-00032,tax,GVT,Government Passenger Tax,203.17,BRL
+INL-00154,INV-00021,TKT-00032,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00155,INV-00021,TKT-00032,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00156,INV-00021,TKT-00032,ancillary,SEATPR,Ancillary service: SEATPR,147.06,BRL
+INL-00157,INV-00021,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-1044.85,BRL
+INL-00158,INV-00022,TKT-00033,base_fare,BIZFL,Base fare: Business Flex,1619.24,AUD
+INL-00159,INV-00022,TKT-00033,tax,GVT,Government Passenger Tax,113.35,AUD
+INL-00160,INV-00022,TKT-00033,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00161,INV-00022,TKT-00033,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00162,INV-00022,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-161.92,AUD
+INL-00163,INV-00023,TKT-00034,base_fare,PREMY,Base fare: Premium Economy,111215.82,JPY
+INL-00164,INV-00023,TKT-00034,tax,GVT,Government Passenger Tax,7785.11,JPY
+INL-00165,INV-00023,TKT-00034,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00166,INV-00023,TKT-00034,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00167,INV-00023,TKT-00035,base_fare,PREMY,Base fare: Premium Economy,111215.82,JPY
+INL-00168,INV-00023,TKT-00035,tax,GVT,Government Passenger Tax,7785.11,JPY
+INL-00169,INV-00023,TKT-00035,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00170,INV-00023,TKT-00035,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00171,INV-00024,TKT-00036,base_fare,FIRST,Base fare: First,20196.61,BRL
+INL-00172,INV-00024,TKT-00036,tax,GVT,Government Passenger Tax,1413.76,BRL
+INL-00173,INV-00024,TKT-00036,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00174,INV-00024,TKT-00036,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00175,INV-00024,TKT-00036,ancillary,BAG20,Ancillary service: BAG20,264.71,BRL
+INL-00176,INV-00025,TKT-00037,base_fare,ECOFL,Base fare: Economy Flex,1021.33,USD
+INL-00177,INV-00025,TKT-00037,tax,GVT,Government Passenger Tax,71.49,USD
+INL-00178,INV-00025,TKT-00037,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00179,INV-00025,TKT-00037,airport_fee,SEC,Security Fee,12.0,USD
+INL-00180,INV-00025,TKT-00038,base_fare,ECOFL,Base fare: Economy Flex,1021.33,USD
+INL-00181,INV-00025,TKT-00038,tax,GVT,Government Passenger Tax,71.49,USD
+INL-00182,INV-00025,TKT-00038,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00183,INV-00025,TKT-00038,airport_fee,SEC,Security Fee,12.0,USD
+INL-00184,INV-00025,TKT-00038,ancillary,SEATPR,Ancillary service: SEATPR,25.0,USD
+INL-00185,INV-00025,TKT-00039,base_fare,ECOFL,Base fare: Economy Flex,1021.33,USD
+INL-00186,INV-00025,TKT-00039,tax,GVT,Government Passenger Tax,71.49,USD
+INL-00187,INV-00025,TKT-00039,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00188,INV-00025,TKT-00039,airport_fee,SEC,Security Fee,12.0,USD
+INL-00189,INV-00026,TKT-00040,base_fare,PREMY,Base fare: Premium Economy,1190.61,EUR
+INL-00190,INV-00026,TKT-00040,tax,GVT,Government Passenger Tax,83.34,EUR
+INL-00191,INV-00026,TKT-00040,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00192,INV-00026,TKT-00040,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00193,INV-00026,TKT-00041,base_fare,PREMY,Base fare: Premium Economy,1190.61,EUR
+INL-00194,INV-00026,TKT-00041,tax,GVT,Government Passenger Tax,83.34,EUR
+INL-00195,INV-00026,TKT-00041,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00196,INV-00026,TKT-00041,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00197,INV-00026,TKT-00041,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00198,INV-00027,TKT-00042,base_fare,FIRST,Base fare: First,64126.56,ZAR
+INL-00199,INV-00027,TKT-00042,tax,GVT,Government Passenger Tax,4488.86,ZAR
+INL-00200,INV-00027,TKT-00042,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00201,INV-00027,TKT-00042,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00202,INV-00027,TKT-00042,ancillary,LOUNGE,Ancillary service: LOUNGE,1018.52,ZAR
+INL-00203,INV-00027,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-5130.12,ZAR
+INL-00204,INV-00028,TKT-00043,base_fare,PREMY,Base fare: Premium Economy,693.45,EUR
+INL-00205,INV-00028,TKT-00043,tax,GVT,Government Passenger Tax,48.54,EUR
+INL-00206,INV-00028,TKT-00043,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00207,INV-00028,TKT-00043,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00208,INV-00028,TKT-00043,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00209,INV-00028,TKT-00044,base_fare,PREMY,Base fare: Premium Economy,693.45,EUR
+INL-00210,INV-00028,TKT-00044,tax,GVT,Government Passenger Tax,48.54,EUR
+INL-00211,INV-00028,TKT-00044,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00212,INV-00028,TKT-00044,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00213,INV-00028,TKT-00044,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-00214,INV-00028,TKT-00045,base_fare,PREMY,Base fare: Premium Economy,693.45,EUR
+INL-00215,INV-00028,TKT-00045,tax,GVT,Government Passenger Tax,48.54,EUR
+INL-00216,INV-00028,TKT-00045,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00217,INV-00028,TKT-00045,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00218,INV-00028,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-208.04,EUR
+INL-00219,INV-00029,TKT-00046,base_fare,BIZFL,Base fare: Business Flex,5454.73,AUD
+INL-00220,INV-00029,TKT-00046,tax,GVT,Government Passenger Tax,381.83,AUD
+INL-00221,INV-00029,TKT-00046,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00222,INV-00029,TKT-00046,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00223,INV-00029,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-545.47,AUD
+INL-00224,INV-00030,TKT-00047,base_fare,BIZFL,Base fare: Business Flex,3302.86,EUR
+INL-00225,INV-00030,TKT-00047,tax,GVT,Government Passenger Tax,231.2,EUR
+INL-00226,INV-00030,TKT-00047,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00227,INV-00030,TKT-00047,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00228,INV-00030,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-330.29,EUR
+INL-00229,INV-00031,TKT-00048,base_fare,BIZFL,Base fare: Business Flex,1479.91,GBP
+INL-00230,INV-00031,TKT-00048,tax,GVT,Government Passenger Tax,103.59,GBP
+INL-00231,INV-00031,TKT-00048,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00232,INV-00031,TKT-00048,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00233,INV-00031,TKT-00049,base_fare,BIZFL,Base fare: Business Flex,1479.91,GBP
+INL-00234,INV-00031,TKT-00049,tax,GVT,Government Passenger Tax,103.59,GBP
+INL-00235,INV-00031,TKT-00049,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00236,INV-00031,TKT-00049,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00237,INV-00032,TKT-00050,base_fare,BIZSV,Base fare: Business Saver,3747.64,AUD
+INL-00238,INV-00032,TKT-00050,tax,GVT,Government Passenger Tax,262.33,AUD
+INL-00239,INV-00032,TKT-00050,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00240,INV-00032,TKT-00050,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00241,INV-00033,TKT-00051,base_fare,BIZFL,Base fare: Business Flex,2911.39,AUD
+INL-00242,INV-00033,TKT-00051,tax,GVT,Government Passenger Tax,203.8,AUD
+INL-00243,INV-00033,TKT-00051,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00244,INV-00033,TKT-00051,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00245,INV-00033,TKT-00051,ancillary,LOUNGE,Ancillary service: LOUNGE,83.33,AUD
+INL-00246,INV-00033,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-291.14,AUD
+INL-00247,INV-00034,TKT-00052,base_fare,BIZFL,Base fare: Business Flex,933.54,EUR
+INL-00248,INV-00034,TKT-00052,tax,GVT,Government Passenger Tax,65.35,EUR
+INL-00249,INV-00034,TKT-00052,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00250,INV-00034,TKT-00052,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00251,INV-00034,TKT-00053,base_fare,BIZFL,Base fare: Business Flex,933.54,EUR
+INL-00252,INV-00034,TKT-00053,tax,GVT,Government Passenger Tax,65.35,EUR
+INL-00253,INV-00034,TKT-00053,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00254,INV-00034,TKT-00053,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00255,INV-00034,TKT-00054,base_fare,BIZFL,Base fare: Business Flex,933.54,EUR
+INL-00256,INV-00034,TKT-00054,tax,GVT,Government Passenger Tax,65.35,EUR
+INL-00257,INV-00034,TKT-00054,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00258,INV-00034,TKT-00054,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00259,INV-00034,TKT-00054,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00260,INV-00035,TKT-00055,base_fare,FIRST,Base fare: First,3433.42,USD
+INL-00261,INV-00035,TKT-00055,tax,GVT,Government Passenger Tax,240.34,USD
+INL-00262,INV-00035,TKT-00055,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00263,INV-00035,TKT-00055,airport_fee,SEC,Security Fee,12.0,USD
+INL-00264,INV-00035,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-274.67,USD
+INL-00265,INV-00036,TKT-00056,base_fare,BIZFL,Base fare: Business Flex,1444.81,EUR
+INL-00266,INV-00036,TKT-00056,tax,GVT,Government Passenger Tax,101.14,EUR
+INL-00267,INV-00036,TKT-00056,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00268,INV-00036,TKT-00056,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00269,INV-00037,TKT-00057,base_fare,ECOFL,Base fare: Economy Flex,15023.35,TRY
+INL-00270,INV-00037,TKT-00057,tax,GVT,Government Passenger Tax,1051.63,TRY
+INL-00271,INV-00037,TKT-00057,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00272,INV-00037,TKT-00057,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00273,INV-00038,TKT-00058,base_fare,PREMY,Base fare: Premium Economy,667.23,EUR
+INL-00274,INV-00038,TKT-00058,tax,GVT,Government Passenger Tax,46.71,EUR
+INL-00275,INV-00038,TKT-00058,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00276,INV-00038,TKT-00058,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00277,INV-00038,TKT-00058,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00278,INV-00038,TKT-00058,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-00279,INV-00038,TKT-00059,base_fare,PREMY,Base fare: Premium Economy,667.23,EUR
+INL-00280,INV-00038,TKT-00059,tax,GVT,Government Passenger Tax,46.71,EUR
+INL-00281,INV-00038,TKT-00059,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00282,INV-00038,TKT-00059,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00283,INV-00038,TKT-00059,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-00284,INV-00038,TKT-00060,base_fare,PREMY,Base fare: Premium Economy,667.23,EUR
+INL-00285,INV-00038,TKT-00060,tax,GVT,Government Passenger Tax,46.71,EUR
+INL-00286,INV-00038,TKT-00060,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00287,INV-00038,TKT-00060,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00288,INV-00038,TKT-00060,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-00289,INV-00039,TKT-00061,base_fare,BIZSV,Base fare: Business Saver,1923.78,SGD
+INL-00290,INV-00039,TKT-00061,tax,GVT,Government Passenger Tax,134.66,SGD
+INL-00291,INV-00039,TKT-00061,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-00292,INV-00039,TKT-00061,airport_fee,SEC,Security Fee,16.11,SGD
+INL-00293,INV-00039,TKT-00061,ancillary,SEATXL,Ancillary service: SEATXL,80.54,SGD
+INL-00294,INV-00039,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-288.57,SGD
+INL-00295,INV-00040,TKT-00062,base_fare,ECOFL,Base fare: Economy Flex,736.16,EUR
+INL-00296,INV-00040,TKT-00062,tax,GVT,Government Passenger Tax,51.53,EUR
+INL-00297,INV-00040,TKT-00062,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00298,INV-00040,TKT-00062,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00299,INV-00040,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-58.89,EUR
+INL-00300,INV-00041,TKT-00063,base_fare,FIRST,Base fare: First,931970.75,JPY
+INL-00301,INV-00041,TKT-00063,tax,GVT,Government Passenger Tax,65237.95,JPY
+INL-00302,INV-00041,TKT-00063,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00303,INV-00041,TKT-00063,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00304,INV-00041,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-93197.08,JPY
+INL-00305,INV-00042,TKT-00064,base_fare,BIZFL,Base fare: Business Flex,3655.82,EUR
+INL-00306,INV-00042,TKT-00064,tax,GVT,Government Passenger Tax,255.91,EUR
+INL-00307,INV-00042,TKT-00064,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00308,INV-00042,TKT-00064,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00309,INV-00043,TKT-00065,base_fare,PREMY,Base fare: Premium Economy,1101.94,AUD
+INL-00310,INV-00043,TKT-00065,tax,GVT,Government Passenger Tax,77.14,AUD
+INL-00311,INV-00043,TKT-00065,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00312,INV-00043,TKT-00065,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00313,INV-00043,TKT-00066,base_fare,PREMY,Base fare: Premium Economy,1101.94,AUD
+INL-00314,INV-00043,TKT-00066,tax,GVT,Government Passenger Tax,77.14,AUD
+INL-00315,INV-00043,TKT-00066,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00316,INV-00043,TKT-00066,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00317,INV-00043,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-220.39,AUD
+INL-00318,INV-00044,TKT-00067,base_fare,ECOSV,Base fare: Economy Saver,357.7,EUR
+INL-00319,INV-00044,TKT-00067,tax,GVT,Government Passenger Tax,25.04,EUR
+INL-00320,INV-00044,TKT-00067,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00321,INV-00044,TKT-00067,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00322,INV-00044,TKT-00068,base_fare,ECOSV,Base fare: Economy Saver,357.7,EUR
+INL-00323,INV-00044,TKT-00068,tax,GVT,Government Passenger Tax,25.04,EUR
+INL-00324,INV-00044,TKT-00068,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00325,INV-00044,TKT-00068,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00326,INV-00044,TKT-00068,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-00327,INV-00044,TKT-00069,base_fare,ECOSV,Base fare: Economy Saver,357.7,EUR
+INL-00328,INV-00044,TKT-00069,tax,GVT,Government Passenger Tax,25.04,EUR
+INL-00329,INV-00044,TKT-00069,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00330,INV-00044,TKT-00069,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00331,INV-00045,TKT-00070,base_fare,PREMY,Base fare: Premium Economy,4714.4,AED
+INL-00332,INV-00045,TKT-00070,tax,GVT,Government Passenger Tax,330.01,AED
+INL-00333,INV-00045,TKT-00070,airport_fee,PSC,Passenger Service Charge,128.53,AED
+INL-00334,INV-00045,TKT-00070,airport_fee,SEC,Security Fee,44.07,AED
+INL-00335,INV-00045,TKT-00070,ancillary,SEATXL,Ancillary service: SEATXL,220.35,AED
+INL-00336,INV-00045,TKT-00071,base_fare,PREMY,Base fare: Premium Economy,4714.4,AED
+INL-00337,INV-00045,TKT-00071,tax,GVT,Government Passenger Tax,330.01,AED
+INL-00338,INV-00045,TKT-00071,airport_fee,PSC,Passenger Service Charge,128.53,AED
+INL-00339,INV-00045,TKT-00071,airport_fee,SEC,Security Fee,44.07,AED
+INL-00340,INV-00045,,discount,SUMMER25,Discount: Summer Fixed Discount,-91.81,AED
+INL-00341,INV-00046,TKT-00072,base_fare,ECOSV,Base fare: Economy Saver,3761.21,BRL
+INL-00342,INV-00046,TKT-00072,tax,GVT,Government Passenger Tax,263.28,BRL
+INL-00343,INV-00046,TKT-00072,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00344,INV-00046,TKT-00072,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00345,INV-00047,TKT-00073,base_fare,FIRST,Base fare: First,63581.93,ZAR
+INL-00346,INV-00047,TKT-00073,tax,GVT,Government Passenger Tax,4450.73,ZAR
+INL-00347,INV-00047,TKT-00073,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00348,INV-00047,TKT-00073,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00349,INV-00048,TKT-00074,base_fare,BIZFL,Base fare: Business Flex,2834.74,GBP
+INL-00350,INV-00048,TKT-00074,tax,GVT,Government Passenger Tax,198.43,GBP
+INL-00351,INV-00048,TKT-00074,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00352,INV-00048,TKT-00074,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00353,INV-00048,TKT-00074,ancillary,SEATXL,Ancillary service: SEATXL,47.24,GBP
+INL-00354,INV-00049,TKT-00075,base_fare,BIZFL,Base fare: Business Flex,1801.85,EUR
+INL-00355,INV-00049,TKT-00075,tax,GVT,Government Passenger Tax,126.13,EUR
+INL-00356,INV-00049,TKT-00075,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00357,INV-00049,TKT-00075,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00358,INV-00049,TKT-00076,base_fare,BIZFL,Base fare: Business Flex,1801.85,EUR
+INL-00359,INV-00049,TKT-00076,tax,GVT,Government Passenger Tax,126.13,EUR
+INL-00360,INV-00049,TKT-00076,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00361,INV-00049,TKT-00076,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00362,INV-00049,TKT-00076,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-00363,INV-00050,TKT-00077,base_fare,ECOFL,Base fare: Economy Flex,930.15,AUD
+INL-00364,INV-00050,TKT-00077,tax,GVT,Government Passenger Tax,65.11,AUD
+INL-00365,INV-00050,TKT-00077,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00366,INV-00050,TKT-00077,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00367,INV-00050,TKT-00077,ancillary,LOUNGE,Ancillary service: LOUNGE,83.33,AUD
+INL-00368,INV-00050,TKT-00078,base_fare,ECOFL,Base fare: Economy Flex,930.15,AUD
+INL-00369,INV-00050,TKT-00078,tax,GVT,Government Passenger Tax,65.11,AUD
+INL-00370,INV-00050,TKT-00078,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00371,INV-00050,TKT-00078,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00372,INV-00050,TKT-00078,ancillary,WIFI,Ancillary service: WIFI,22.73,AUD
+INL-00373,INV-00050,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-186.03,AUD
+INL-00374,INV-00051,TKT-00079,base_fare,BIZFL,Base fare: Business Flex,18009.21,CNY
+INL-00375,INV-00051,TKT-00079,tax,GVT,Government Passenger Tax,1260.64,CNY
+INL-00376,INV-00051,TKT-00079,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00377,INV-00051,TKT-00079,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00378,INV-00051,TKT-00079,ancillary,UPGCB,Ancillary service: UPGCB,1582.73,CNY
+INL-00379,INV-00052,TKT-00080,base_fare,ECOSV,Base fare: Economy Saver,303.71,EUR
+INL-00380,INV-00052,TKT-00080,tax,GVT,Government Passenger Tax,21.26,EUR
+INL-00381,INV-00052,TKT-00080,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00382,INV-00052,TKT-00080,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00383,INV-00052,TKT-00080,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00384,INV-00053,TKT-00081,base_fare,BIZFL,Base fare: Business Flex,6037.64,AUD
+INL-00385,INV-00053,TKT-00081,tax,GVT,Government Passenger Tax,422.63,AUD
+INL-00386,INV-00053,TKT-00081,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00387,INV-00053,TKT-00081,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00388,INV-00053,TKT-00082,base_fare,BIZFL,Base fare: Business Flex,6037.64,AUD
+INL-00389,INV-00053,TKT-00082,tax,GVT,Government Passenger Tax,422.63,AUD
+INL-00390,INV-00053,TKT-00082,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00391,INV-00053,TKT-00082,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00392,INV-00053,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-1449.03,AUD
+INL-00393,INV-00054,TKT-00083,base_fare,ECOFL,Base fare: Economy Flex,1217.21,AUD
+INL-00394,INV-00054,TKT-00083,tax,GVT,Government Passenger Tax,85.2,AUD
+INL-00395,INV-00054,TKT-00083,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00396,INV-00054,TKT-00083,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00397,INV-00054,TKT-00083,ancillary,LOUNGE,Ancillary service: LOUNGE,83.33,AUD
+INL-00398,INV-00055,TKT-00084,base_fare,BIZFL,Base fare: Business Flex,2559.93,EUR
+INL-00399,INV-00055,TKT-00084,tax,GVT,Government Passenger Tax,179.19,EUR
+INL-00400,INV-00055,TKT-00084,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00401,INV-00055,TKT-00084,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00402,INV-00055,TKT-00084,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-00403,INV-00055,TKT-00084,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00404,INV-00055,TKT-00085,base_fare,BIZFL,Base fare: Business Flex,2559.93,EUR
+INL-00405,INV-00055,TKT-00085,tax,GVT,Government Passenger Tax,179.19,EUR
+INL-00406,INV-00055,TKT-00085,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00407,INV-00055,TKT-00085,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00408,INV-00055,TKT-00085,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-00409,INV-00055,TKT-00086,base_fare,BIZFL,Base fare: Business Flex,2559.93,EUR
+INL-00410,INV-00055,TKT-00086,tax,GVT,Government Passenger Tax,179.19,EUR
+INL-00411,INV-00055,TKT-00086,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00412,INV-00055,TKT-00086,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00413,INV-00056,TKT-00087,base_fare,PREMY,Base fare: Premium Economy,37146.2,TRY
+INL-00414,INV-00056,TKT-00087,tax,GVT,Government Passenger Tax,2600.23,TRY
+INL-00415,INV-00056,TKT-00087,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00416,INV-00056,TKT-00087,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00417,INV-00056,TKT-00088,base_fare,PREMY,Base fare: Premium Economy,37146.2,TRY
+INL-00418,INV-00056,TKT-00088,tax,GVT,Government Passenger Tax,2600.23,TRY
+INL-00419,INV-00056,TKT-00088,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00420,INV-00056,TKT-00088,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00421,INV-00056,TKT-00089,base_fare,PREMY,Base fare: Premium Economy,37146.2,TRY
+INL-00422,INV-00056,TKT-00089,tax,GVT,Government Passenger Tax,2600.23,TRY
+INL-00423,INV-00056,TKT-00089,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00424,INV-00056,TKT-00089,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00425,INV-00056,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-8915.09,TRY
+INL-00426,INV-00057,TKT-00090,base_fare,PREMY,Base fare: Premium Economy,3516.51,BRL
+INL-00427,INV-00057,TKT-00090,tax,GVT,Government Passenger Tax,246.16,BRL
+INL-00428,INV-00057,TKT-00090,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00429,INV-00057,TKT-00090,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00430,INV-00057,TKT-00091,base_fare,PREMY,Base fare: Premium Economy,3516.51,BRL
+INL-00431,INV-00057,TKT-00091,tax,GVT,Government Passenger Tax,246.16,BRL
+INL-00432,INV-00057,TKT-00091,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00433,INV-00057,TKT-00091,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00434,INV-00057,TKT-00091,ancillary,SEATXL,Ancillary service: SEATXL,352.94,BRL
+INL-00435,INV-00058,TKT-00092,base_fare,BIZFL,Base fare: Business Flex,1619.24,AUD
+INL-00436,INV-00058,TKT-00092,tax,GVT,Government Passenger Tax,113.35,AUD
+INL-00437,INV-00058,TKT-00092,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00438,INV-00058,TKT-00092,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00439,INV-00058,TKT-00093,base_fare,BIZFL,Base fare: Business Flex,1619.24,AUD
+INL-00440,INV-00058,TKT-00093,tax,GVT,Government Passenger Tax,113.35,AUD
+INL-00441,INV-00058,TKT-00093,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00442,INV-00058,TKT-00093,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00443,INV-00059,TKT-00094,base_fare,PREMY,Base fare: Premium Economy,20099.55,ZAR
+INL-00444,INV-00059,TKT-00094,tax,GVT,Government Passenger Tax,1406.97,ZAR
+INL-00445,INV-00059,TKT-00094,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00446,INV-00059,TKT-00094,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00447,INV-00059,TKT-00094,ancillary,WIFI,Ancillary service: WIFI,277.78,ZAR
+INL-00448,INV-00059,TKT-00095,base_fare,PREMY,Base fare: Premium Economy,20099.55,ZAR
+INL-00449,INV-00059,TKT-00095,tax,GVT,Government Passenger Tax,1406.97,ZAR
+INL-00450,INV-00059,TKT-00095,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00451,INV-00059,TKT-00095,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00452,INV-00060,TKT-00096,base_fare,ECOFL,Base fare: Economy Flex,631.82,GBP
+INL-00453,INV-00060,TKT-00096,tax,GVT,Government Passenger Tax,44.23,GBP
+INL-00454,INV-00060,TKT-00096,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00455,INV-00060,TKT-00096,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00456,INV-00060,TKT-00097,base_fare,ECOFL,Base fare: Economy Flex,631.82,GBP
+INL-00457,INV-00060,TKT-00097,tax,GVT,Government Passenger Tax,44.23,GBP
+INL-00458,INV-00060,TKT-00097,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00459,INV-00060,TKT-00097,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00460,INV-00060,TKT-00098,base_fare,ECOFL,Base fare: Economy Flex,631.82,GBP
+INL-00461,INV-00060,TKT-00098,tax,GVT,Government Passenger Tax,44.23,GBP
+INL-00462,INV-00060,TKT-00098,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00463,INV-00060,TKT-00098,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00464,INV-00060,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-151.64,GBP
+INL-00465,INV-00061,TKT-00099,base_fare,FIRST,Base fare: First,6114.92,EUR
+INL-00466,INV-00061,TKT-00099,tax,GVT,Government Passenger Tax,428.04,EUR
+INL-00467,INV-00061,TKT-00099,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00468,INV-00061,TKT-00099,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00469,INV-00061,TKT-00099,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00470,INV-00061,TKT-00099,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-00471,INV-00062,TKT-00100,base_fare,ECOFL,Base fare: Economy Flex,416.44,EUR
+INL-00472,INV-00062,TKT-00100,tax,GVT,Government Passenger Tax,29.15,EUR
+INL-00473,INV-00062,TKT-00100,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00474,INV-00062,TKT-00100,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00475,INV-00062,TKT-00101,base_fare,ECOFL,Base fare: Economy Flex,416.44,EUR
+INL-00476,INV-00062,TKT-00101,tax,GVT,Government Passenger Tax,29.15,EUR
+INL-00477,INV-00062,TKT-00101,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00478,INV-00062,TKT-00101,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00479,INV-00063,TKT-00102,base_fare,BIZFL,Base fare: Business Flex,2955.78,EUR
+INL-00480,INV-00063,TKT-00102,tax,GVT,Government Passenger Tax,206.9,EUR
+INL-00481,INV-00063,TKT-00102,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00482,INV-00063,TKT-00102,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00483,INV-00064,TKT-00103,base_fare,ECOSV,Base fare: Economy Saver,465.15,CAD
+INL-00484,INV-00064,TKT-00103,tax,GVT,Government Passenger Tax,32.56,CAD
+INL-00485,INV-00064,TKT-00103,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00486,INV-00064,TKT-00103,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00487,INV-00065,TKT-00104,base_fare,ECOFL,Base fare: Economy Flex,506.54,USD
+INL-00488,INV-00065,TKT-00104,tax,GVT,Government Passenger Tax,35.46,USD
+INL-00489,INV-00065,TKT-00104,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00490,INV-00065,TKT-00104,airport_fee,SEC,Security Fee,12.0,USD
+INL-00491,INV-00065,TKT-00104,ancillary,LOUNGE,Ancillary service: LOUNGE,55.0,USD
+INL-00492,INV-00065,TKT-00105,base_fare,ECOFL,Base fare: Economy Flex,506.54,USD
+INL-00493,INV-00065,TKT-00105,tax,GVT,Government Passenger Tax,35.46,USD
+INL-00494,INV-00065,TKT-00105,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00495,INV-00065,TKT-00105,airport_fee,SEC,Security Fee,12.0,USD
+INL-00496,INV-00065,TKT-00106,base_fare,ECOFL,Base fare: Economy Flex,506.54,USD
+INL-00497,INV-00065,TKT-00106,tax,GVT,Government Passenger Tax,35.46,USD
+INL-00498,INV-00065,TKT-00106,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00499,INV-00065,TKT-00106,airport_fee,SEC,Security Fee,12.0,USD
+INL-00500,INV-00066,TKT-00107,base_fare,PREMY,Base fare: Premium Economy,30038.09,ZAR
+INL-00501,INV-00066,TKT-00107,tax,GVT,Government Passenger Tax,2102.67,ZAR
+INL-00502,INV-00066,TKT-00107,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00503,INV-00066,TKT-00107,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00504,INV-00066,TKT-00108,base_fare,PREMY,Base fare: Premium Economy,30038.09,ZAR
+INL-00505,INV-00066,TKT-00108,tax,GVT,Government Passenger Tax,2102.67,ZAR
+INL-00506,INV-00066,TKT-00108,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00507,INV-00066,TKT-00108,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00508,INV-00066,TKT-00109,base_fare,PREMY,Base fare: Premium Economy,30038.09,ZAR
+INL-00509,INV-00066,TKT-00109,tax,GVT,Government Passenger Tax,2102.67,ZAR
+INL-00510,INV-00066,TKT-00109,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00511,INV-00066,TKT-00109,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00512,INV-00066,TKT-00109,ancillary,MEALSP,Ancillary service: MEALSP,370.37,ZAR
+INL-00513,INV-00066,TKT-00109,ancillary,SEATXL,Ancillary service: SEATXL,1111.11,ZAR
+INL-00514,INV-00067,TKT-00110,base_fare,FIRST,Base fare: First,6328.65,EUR
+INL-00515,INV-00067,TKT-00110,tax,GVT,Government Passenger Tax,443.01,EUR
+INL-00516,INV-00067,TKT-00110,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00517,INV-00067,TKT-00110,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00518,INV-00068,TKT-00111,base_fare,ECOFL,Base fare: Economy Flex,618.41,EUR
+INL-00519,INV-00068,TKT-00111,tax,GVT,Government Passenger Tax,43.29,EUR
+INL-00520,INV-00068,TKT-00111,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00521,INV-00068,TKT-00111,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00522,INV-00068,TKT-00112,base_fare,ECOFL,Base fare: Economy Flex,618.41,EUR
+INL-00523,INV-00068,TKT-00112,tax,GVT,Government Passenger Tax,43.29,EUR
+INL-00524,INV-00068,TKT-00112,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00525,INV-00068,TKT-00112,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00526,INV-00068,TKT-00113,base_fare,ECOFL,Base fare: Economy Flex,618.41,EUR
+INL-00527,INV-00068,TKT-00113,tax,GVT,Government Passenger Tax,43.29,EUR
+INL-00528,INV-00068,TKT-00113,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00529,INV-00068,TKT-00113,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00530,INV-00068,TKT-00113,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00531,INV-00068,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-148.42,EUR
+INL-00532,INV-00069,TKT-00114,base_fare,PREMY,Base fare: Premium Economy,13246.5,ZAR
+INL-00533,INV-00069,TKT-00114,tax,GVT,Government Passenger Tax,927.26,ZAR
+INL-00534,INV-00069,TKT-00114,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00535,INV-00069,TKT-00114,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00536,INV-00069,TKT-00114,ancillary,LOUNGE,Ancillary service: LOUNGE,1018.52,ZAR
+INL-00537,INV-00069,TKT-00114,ancillary,MEALSP,Ancillary service: MEALSP,370.37,ZAR
+INL-00538,INV-00069,TKT-00115,base_fare,PREMY,Base fare: Premium Economy,13246.5,ZAR
+INL-00539,INV-00069,TKT-00115,tax,GVT,Government Passenger Tax,927.26,ZAR
+INL-00540,INV-00069,TKT-00115,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00541,INV-00069,TKT-00115,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00542,INV-00070,TKT-00116,base_fare,ECOFL,Base fare: Economy Flex,3802.39,ZAR
+INL-00543,INV-00070,TKT-00116,tax,GVT,Government Passenger Tax,266.17,ZAR
+INL-00544,INV-00070,TKT-00116,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00545,INV-00070,TKT-00116,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00546,INV-00070,TKT-00117,base_fare,ECOFL,Base fare: Economy Flex,3802.39,ZAR
+INL-00547,INV-00070,TKT-00117,tax,GVT,Government Passenger Tax,266.17,ZAR
+INL-00548,INV-00070,TKT-00117,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00549,INV-00070,TKT-00117,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00550,INV-00070,TKT-00117,ancillary,WIFI,Ancillary service: WIFI,277.78,ZAR
+INL-00551,INV-00071,TKT-00118,base_fare,PREMY,Base fare: Premium Economy,1121.48,AUD
+INL-00552,INV-00071,TKT-00118,tax,GVT,Government Passenger Tax,78.5,AUD
+INL-00553,INV-00071,TKT-00118,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00554,INV-00071,TKT-00118,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00555,INV-00071,TKT-00118,ancillary,SEATXL,Ancillary service: SEATXL,90.91,AUD
+INL-00556,INV-00072,TKT-00119,base_fare,PREMY,Base fare: Premium Economy,1000.23,CAD
+INL-00557,INV-00072,TKT-00119,tax,GVT,Government Passenger Tax,70.02,CAD
+INL-00558,INV-00072,TKT-00119,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00559,INV-00072,TKT-00119,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00560,INV-00072,TKT-00119,ancillary,LOUNGE,Ancillary service: LOUNGE,74.32,CAD
+INL-00561,INV-00072,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-150.03,CAD
+INL-00562,INV-00073,TKT-00120,base_fare,ECOSV,Base fare: Economy Saver,958.71,AUD
+INL-00563,INV-00073,TKT-00120,tax,GVT,Government Passenger Tax,67.11,AUD
+INL-00564,INV-00073,TKT-00120,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00565,INV-00073,TKT-00120,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00566,INV-00073,TKT-00121,base_fare,ECOSV,Base fare: Economy Saver,958.71,AUD
+INL-00567,INV-00073,TKT-00121,tax,GVT,Government Passenger Tax,67.11,AUD
+INL-00568,INV-00073,TKT-00121,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00569,INV-00073,TKT-00121,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00570,INV-00073,TKT-00121,ancillary,WIFI,Ancillary service: WIFI,22.73,AUD
+INL-00571,INV-00073,TKT-00121,ancillary,BAG20,Ancillary service: BAG20,68.18,AUD
+INL-00572,INV-00073,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-230.09,AUD
+INL-00573,INV-00074,TKT-00122,base_fare,BIZFL,Base fare: Business Flex,2855.22,CAD
+INL-00574,INV-00074,TKT-00122,tax,GVT,Government Passenger Tax,199.87,CAD
+INL-00575,INV-00074,TKT-00122,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00576,INV-00074,TKT-00122,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00577,INV-00074,TKT-00123,base_fare,BIZFL,Base fare: Business Flex,2855.22,CAD
+INL-00578,INV-00074,TKT-00123,tax,GVT,Government Passenger Tax,199.87,CAD
+INL-00579,INV-00074,TKT-00123,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00580,INV-00074,TKT-00123,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00581,INV-00075,TKT-00124,base_fare,ECOFL,Base fare: Economy Flex,5779.57,CNY
+INL-00582,INV-00075,TKT-00124,tax,GVT,Government Passenger Tax,404.57,CNY
+INL-00583,INV-00075,TKT-00124,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00584,INV-00075,TKT-00124,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00585,INV-00076,TKT-00125,base_fare,PREMY,Base fare: Premium Economy,1014.57,SGD
+INL-00586,INV-00076,TKT-00125,tax,GVT,Government Passenger Tax,71.02,SGD
+INL-00587,INV-00076,TKT-00125,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-00588,INV-00076,TKT-00125,airport_fee,SEC,Security Fee,16.11,SGD
+INL-00589,INV-00077,TKT-00126,base_fare,PREMY,Base fare: Premium Economy,108549.1,JPY
+INL-00590,INV-00077,TKT-00126,tax,GVT,Government Passenger Tax,7598.44,JPY
+INL-00591,INV-00077,TKT-00126,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00592,INV-00077,TKT-00126,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00593,INV-00077,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-8683.93,JPY
+INL-00594,INV-00078,TKT-00127,base_fare,ECOFL,Base fare: Economy Flex,27049.83,TRY
+INL-00595,INV-00078,TKT-00127,tax,GVT,Government Passenger Tax,1893.49,TRY
+INL-00596,INV-00078,TKT-00127,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00597,INV-00078,TKT-00127,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00598,INV-00078,TKT-00127,ancillary,BAG20,Ancillary service: BAG20,1500.0,TRY
+INL-00599,INV-00078,TKT-00128,base_fare,ECOFL,Base fare: Economy Flex,27049.83,TRY
+INL-00600,INV-00078,TKT-00128,tax,GVT,Government Passenger Tax,1893.49,TRY
+INL-00601,INV-00078,TKT-00128,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00602,INV-00078,TKT-00128,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00603,INV-00078,TKT-00128,ancillary,UPGCB,Ancillary service: UPGCB,7333.33,TRY
+INL-00604,INV-00079,TKT-00129,base_fare,ECOSV,Base fare: Economy Saver,696.15,EUR
+INL-00605,INV-00079,TKT-00129,tax,GVT,Government Passenger Tax,48.73,EUR
+INL-00606,INV-00079,TKT-00129,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00607,INV-00079,TKT-00129,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00608,INV-00079,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-83.54,EUR
+INL-00609,INV-00080,TKT-00130,base_fare,PREMY,Base fare: Premium Economy,982.81,CAD
+INL-00610,INV-00080,TKT-00130,tax,GVT,Government Passenger Tax,68.8,CAD
+INL-00611,INV-00080,TKT-00130,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00612,INV-00080,TKT-00130,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00613,INV-00080,TKT-00131,base_fare,PREMY,Base fare: Premium Economy,982.81,CAD
+INL-00614,INV-00080,TKT-00131,tax,GVT,Government Passenger Tax,68.8,CAD
+INL-00615,INV-00080,TKT-00131,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00616,INV-00080,TKT-00131,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00617,INV-00080,TKT-00132,base_fare,PREMY,Base fare: Premium Economy,982.81,CAD
+INL-00618,INV-00080,TKT-00132,tax,GVT,Government Passenger Tax,68.8,CAD
+INL-00619,INV-00080,TKT-00132,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00620,INV-00080,TKT-00132,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00621,INV-00080,TKT-00132,ancillary,WIFI,Ancillary service: WIFI,20.27,CAD
+INL-00622,INV-00080,TKT-00132,ancillary,SEATPR,Ancillary service: SEATPR,33.78,CAD
+INL-00623,INV-00081,TKT-00133,base_fare,ECOSV,Base fare: Economy Saver,715.83,EUR
+INL-00624,INV-00081,TKT-00133,tax,GVT,Government Passenger Tax,50.11,EUR
+INL-00625,INV-00081,TKT-00133,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00626,INV-00081,TKT-00133,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00627,INV-00081,TKT-00133,ancillary,LOUNGE,Ancillary service: LOUNGE,50.46,EUR
+INL-00628,INV-00081,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-107.37,EUR
+INL-00629,INV-00082,TKT-00134,base_fare,PREMY,Base fare: Premium Economy,1031.36,CAD
+INL-00630,INV-00082,TKT-00134,tax,GVT,Government Passenger Tax,72.2,CAD
+INL-00631,INV-00082,TKT-00134,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00632,INV-00082,TKT-00134,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00633,INV-00083,TKT-00135,base_fare,ECOSV,Base fare: Economy Saver,1025.4,CAD
+INL-00634,INV-00083,TKT-00135,tax,GVT,Government Passenger Tax,71.78,CAD
+INL-00635,INV-00083,TKT-00135,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00636,INV-00083,TKT-00135,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00637,INV-00083,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-123.05,CAD
+INL-00638,INV-00084,TKT-00136,base_fare,BIZSV,Base fare: Business Saver,55078.52,ZAR
+INL-00639,INV-00084,TKT-00136,tax,GVT,Government Passenger Tax,3855.5,ZAR
+INL-00640,INV-00084,TKT-00136,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00641,INV-00084,TKT-00136,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00642,INV-00084,TKT-00137,base_fare,BIZSV,Base fare: Business Saver,55078.52,ZAR
+INL-00643,INV-00084,TKT-00137,tax,GVT,Government Passenger Tax,3855.5,ZAR
+INL-00644,INV-00084,TKT-00137,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00645,INV-00084,TKT-00137,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00646,INV-00085,TKT-00138,base_fare,ECOFL,Base fare: Economy Flex,413.49,EUR
+INL-00647,INV-00085,TKT-00138,tax,GVT,Government Passenger Tax,28.94,EUR
+INL-00648,INV-00085,TKT-00138,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00649,INV-00085,TKT-00138,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00650,INV-00086,TKT-00139,base_fare,FIRST,Base fare: First,7199.25,AUD
+INL-00651,INV-00086,TKT-00139,tax,GVT,Government Passenger Tax,503.95,AUD
+INL-00652,INV-00086,TKT-00139,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00653,INV-00086,TKT-00139,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00654,INV-00086,,discount,SUMMER25,Discount: Summer Fixed Discount,-37.88,AUD
+INL-00655,INV-00087,TKT-00140,base_fare,PREMY,Base fare: Premium Economy,758.23,EUR
+INL-00656,INV-00087,TKT-00140,tax,GVT,Government Passenger Tax,53.08,EUR
+INL-00657,INV-00087,TKT-00140,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00658,INV-00087,TKT-00140,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00659,INV-00087,TKT-00140,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-00660,INV-00088,TKT-00141,base_fare,PREMY,Base fare: Premium Economy,161996.34,JPY
+INL-00661,INV-00088,TKT-00141,tax,GVT,Government Passenger Tax,11339.74,JPY
+INL-00662,INV-00088,TKT-00141,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00663,INV-00088,TKT-00141,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00664,INV-00088,TKT-00142,base_fare,PREMY,Base fare: Premium Economy,161996.34,JPY
+INL-00665,INV-00088,TKT-00142,tax,GVT,Government Passenger Tax,11339.74,JPY
+INL-00666,INV-00088,TKT-00142,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00667,INV-00088,TKT-00142,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00668,INV-00088,TKT-00142,ancillary,SEATPR,Ancillary service: SEATPR,3731.34,JPY
+INL-00669,INV-00089,TKT-00143,base_fare,BIZFL,Base fare: Business Flex,1971.09,GBP
+INL-00670,INV-00089,TKT-00143,tax,GVT,Government Passenger Tax,137.98,GBP
+INL-00671,INV-00089,TKT-00143,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00672,INV-00089,TKT-00143,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00673,INV-00089,TKT-00143,ancillary,BAG20,Ancillary service: BAG20,35.43,GBP
+INL-00674,INV-00089,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-236.53,GBP
+INL-00675,INV-00090,TKT-00144,base_fare,ECOSV,Base fare: Economy Saver,503.47,GBP
+INL-00676,INV-00090,TKT-00144,tax,GVT,Government Passenger Tax,35.24,GBP
+INL-00677,INV-00090,TKT-00144,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00678,INV-00090,TKT-00144,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00679,INV-00090,TKT-00144,ancillary,MEALSP,Ancillary service: MEALSP,15.75,GBP
+INL-00680,INV-00091,TKT-00145,base_fare,BIZFL,Base fare: Business Flex,1457.73,GBP
+INL-00681,INV-00091,TKT-00145,tax,GVT,Government Passenger Tax,102.04,GBP
+INL-00682,INV-00091,TKT-00145,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00683,INV-00091,TKT-00145,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00684,INV-00092,TKT-00146,base_fare,BIZFL,Base fare: Business Flex,11585.32,CNY
+INL-00685,INV-00092,TKT-00146,tax,GVT,Government Passenger Tax,810.97,CNY
+INL-00686,INV-00092,TKT-00146,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00687,INV-00092,TKT-00146,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00688,INV-00092,TKT-00146,ancillary,MEALSP,Ancillary service: MEALSP,143.88,CNY
+INL-00689,INV-00093,TKT-00147,base_fare,ECOSV,Base fare: Economy Saver,95433.58,JPY
+INL-00690,INV-00093,TKT-00147,tax,GVT,Government Passenger Tax,6680.35,JPY
+INL-00691,INV-00093,TKT-00147,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00692,INV-00093,TKT-00147,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00693,INV-00093,TKT-00147,ancillary,SEATXL,Ancillary service: SEATXL,8955.22,JPY
+INL-00694,INV-00094,TKT-00148,base_fare,BIZFL,Base fare: Business Flex,5685.52,AUD
+INL-00695,INV-00094,TKT-00148,tax,GVT,Government Passenger Tax,397.99,AUD
+INL-00696,INV-00094,TKT-00148,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00697,INV-00094,TKT-00148,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00698,INV-00094,TKT-00149,base_fare,BIZFL,Base fare: Business Flex,5685.52,AUD
+INL-00699,INV-00094,TKT-00149,tax,GVT,Government Passenger Tax,397.99,AUD
+INL-00700,INV-00094,TKT-00149,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00701,INV-00094,TKT-00149,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00702,INV-00094,TKT-00149,ancillary,SEATPR,Ancillary service: SEATPR,37.88,AUD
+INL-00703,INV-00094,TKT-00150,base_fare,BIZFL,Base fare: Business Flex,5685.52,AUD
+INL-00704,INV-00094,TKT-00150,tax,GVT,Government Passenger Tax,397.99,AUD
+INL-00705,INV-00094,TKT-00150,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00706,INV-00094,TKT-00150,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00707,INV-00094,TKT-00150,ancillary,SEATPR,Ancillary service: SEATPR,37.88,AUD
+INL-00708,INV-00094,TKT-00150,ancillary,BAG20,Ancillary service: BAG20,68.18,AUD
+INL-00709,INV-00094,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-2046.79,AUD
+INL-00710,INV-00095,TKT-00151,base_fare,FIRST,Base fare: First,34330.59,ZAR
+INL-00711,INV-00095,TKT-00151,tax,GVT,Government Passenger Tax,2403.14,ZAR
+INL-00712,INV-00095,TKT-00151,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00713,INV-00095,TKT-00151,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00714,INV-00096,TKT-00152,base_fare,FIRST,Base fare: First,2808.87,AUD
+INL-00715,INV-00096,TKT-00152,tax,GVT,Government Passenger Tax,196.62,AUD
+INL-00716,INV-00096,TKT-00152,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00717,INV-00096,TKT-00152,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00718,INV-00096,,discount,LOYALTY5,Discount: Loyalty 5 Percent,-140.44,AUD
+INL-00719,INV-00097,TKT-00153,base_fare,ECOFL,Base fare: Economy Flex,1049.75,AUD
+INL-00720,INV-00097,TKT-00153,tax,GVT,Government Passenger Tax,73.48,AUD
+INL-00721,INV-00097,TKT-00153,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00722,INV-00097,TKT-00153,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00723,INV-00097,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-157.46,AUD
+INL-00724,INV-00098,TKT-00154,base_fare,ECOSV,Base fare: Economy Saver,715.83,EUR
+INL-00725,INV-00098,TKT-00154,tax,GVT,Government Passenger Tax,50.11,EUR
+INL-00726,INV-00098,TKT-00154,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00727,INV-00098,TKT-00154,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00728,INV-00098,TKT-00155,base_fare,ECOSV,Base fare: Economy Saver,715.83,EUR
+INL-00729,INV-00098,TKT-00155,tax,GVT,Government Passenger Tax,50.11,EUR
+INL-00730,INV-00098,TKT-00155,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00731,INV-00098,TKT-00155,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00732,INV-00098,TKT-00156,base_fare,ECOSV,Base fare: Economy Saver,715.83,EUR
+INL-00733,INV-00098,TKT-00156,tax,GVT,Government Passenger Tax,50.11,EUR
+INL-00734,INV-00098,TKT-00156,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00735,INV-00098,TKT-00156,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00736,INV-00098,TKT-00156,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-00737,INV-00098,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-214.75,EUR
+INL-00738,INV-00099,TKT-00157,base_fare,PREMY,Base fare: Premium Economy,351.1,EUR
+INL-00739,INV-00099,TKT-00157,tax,GVT,Government Passenger Tax,24.58,EUR
+INL-00740,INV-00099,TKT-00157,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00741,INV-00099,TKT-00157,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00742,INV-00099,TKT-00157,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00743,INV-00099,TKT-00158,base_fare,PREMY,Base fare: Premium Economy,351.1,EUR
+INL-00744,INV-00099,TKT-00158,tax,GVT,Government Passenger Tax,24.58,EUR
+INL-00745,INV-00099,TKT-00158,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00746,INV-00099,TKT-00158,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00747,INV-00099,TKT-00158,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-00748,INV-00099,TKT-00158,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-00749,INV-00099,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-84.26,EUR
+INL-00750,INV-00100,TKT-00159,base_fare,ECOSV,Base fare: Economy Saver,303.71,EUR
+INL-00751,INV-00100,TKT-00159,tax,GVT,Government Passenger Tax,21.26,EUR
+INL-00752,INV-00100,TKT-00159,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00753,INV-00100,TKT-00159,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00754,INV-00100,TKT-00159,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-00755,INV-00100,TKT-00159,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00756,INV-00100,TKT-00160,base_fare,ECOSV,Base fare: Economy Saver,303.71,EUR
+INL-00757,INV-00100,TKT-00160,tax,GVT,Government Passenger Tax,21.26,EUR
+INL-00758,INV-00100,TKT-00160,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00759,INV-00100,TKT-00160,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00760,INV-00101,TKT-00161,base_fare,BIZSV,Base fare: Business Saver,291689.55,JPY
+INL-00761,INV-00101,TKT-00161,tax,GVT,Government Passenger Tax,20418.27,JPY
+INL-00762,INV-00101,TKT-00161,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00763,INV-00101,TKT-00161,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00764,INV-00101,TKT-00162,base_fare,BIZSV,Base fare: Business Saver,291689.55,JPY
+INL-00765,INV-00101,TKT-00162,tax,GVT,Government Passenger Tax,20418.27,JPY
+INL-00766,INV-00101,TKT-00162,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00767,INV-00101,TKT-00162,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00768,INV-00101,TKT-00163,base_fare,BIZSV,Base fare: Business Saver,291689.55,JPY
+INL-00769,INV-00101,TKT-00163,tax,GVT,Government Passenger Tax,20418.27,JPY
+INL-00770,INV-00101,TKT-00163,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00771,INV-00101,TKT-00163,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00772,INV-00102,TKT-00164,base_fare,BIZSV,Base fare: Business Saver,17604.49,CNY
+INL-00773,INV-00102,TKT-00164,tax,GVT,Government Passenger Tax,1232.31,CNY
+INL-00774,INV-00102,TKT-00164,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00775,INV-00102,TKT-00164,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00776,INV-00102,TKT-00165,base_fare,BIZSV,Base fare: Business Saver,17604.49,CNY
+INL-00777,INV-00102,TKT-00165,tax,GVT,Government Passenger Tax,1232.31,CNY
+INL-00778,INV-00102,TKT-00165,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00779,INV-00102,TKT-00165,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00780,INV-00102,TKT-00165,ancillary,MEALSP,Ancillary service: MEALSP,143.88,CNY
+INL-00781,INV-00102,TKT-00165,ancillary,WIFI,Ancillary service: WIFI,107.91,CNY
+INL-00782,INV-00102,TKT-00166,base_fare,BIZSV,Base fare: Business Saver,17604.49,CNY
+INL-00783,INV-00102,TKT-00166,tax,GVT,Government Passenger Tax,1232.31,CNY
+INL-00784,INV-00102,TKT-00166,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00785,INV-00102,TKT-00166,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00786,INV-00102,TKT-00166,ancillary,SEATPR,Ancillary service: SEATPR,179.86,CNY
+INL-00787,INV-00103,TKT-00167,base_fare,BIZFL,Base fare: Business Flex,2790.32,USD
+INL-00788,INV-00103,TKT-00167,tax,GVT,Government Passenger Tax,195.32,USD
+INL-00789,INV-00103,TKT-00167,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00790,INV-00103,TKT-00167,airport_fee,SEC,Security Fee,12.0,USD
+INL-00791,INV-00103,,discount,LOYALTY5,Discount: Loyalty 5 Percent,-139.52,USD
+INL-00792,INV-00104,TKT-00168,base_fare,BIZSV,Base fare: Business Saver,1060.43,EUR
+INL-00793,INV-00104,TKT-00168,tax,GVT,Government Passenger Tax,74.23,EUR
+INL-00794,INV-00104,TKT-00168,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00795,INV-00104,TKT-00168,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00796,INV-00104,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-159.06,EUR
+INL-00797,INV-00105,TKT-00169,base_fare,PREMY,Base fare: Premium Economy,1548.46,AUD
+INL-00798,INV-00105,TKT-00169,tax,GVT,Government Passenger Tax,108.39,AUD
+INL-00799,INV-00105,TKT-00169,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00800,INV-00105,TKT-00169,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00801,INV-00105,TKT-00169,ancillary,UPGCB,Ancillary service: UPGCB,333.33,AUD
+INL-00802,INV-00105,TKT-00170,base_fare,PREMY,Base fare: Premium Economy,1548.46,AUD
+INL-00803,INV-00105,TKT-00170,tax,GVT,Government Passenger Tax,108.39,AUD
+INL-00804,INV-00105,TKT-00170,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-00805,INV-00105,TKT-00170,airport_fee,SEC,Security Fee,18.18,AUD
+INL-00806,INV-00106,TKT-00171,base_fare,FIRST,Base fare: First,123430.74,ZAR
+INL-00807,INV-00106,TKT-00171,tax,GVT,Government Passenger Tax,8640.15,ZAR
+INL-00808,INV-00106,TKT-00171,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00809,INV-00106,TKT-00171,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00810,INV-00106,TKT-00171,ancillary,LOUNGE,Ancillary service: LOUNGE,1018.52,ZAR
+INL-00811,INV-00106,TKT-00172,base_fare,FIRST,Base fare: First,123430.74,ZAR
+INL-00812,INV-00106,TKT-00172,tax,GVT,Government Passenger Tax,8640.15,ZAR
+INL-00813,INV-00106,TKT-00172,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00814,INV-00106,TKT-00172,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00815,INV-00106,TKT-00172,ancillary,SEATPR,Ancillary service: SEATPR,462.96,ZAR
+INL-00816,INV-00106,TKT-00173,base_fare,FIRST,Base fare: First,123430.74,ZAR
+INL-00817,INV-00106,TKT-00173,tax,GVT,Government Passenger Tax,8640.15,ZAR
+INL-00818,INV-00106,TKT-00173,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00819,INV-00106,TKT-00173,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00820,INV-00107,TKT-00174,base_fare,PREMY,Base fare: Premium Economy,910.45,EUR
+INL-00821,INV-00107,TKT-00174,tax,GVT,Government Passenger Tax,63.73,EUR
+INL-00822,INV-00107,TKT-00174,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00823,INV-00107,TKT-00174,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00824,INV-00107,TKT-00174,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00825,INV-00107,TKT-00175,base_fare,PREMY,Base fare: Premium Economy,910.45,EUR
+INL-00826,INV-00107,TKT-00175,tax,GVT,Government Passenger Tax,63.73,EUR
+INL-00827,INV-00107,TKT-00175,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00828,INV-00107,TKT-00175,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00829,INV-00107,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-218.51,EUR
+INL-00830,INV-00108,TKT-00176,base_fare,PREMY,Base fare: Premium Economy,13706.92,ZAR
+INL-00831,INV-00108,TKT-00176,tax,GVT,Government Passenger Tax,959.48,ZAR
+INL-00832,INV-00108,TKT-00176,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-00833,INV-00108,TKT-00176,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-00834,INV-00108,TKT-00176,ancillary,SEATPR,Ancillary service: SEATPR,462.96,ZAR
+INL-00835,INV-00109,TKT-00177,base_fare,BIZFL,Base fare: Business Flex,2928.64,EUR
+INL-00836,INV-00109,TKT-00177,tax,GVT,Government Passenger Tax,205.0,EUR
+INL-00837,INV-00109,TKT-00177,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00838,INV-00109,TKT-00177,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00839,INV-00110,TKT-00178,base_fare,ECOSV,Base fare: Economy Saver,632.75,USD
+INL-00840,INV-00110,TKT-00178,tax,GVT,Government Passenger Tax,44.29,USD
+INL-00841,INV-00110,TKT-00178,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00842,INV-00110,TKT-00178,airport_fee,SEC,Security Fee,12.0,USD
+INL-00843,INV-00110,TKT-00179,base_fare,ECOSV,Base fare: Economy Saver,632.75,USD
+INL-00844,INV-00110,TKT-00179,tax,GVT,Government Passenger Tax,44.29,USD
+INL-00845,INV-00110,TKT-00179,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-00846,INV-00110,TKT-00179,airport_fee,SEC,Security Fee,12.0,USD
+INL-00847,INV-00111,TKT-00180,base_fare,ECOSV,Base fare: Economy Saver,142.72,CAD
+INL-00848,INV-00111,TKT-00180,tax,GVT,Government Passenger Tax,9.99,CAD
+INL-00849,INV-00111,TKT-00180,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00850,INV-00111,TKT-00180,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00851,INV-00111,TKT-00180,ancillary,UPGCB,Ancillary service: UPGCB,297.3,CAD
+INL-00852,INV-00112,TKT-00181,base_fare,BIZFL,Base fare: Business Flex,574298.51,JPY
+INL-00853,INV-00112,TKT-00181,tax,GVT,Government Passenger Tax,40200.9,JPY
+INL-00854,INV-00112,TKT-00181,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00855,INV-00112,TKT-00181,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00856,INV-00112,TKT-00181,ancillary,MEALSP,Ancillary service: MEALSP,2985.07,JPY
+INL-00857,INV-00113,TKT-00182,base_fare,PREMY,Base fare: Premium Economy,227.95,GBP
+INL-00858,INV-00113,TKT-00182,tax,GVT,Government Passenger Tax,15.96,GBP
+INL-00859,INV-00113,TKT-00182,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00860,INV-00113,TKT-00182,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00861,INV-00114,TKT-00183,base_fare,FIRST,Base fare: First,16833.01,BRL
+INL-00862,INV-00114,TKT-00183,tax,GVT,Government Passenger Tax,1178.31,BRL
+INL-00863,INV-00114,TKT-00183,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00864,INV-00114,TKT-00183,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00865,INV-00114,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-2524.95,BRL
+INL-00866,INV-00115,TKT-00184,base_fare,BIZSV,Base fare: Business Saver,1455.31,EUR
+INL-00867,INV-00115,TKT-00184,tax,GVT,Government Passenger Tax,101.87,EUR
+INL-00868,INV-00115,TKT-00184,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00869,INV-00115,TKT-00184,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00870,INV-00115,TKT-00184,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-00871,INV-00116,TKT-00185,base_fare,ECOFL,Base fare: Economy Flex,427.16,EUR
+INL-00872,INV-00116,TKT-00185,tax,GVT,Government Passenger Tax,29.9,EUR
+INL-00873,INV-00116,TKT-00185,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00874,INV-00116,TKT-00185,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00875,INV-00116,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-34.17,EUR
+INL-00876,INV-00117,TKT-00186,base_fare,FIRST,Base fare: First,3741.34,GBP
+INL-00877,INV-00117,TKT-00186,tax,GVT,Government Passenger Tax,261.89,GBP
+INL-00878,INV-00117,TKT-00186,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00879,INV-00117,TKT-00186,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00880,INV-00117,TKT-00187,base_fare,FIRST,Base fare: First,3741.34,GBP
+INL-00881,INV-00117,TKT-00187,tax,GVT,Government Passenger Tax,261.89,GBP
+INL-00882,INV-00117,TKT-00187,airport_fee,PSC,Passenger Service Charge,27.56,GBP
+INL-00883,INV-00117,TKT-00187,airport_fee,SEC,Security Fee,9.45,GBP
+INL-00884,INV-00117,TKT-00187,ancillary,UPGCB,Ancillary service: UPGCB,173.23,GBP
+INL-00885,INV-00117,TKT-00187,ancillary,MEALSP,Ancillary service: MEALSP,15.75,GBP
+INL-00886,INV-00117,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-1122.4,GBP
+INL-00887,INV-00118,TKT-00188,base_fare,ECOFL,Base fare: Economy Flex,1578.36,CNY
+INL-00888,INV-00118,TKT-00188,tax,GVT,Government Passenger Tax,110.49,CNY
+INL-00889,INV-00118,TKT-00188,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00890,INV-00118,TKT-00188,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00891,INV-00118,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-126.27,CNY
+INL-00892,INV-00119,TKT-00189,base_fare,BIZSV,Base fare: Business Saver,1455.31,EUR
+INL-00893,INV-00119,TKT-00189,tax,GVT,Government Passenger Tax,101.87,EUR
+INL-00894,INV-00119,TKT-00189,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00895,INV-00119,TKT-00189,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00896,INV-00119,TKT-00189,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-00897,INV-00119,TKT-00190,base_fare,BIZSV,Base fare: Business Saver,1455.31,EUR
+INL-00898,INV-00119,TKT-00190,tax,GVT,Government Passenger Tax,101.87,EUR
+INL-00899,INV-00119,TKT-00190,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00900,INV-00119,TKT-00190,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00901,INV-00119,TKT-00191,base_fare,BIZSV,Base fare: Business Saver,1455.31,EUR
+INL-00902,INV-00119,TKT-00191,tax,GVT,Government Passenger Tax,101.87,EUR
+INL-00903,INV-00119,TKT-00191,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00904,INV-00119,TKT-00191,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00905,INV-00119,TKT-00191,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-00906,INV-00120,TKT-00192,base_fare,PREMY,Base fare: Premium Economy,683.62,EUR
+INL-00907,INV-00120,TKT-00192,tax,GVT,Government Passenger Tax,47.85,EUR
+INL-00908,INV-00120,TKT-00192,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00909,INV-00120,TKT-00192,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00910,INV-00120,TKT-00192,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-00911,INV-00120,TKT-00192,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-00912,INV-00120,,discount,SUMMER25,Discount: Summer Fixed Discount,-22.94,EUR
+INL-00913,INV-00121,TKT-00193,base_fare,BIZSV,Base fare: Business Saver,1792.95,EUR
+INL-00914,INV-00121,TKT-00193,tax,GVT,Government Passenger Tax,125.51,EUR
+INL-00915,INV-00121,TKT-00193,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00916,INV-00121,TKT-00193,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00917,INV-00121,TKT-00193,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00918,INV-00121,TKT-00194,base_fare,BIZSV,Base fare: Business Saver,1792.95,EUR
+INL-00919,INV-00121,TKT-00194,tax,GVT,Government Passenger Tax,125.51,EUR
+INL-00920,INV-00121,TKT-00194,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00921,INV-00121,TKT-00194,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00922,INV-00121,TKT-00194,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-00923,INV-00121,TKT-00195,base_fare,BIZSV,Base fare: Business Saver,1792.95,EUR
+INL-00924,INV-00121,TKT-00195,tax,GVT,Government Passenger Tax,125.51,EUR
+INL-00925,INV-00121,TKT-00195,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00926,INV-00121,TKT-00195,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00927,INV-00122,TKT-00196,base_fare,FIRST,Base fare: First,4648.1,SGD
+INL-00928,INV-00122,TKT-00196,tax,GVT,Government Passenger Tax,325.37,SGD
+INL-00929,INV-00122,TKT-00196,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-00930,INV-00122,TKT-00196,airport_fee,SEC,Security Fee,16.11,SGD
+INL-00931,INV-00122,TKT-00197,base_fare,FIRST,Base fare: First,4648.1,SGD
+INL-00932,INV-00122,TKT-00197,tax,GVT,Government Passenger Tax,325.37,SGD
+INL-00933,INV-00122,TKT-00197,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-00934,INV-00122,TKT-00197,airport_fee,SEC,Security Fee,16.11,SGD
+INL-00935,INV-00123,TKT-00198,base_fare,ECOSV,Base fare: Economy Saver,53194.7,JPY
+INL-00936,INV-00123,TKT-00198,tax,GVT,Government Passenger Tax,3723.63,JPY
+INL-00937,INV-00123,TKT-00198,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-00938,INV-00123,TKT-00198,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-00939,INV-00123,TKT-00198,ancillary,LOUNGE,Ancillary service: LOUNGE,8208.96,JPY
+INL-00940,INV-00124,TKT-00199,base_fare,ECOFL,Base fare: Economy Flex,5779.57,CNY
+INL-00941,INV-00124,TKT-00199,tax,GVT,Government Passenger Tax,404.57,CNY
+INL-00942,INV-00124,TKT-00199,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-00943,INV-00124,TKT-00199,airport_fee,SEC,Security Fee,86.33,CNY
+INL-00944,INV-00125,TKT-00200,base_fare,PREMY,Base fare: Premium Economy,1116.85,CAD
+INL-00945,INV-00125,TKT-00200,tax,GVT,Government Passenger Tax,78.18,CAD
+INL-00946,INV-00125,TKT-00200,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00947,INV-00125,TKT-00200,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00948,INV-00125,TKT-00201,base_fare,PREMY,Base fare: Premium Economy,1116.85,CAD
+INL-00949,INV-00125,TKT-00201,tax,GVT,Government Passenger Tax,78.18,CAD
+INL-00950,INV-00125,TKT-00201,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00951,INV-00125,TKT-00201,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00952,INV-00125,TKT-00202,base_fare,PREMY,Base fare: Premium Economy,1116.85,CAD
+INL-00953,INV-00125,TKT-00202,tax,GVT,Government Passenger Tax,78.18,CAD
+INL-00954,INV-00125,TKT-00202,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00955,INV-00125,TKT-00202,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00956,INV-00126,TKT-00203,base_fare,BIZFL,Base fare: Business Flex,120004.0,TRY
+INL-00957,INV-00126,TKT-00203,tax,GVT,Government Passenger Tax,8400.28,TRY
+INL-00958,INV-00126,TKT-00203,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-00959,INV-00126,TKT-00203,airport_fee,SEC,Security Fee,400.0,TRY
+INL-00960,INV-00127,TKT-00204,base_fare,ECOFL,Base fare: Economy Flex,937.0,EUR
+INL-00961,INV-00127,TKT-00204,tax,GVT,Government Passenger Tax,65.59,EUR
+INL-00962,INV-00127,TKT-00204,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00963,INV-00127,TKT-00204,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00964,INV-00127,TKT-00204,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-00965,INV-00127,TKT-00205,base_fare,ECOFL,Base fare: Economy Flex,937.0,EUR
+INL-00966,INV-00127,TKT-00205,tax,GVT,Government Passenger Tax,65.59,EUR
+INL-00967,INV-00127,TKT-00205,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00968,INV-00127,TKT-00205,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00969,INV-00127,TKT-00205,ancillary,LOUNGE,Ancillary service: LOUNGE,50.46,EUR
+INL-00970,INV-00127,TKT-00205,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00971,INV-00127,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-187.4,EUR
+INL-00972,INV-00128,TKT-00206,base_fare,ECOSV,Base fare: Economy Saver,849.33,SGD
+INL-00973,INV-00128,TKT-00206,tax,GVT,Government Passenger Tax,59.45,SGD
+INL-00974,INV-00128,TKT-00206,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-00975,INV-00128,TKT-00206,airport_fee,SEC,Security Fee,16.11,SGD
+INL-00976,INV-00129,TKT-00207,base_fare,ECOFL,Base fare: Economy Flex,635.63,EUR
+INL-00977,INV-00129,TKT-00207,tax,GVT,Government Passenger Tax,44.49,EUR
+INL-00978,INV-00129,TKT-00207,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00979,INV-00129,TKT-00207,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00980,INV-00129,TKT-00207,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-00981,INV-00129,TKT-00208,base_fare,ECOFL,Base fare: Economy Flex,635.63,EUR
+INL-00982,INV-00129,TKT-00208,tax,GVT,Government Passenger Tax,44.49,EUR
+INL-00983,INV-00129,TKT-00208,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00984,INV-00129,TKT-00208,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00985,INV-00129,TKT-00208,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-00986,INV-00130,TKT-00209,base_fare,BIZFL,Base fare: Business Flex,18951.76,BRL
+INL-00987,INV-00130,TKT-00209,tax,GVT,Government Passenger Tax,1326.62,BRL
+INL-00988,INV-00130,TKT-00209,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-00989,INV-00130,TKT-00209,airport_fee,SEC,Security Fee,70.59,BRL
+INL-00990,INV-00131,TKT-00210,base_fare,FIRST,Base fare: First,4465.64,EUR
+INL-00991,INV-00131,TKT-00210,tax,GVT,Government Passenger Tax,312.59,EUR
+INL-00992,INV-00131,TKT-00210,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00993,INV-00131,TKT-00210,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00994,INV-00131,TKT-00211,base_fare,FIRST,Base fare: First,4465.64,EUR
+INL-00995,INV-00131,TKT-00211,tax,GVT,Government Passenger Tax,312.59,EUR
+INL-00996,INV-00131,TKT-00211,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-00997,INV-00131,TKT-00211,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00998,INV-00131,TKT-00212,base_fare,FIRST,Base fare: First,4465.64,EUR
+INL-00999,INV-00131,TKT-00212,tax,GVT,Government Passenger Tax,312.59,EUR
+INL-01000,INV-00131,TKT-00212,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01001,INV-00131,TKT-00212,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01002,INV-00131,TKT-00212,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-01003,INV-00131,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-1607.63,EUR
+INL-01004,INV-00132,TKT-00213,base_fare,ECOSV,Base fare: Economy Saver,342.44,EUR
+INL-01005,INV-00132,TKT-00213,tax,GVT,Government Passenger Tax,23.97,EUR
+INL-01006,INV-00132,TKT-00213,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01007,INV-00132,TKT-00213,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01008,INV-00132,TKT-00214,base_fare,ECOSV,Base fare: Economy Saver,342.44,EUR
+INL-01009,INV-00132,TKT-00214,tax,GVT,Government Passenger Tax,23.97,EUR
+INL-01010,INV-00132,TKT-00214,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01011,INV-00132,TKT-00214,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01012,INV-00132,TKT-00214,ancillary,SEATPR,Ancillary service: SEATPR,22.94,EUR
+INL-01013,INV-00132,TKT-00214,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-01014,INV-00133,TKT-00215,base_fare,BIZFL,Base fare: Business Flex,64890.67,TRY
+INL-01015,INV-00133,TKT-00215,tax,GVT,Government Passenger Tax,4542.35,TRY
+INL-01016,INV-00133,TKT-00215,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-01017,INV-00133,TKT-00215,airport_fee,SEC,Security Fee,400.0,TRY
+INL-01018,INV-00134,TKT-00216,base_fare,PREMY,Base fare: Premium Economy,1397.51,EUR
+INL-01019,INV-00134,TKT-00216,tax,GVT,Government Passenger Tax,97.83,EUR
+INL-01020,INV-00134,TKT-00216,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01021,INV-00134,TKT-00216,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01022,INV-00134,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-167.7,EUR
+INL-01023,INV-00135,TKT-00217,base_fare,BIZSV,Base fare: Business Saver,8983.25,BRL
+INL-01024,INV-00135,TKT-00217,tax,GVT,Government Passenger Tax,628.83,BRL
+INL-01025,INV-00135,TKT-00217,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-01026,INV-00135,TKT-00217,airport_fee,SEC,Security Fee,70.59,BRL
+INL-01027,INV-00135,TKT-00218,base_fare,BIZSV,Base fare: Business Saver,8983.25,BRL
+INL-01028,INV-00135,TKT-00218,tax,GVT,Government Passenger Tax,628.83,BRL
+INL-01029,INV-00135,TKT-00218,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-01030,INV-00135,TKT-00218,airport_fee,SEC,Security Fee,70.59,BRL
+INL-01031,INV-00135,TKT-00218,ancillary,SEATXL,Ancillary service: SEATXL,352.94,BRL
+INL-01032,INV-00136,TKT-00219,base_fare,BIZSV,Base fare: Business Saver,2607.59,AED
+INL-01033,INV-00136,TKT-00219,tax,GVT,Government Passenger Tax,182.53,AED
+INL-01034,INV-00136,TKT-00219,airport_fee,PSC,Passenger Service Charge,128.53,AED
+INL-01035,INV-00136,TKT-00219,airport_fee,SEC,Security Fee,44.07,AED
+INL-01036,INV-00136,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-391.14,AED
+INL-01037,INV-00137,TKT-00220,base_fare,BIZFL,Base fare: Business Flex,3984.84,USD
+INL-01038,INV-00137,TKT-00220,tax,GVT,Government Passenger Tax,278.94,USD
+INL-01039,INV-00137,TKT-00220,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-01040,INV-00137,TKT-00220,airport_fee,SEC,Security Fee,12.0,USD
+INL-01041,INV-00138,TKT-00221,base_fare,PREMY,Base fare: Premium Economy,1000.2,SGD
+INL-01042,INV-00138,TKT-00221,tax,GVT,Government Passenger Tax,70.01,SGD
+INL-01043,INV-00138,TKT-00221,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01044,INV-00138,TKT-00221,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01045,INV-00138,TKT-00221,ancillary,BAG20,Ancillary service: BAG20,60.4,SGD
+INL-01046,INV-00138,TKT-00222,base_fare,PREMY,Base fare: Premium Economy,1000.2,SGD
+INL-01047,INV-00138,TKT-00222,tax,GVT,Government Passenger Tax,70.01,SGD
+INL-01048,INV-00138,TKT-00222,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01049,INV-00138,TKT-00222,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01050,INV-00138,TKT-00223,base_fare,PREMY,Base fare: Premium Economy,1000.2,SGD
+INL-01051,INV-00138,TKT-00223,tax,GVT,Government Passenger Tax,70.01,SGD
+INL-01052,INV-00138,TKT-00223,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01053,INV-00138,TKT-00223,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01054,INV-00138,TKT-00223,ancillary,SEATXL,Ancillary service: SEATXL,80.54,SGD
+INL-01055,INV-00138,TKT-00223,ancillary,MEALSP,Ancillary service: MEALSP,26.85,SGD
+INL-01056,INV-00138,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-300.06,SGD
+INL-01057,INV-00139,TKT-00224,base_fare,BIZSV,Base fare: Business Saver,10243.57,CNY
+INL-01058,INV-00139,TKT-00224,tax,GVT,Government Passenger Tax,717.05,CNY
+INL-01059,INV-00139,TKT-00224,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-01060,INV-00139,TKT-00224,airport_fee,SEC,Security Fee,86.33,CNY
+INL-01061,INV-00139,TKT-00224,ancillary,LOUNGE,Ancillary service: LOUNGE,395.68,CNY
+INL-01062,INV-00139,TKT-00224,ancillary,SEATXL,Ancillary service: SEATXL,431.65,CNY
+INL-01063,INV-00140,TKT-00225,base_fare,PREMY,Base fare: Premium Economy,1179.08,EUR
+INL-01064,INV-00140,TKT-00225,tax,GVT,Government Passenger Tax,82.54,EUR
+INL-01065,INV-00140,TKT-00225,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01066,INV-00140,TKT-00225,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01067,INV-00140,TKT-00226,base_fare,PREMY,Base fare: Premium Economy,1179.08,EUR
+INL-01068,INV-00140,TKT-00226,tax,GVT,Government Passenger Tax,82.54,EUR
+INL-01069,INV-00140,TKT-00226,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01070,INV-00140,TKT-00226,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01071,INV-00141,TKT-00227,base_fare,ECOSV,Base fare: Economy Saver,855.07,CAD
+INL-01072,INV-00141,TKT-00227,tax,GVT,Government Passenger Tax,59.85,CAD
+INL-01073,INV-00141,TKT-00227,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-01074,INV-00141,TKT-00227,airport_fee,SEC,Security Fee,16.22,CAD
+INL-01075,INV-00141,TKT-00227,ancillary,MEALSP,Ancillary service: MEALSP,27.03,CAD
+INL-01076,INV-00142,TKT-00228,base_fare,FIRST,Base fare: First,4244.28,AUD
+INL-01077,INV-00142,TKT-00228,tax,GVT,Government Passenger Tax,297.1,AUD
+INL-01078,INV-00142,TKT-00228,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01079,INV-00142,TKT-00228,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01080,INV-00142,TKT-00229,base_fare,FIRST,Base fare: First,4244.28,AUD
+INL-01081,INV-00142,TKT-00229,tax,GVT,Government Passenger Tax,297.1,AUD
+INL-01082,INV-00142,TKT-00229,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01083,INV-00142,TKT-00229,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01084,INV-00143,TKT-00230,base_fare,BIZSV,Base fare: Business Saver,2449.78,USD
+INL-01085,INV-00143,TKT-00230,tax,GVT,Government Passenger Tax,171.48,USD
+INL-01086,INV-00143,TKT-00230,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-01087,INV-00143,TKT-00230,airport_fee,SEC,Security Fee,12.0,USD
+INL-01088,INV-00143,TKT-00231,base_fare,BIZSV,Base fare: Business Saver,2449.78,USD
+INL-01089,INV-00143,TKT-00231,tax,GVT,Government Passenger Tax,171.48,USD
+INL-01090,INV-00143,TKT-00231,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-01091,INV-00143,TKT-00231,airport_fee,SEC,Security Fee,12.0,USD
+INL-01092,INV-00143,TKT-00232,base_fare,BIZSV,Base fare: Business Saver,2449.78,USD
+INL-01093,INV-00143,TKT-00232,tax,GVT,Government Passenger Tax,171.48,USD
+INL-01094,INV-00143,TKT-00232,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-01095,INV-00143,TKT-00232,airport_fee,SEC,Security Fee,12.0,USD
+INL-01096,INV-00143,TKT-00232,ancillary,SEATPR,Ancillary service: SEATPR,25.0,USD
+INL-01097,INV-00143,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-1102.4,USD
+INL-01098,INV-00144,TKT-00233,base_fare,FIRST,Base fare: First,4956.43,AUD
+INL-01099,INV-00144,TKT-00233,tax,GVT,Government Passenger Tax,346.95,AUD
+INL-01100,INV-00144,TKT-00233,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01101,INV-00144,TKT-00233,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01102,INV-00144,TKT-00233,ancillary,LOUNGE,Ancillary service: LOUNGE,83.33,AUD
+INL-01103,INV-00145,TKT-00234,base_fare,ECOFL,Base fare: Economy Flex,413.49,EUR
+INL-01104,INV-00145,TKT-00234,tax,GVT,Government Passenger Tax,28.94,EUR
+INL-01105,INV-00145,TKT-00234,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01106,INV-00145,TKT-00234,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01107,INV-00145,TKT-00234,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-01108,INV-00145,TKT-00235,base_fare,ECOFL,Base fare: Economy Flex,413.49,EUR
+INL-01109,INV-00145,TKT-00235,tax,GVT,Government Passenger Tax,28.94,EUR
+INL-01110,INV-00145,TKT-00235,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01111,INV-00145,TKT-00235,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01112,INV-00146,TKT-00236,base_fare,BIZFL,Base fare: Business Flex,35583.7,ZAR
+INL-01113,INV-00146,TKT-00236,tax,GVT,Government Passenger Tax,2490.86,ZAR
+INL-01114,INV-00146,TKT-00236,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-01115,INV-00146,TKT-00236,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-01116,INV-00146,TKT-00236,ancillary,MEALSP,Ancillary service: MEALSP,370.37,ZAR
+INL-01117,INV-00146,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-5337.55,ZAR
+INL-01118,INV-00147,TKT-00237,base_fare,FIRST,Base fare: First,6328.65,EUR
+INL-01119,INV-00147,TKT-00237,tax,GVT,Government Passenger Tax,443.01,EUR
+INL-01120,INV-00147,TKT-00237,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01121,INV-00147,TKT-00237,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01122,INV-00147,TKT-00237,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-01123,INV-00147,TKT-00237,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-01124,INV-00148,TKT-00238,base_fare,ECOFL,Base fare: Economy Flex,214.98,CAD
+INL-01125,INV-00148,TKT-00238,tax,GVT,Government Passenger Tax,15.05,CAD
+INL-01126,INV-00148,TKT-00238,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-01127,INV-00148,TKT-00238,airport_fee,SEC,Security Fee,16.22,CAD
+INL-01128,INV-00148,,discount,LOYALTY5,Discount: Loyalty 5 Percent,-10.75,CAD
+INL-01129,INV-00149,TKT-00239,base_fare,BIZSV,Base fare: Business Saver,17624.29,CNY
+INL-01130,INV-00149,TKT-00239,tax,GVT,Government Passenger Tax,1233.7,CNY
+INL-01131,INV-00149,TKT-00239,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-01132,INV-00149,TKT-00239,airport_fee,SEC,Security Fee,86.33,CNY
+INL-01133,INV-00149,TKT-00240,base_fare,BIZSV,Base fare: Business Saver,17624.29,CNY
+INL-01134,INV-00149,TKT-00240,tax,GVT,Government Passenger Tax,1233.7,CNY
+INL-01135,INV-00149,TKT-00240,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-01136,INV-00149,TKT-00240,airport_fee,SEC,Security Fee,86.33,CNY
+INL-01137,INV-00149,TKT-00240,ancillary,SEATPR,Ancillary service: SEATPR,179.86,CNY
+INL-01138,INV-00149,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-5287.29,CNY
+INL-01139,INV-00150,TKT-00241,base_fare,FIRST,Base fare: First,5092.45,EUR
+INL-01140,INV-00150,TKT-00241,tax,GVT,Government Passenger Tax,356.47,EUR
+INL-01141,INV-00150,TKT-00241,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01142,INV-00150,TKT-00241,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01143,INV-00150,TKT-00241,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-01144,INV-00151,TKT-00242,base_fare,PREMY,Base fare: Premium Economy,1488.13,EUR
+INL-01145,INV-00151,TKT-00242,tax,GVT,Government Passenger Tax,104.17,EUR
+INL-01146,INV-00151,TKT-00242,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01147,INV-00151,TKT-00242,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01148,INV-00152,TKT-00243,base_fare,ECOSV,Base fare: Economy Saver,715.83,EUR
+INL-01149,INV-00152,TKT-00243,tax,GVT,Government Passenger Tax,50.11,EUR
+INL-01150,INV-00152,TKT-00243,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01151,INV-00152,TKT-00243,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01152,INV-00152,TKT-00244,base_fare,ECOSV,Base fare: Economy Saver,715.83,EUR
+INL-01153,INV-00152,TKT-00244,tax,GVT,Government Passenger Tax,50.11,EUR
+INL-01154,INV-00152,TKT-00244,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01155,INV-00152,TKT-00244,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01156,INV-00152,TKT-00244,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-01157,INV-00152,,discount,CORP-CORP-002,Discount: Corporate rate: Northfield Industrial Holdings,-143.17,EUR
+INL-01158,INV-00153,TKT-00245,base_fare,BIZSV,Base fare: Business Saver,4390.84,AUD
+INL-01159,INV-00153,TKT-00245,tax,GVT,Government Passenger Tax,307.36,AUD
+INL-01160,INV-00153,TKT-00245,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01161,INV-00153,TKT-00245,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01162,INV-00154,TKT-00246,base_fare,FIRST,Base fare: First,5966.19,EUR
+INL-01163,INV-00154,TKT-00246,tax,GVT,Government Passenger Tax,417.63,EUR
+INL-01164,INV-00154,TKT-00246,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01165,INV-00154,TKT-00246,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01166,INV-00154,TKT-00246,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-01167,INV-00154,TKT-00246,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-01168,INV-00155,TKT-00247,base_fare,ECOFL,Base fare: Economy Flex,23094.6,TRY
+INL-01169,INV-00155,TKT-00247,tax,GVT,Government Passenger Tax,1616.62,TRY
+INL-01170,INV-00155,TKT-00247,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-01171,INV-00155,TKT-00247,airport_fee,SEC,Security Fee,400.0,TRY
+INL-01172,INV-00155,TKT-00247,ancillary,UPGCB,Ancillary service: UPGCB,7333.33,TRY
+INL-01173,INV-00155,TKT-00248,base_fare,ECOFL,Base fare: Economy Flex,23094.6,TRY
+INL-01174,INV-00155,TKT-00248,tax,GVT,Government Passenger Tax,1616.62,TRY
+INL-01175,INV-00155,TKT-00248,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-01176,INV-00155,TKT-00248,airport_fee,SEC,Security Fee,400.0,TRY
+INL-01177,INV-00155,TKT-00249,base_fare,ECOFL,Base fare: Economy Flex,23094.6,TRY
+INL-01178,INV-00155,TKT-00249,tax,GVT,Government Passenger Tax,1616.62,TRY
+INL-01179,INV-00155,TKT-00249,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-01180,INV-00155,TKT-00249,airport_fee,SEC,Security Fee,400.0,TRY
+INL-01181,INV-00155,TKT-00249,ancillary,WIFI,Ancillary service: WIFI,500.0,TRY
+INL-01182,INV-00155,,discount,LOYALTY5,Discount: Loyalty 5 Percent,-3464.19,TRY
+INL-01183,INV-00156,TKT-00250,base_fare,BIZSV,Base fare: Business Saver,105977.31,JPY
+INL-01184,INV-00156,TKT-00250,tax,GVT,Government Passenger Tax,7418.41,JPY
+INL-01185,INV-00156,TKT-00250,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-01186,INV-00156,TKT-00250,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-01187,INV-00156,TKT-00250,ancillary,SEATPR,Ancillary service: SEATPR,3731.34,JPY
+INL-01188,INV-00156,TKT-00251,base_fare,BIZSV,Base fare: Business Saver,105977.31,JPY
+INL-01189,INV-00156,TKT-00251,tax,GVT,Government Passenger Tax,7418.41,JPY
+INL-01190,INV-00156,TKT-00251,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-01191,INV-00156,TKT-00251,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-01192,INV-00157,TKT-00252,base_fare,PREMY,Base fare: Premium Economy,1145.24,AUD
+INL-01193,INV-00157,TKT-00252,tax,GVT,Government Passenger Tax,80.17,AUD
+INL-01194,INV-00157,TKT-00252,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01195,INV-00157,TKT-00252,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01196,INV-00157,,discount,CORP-CORP-003,Discount: Corporate rate: Solenne Cosmetiques,-91.62,AUD
+INL-01197,INV-00158,TKT-00253,base_fare,FIRST,Base fare: First,186702.0,TRY
+INL-01198,INV-00158,TKT-00253,tax,GVT,Government Passenger Tax,13069.14,TRY
+INL-01199,INV-00158,TKT-00253,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-01200,INV-00158,TKT-00253,airport_fee,SEC,Security Fee,400.0,TRY
+INL-01201,INV-00158,TKT-00253,ancillary,UPGCB,Ancillary service: UPGCB,7333.33,TRY
+INL-01202,INV-00158,TKT-00253,ancillary,LOUNGE,Ancillary service: LOUNGE,1833.33,TRY
+INL-01203,INV-00158,TKT-00254,base_fare,FIRST,Base fare: First,186702.0,TRY
+INL-01204,INV-00158,TKT-00254,tax,GVT,Government Passenger Tax,13069.14,TRY
+INL-01205,INV-00158,TKT-00254,airport_fee,PSC,Passenger Service Charge,1166.67,TRY
+INL-01206,INV-00158,TKT-00254,airport_fee,SEC,Security Fee,400.0,TRY
+INL-01207,INV-00159,TKT-00255,base_fare,ECOFL,Base fare: Economy Flex,878.37,EUR
+INL-01208,INV-00159,TKT-00255,tax,GVT,Government Passenger Tax,61.49,EUR
+INL-01209,INV-00159,TKT-00255,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01210,INV-00159,TKT-00255,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01211,INV-00160,TKT-00256,base_fare,FIRST,Base fare: First,276694.33,JPY
+INL-01212,INV-00160,TKT-00256,tax,GVT,Government Passenger Tax,19368.6,JPY
+INL-01213,INV-00160,TKT-00256,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-01214,INV-00160,TKT-00256,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-01215,INV-00161,TKT-00257,base_fare,BIZSV,Base fare: Business Saver,651.42,EUR
+INL-01216,INV-00161,TKT-00257,tax,GVT,Government Passenger Tax,45.6,EUR
+INL-01217,INV-00161,TKT-00257,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01218,INV-00161,TKT-00257,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01219,INV-00161,TKT-00257,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-01220,INV-00161,TKT-00257,ancillary,LOUNGE,Ancillary service: LOUNGE,50.46,EUR
+INL-01221,INV-00162,TKT-00258,base_fare,ECOFL,Base fare: Economy Flex,2579.72,CNY
+INL-01222,INV-00162,TKT-00258,tax,GVT,Government Passenger Tax,180.58,CNY
+INL-01223,INV-00162,TKT-00258,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-01224,INV-00162,TKT-00258,airport_fee,SEC,Security Fee,86.33,CNY
+INL-01225,INV-00163,TKT-00259,base_fare,PREMY,Base fare: Premium Economy,1434.69,EUR
+INL-01226,INV-00163,TKT-00259,tax,GVT,Government Passenger Tax,100.43,EUR
+INL-01227,INV-00163,TKT-00259,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01228,INV-00163,TKT-00259,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01229,INV-00163,TKT-00259,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-01230,INV-00163,TKT-00259,ancillary,BAG20,Ancillary service: BAG20,41.28,EUR
+INL-01231,INV-00163,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-172.16,EUR
+INL-01232,INV-00164,TKT-00260,base_fare,ECOFL,Base fare: Economy Flex,328.97,EUR
+INL-01233,INV-00164,TKT-00260,tax,GVT,Government Passenger Tax,23.03,EUR
+INL-01234,INV-00164,TKT-00260,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01235,INV-00164,TKT-00260,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01236,INV-00164,TKT-00260,ancillary,MEALSP,Ancillary service: MEALSP,18.35,EUR
+INL-01237,INV-00164,TKT-00261,base_fare,ECOFL,Base fare: Economy Flex,328.97,EUR
+INL-01238,INV-00164,TKT-00261,tax,GVT,Government Passenger Tax,23.03,EUR
+INL-01239,INV-00164,TKT-00261,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01240,INV-00164,TKT-00261,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01241,INV-00164,TKT-00261,ancillary,SEATXL,Ancillary service: SEATXL,55.05,EUR
+INL-01242,INV-00165,TKT-00262,base_fare,FIRST,Base fare: First,5728.63,EUR
+INL-01243,INV-00165,TKT-00262,tax,GVT,Government Passenger Tax,401.0,EUR
+INL-01244,INV-00165,TKT-00262,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01245,INV-00165,TKT-00262,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01246,INV-00165,TKT-00262,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-01247,INV-00165,TKT-00262,ancillary,UPGCB,Ancillary service: UPGCB,201.83,EUR
+INL-01248,INV-00166,TKT-00263,base_fare,FIRST,Base fare: First,3390.58,USD
+INL-01249,INV-00166,TKT-00263,tax,GVT,Government Passenger Tax,237.34,USD
+INL-01250,INV-00166,TKT-00263,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-01251,INV-00166,TKT-00263,airport_fee,SEC,Security Fee,12.0,USD
+INL-01252,INV-00166,TKT-00264,base_fare,FIRST,Base fare: First,3390.58,USD
+INL-01253,INV-00166,TKT-00264,tax,GVT,Government Passenger Tax,237.34,USD
+INL-01254,INV-00166,TKT-00264,airport_fee,PSC,Passenger Service Charge,35.0,USD
+INL-01255,INV-00166,TKT-00264,airport_fee,SEC,Security Fee,12.0,USD
+INL-01256,INV-00166,TKT-00264,ancillary,SEATPR,Ancillary service: SEATPR,25.0,USD
+INL-01257,INV-00166,TKT-00264,ancillary,MEALSP,Ancillary service: MEALSP,20.0,USD
+INL-01258,INV-00166,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-813.74,USD
+INL-01259,INV-00167,TKT-00265,base_fare,ECOFL,Base fare: Economy Flex,3965.1,BRL
+INL-01260,INV-00167,TKT-00265,tax,GVT,Government Passenger Tax,277.56,BRL
+INL-01261,INV-00167,TKT-00265,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-01262,INV-00167,TKT-00265,airport_fee,SEC,Security Fee,70.59,BRL
+INL-01263,INV-00167,TKT-00266,base_fare,ECOFL,Base fare: Economy Flex,3965.1,BRL
+INL-01264,INV-00167,TKT-00266,tax,GVT,Government Passenger Tax,277.56,BRL
+INL-01265,INV-00167,TKT-00266,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-01266,INV-00167,TKT-00266,airport_fee,SEC,Security Fee,70.59,BRL
+INL-01267,INV-00167,TKT-00266,ancillary,MEALSP,Ancillary service: MEALSP,117.65,BRL
+INL-01268,INV-00167,TKT-00267,base_fare,ECOFL,Base fare: Economy Flex,3965.1,BRL
+INL-01269,INV-00167,TKT-00267,tax,GVT,Government Passenger Tax,277.56,BRL
+INL-01270,INV-00167,TKT-00267,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-01271,INV-00167,TKT-00267,airport_fee,SEC,Security Fee,70.59,BRL
+INL-01272,INV-00168,TKT-00268,base_fare,BIZSV,Base fare: Business Saver,1952.53,EUR
+INL-01273,INV-00168,TKT-00268,tax,GVT,Government Passenger Tax,136.68,EUR
+INL-01274,INV-00168,TKT-00268,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01275,INV-00168,TKT-00268,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01276,INV-00168,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-234.3,EUR
+INL-01277,INV-00169,TKT-00269,base_fare,FIRST,Base fare: First,653668.06,JPY
+INL-01278,INV-00169,TKT-00269,tax,GVT,Government Passenger Tax,45756.76,JPY
+INL-01279,INV-00169,TKT-00269,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-01280,INV-00169,TKT-00269,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-01281,INV-00169,TKT-00270,base_fare,FIRST,Base fare: First,653668.06,JPY
+INL-01282,INV-00169,TKT-00270,tax,GVT,Government Passenger Tax,45756.76,JPY
+INL-01283,INV-00169,TKT-00270,airport_fee,PSC,Passenger Service Charge,5223.88,JPY
+INL-01284,INV-00169,TKT-00270,airport_fee,SEC,Security Fee,1791.04,JPY
+INL-01285,INV-00169,TKT-00270,ancillary,WIFI,Ancillary service: WIFI,2238.81,JPY
+INL-01286,INV-00170,TKT-00271,base_fare,BIZSV,Base fare: Business Saver,10555.51,CNY
+INL-01287,INV-00170,TKT-00271,tax,GVT,Government Passenger Tax,738.89,CNY
+INL-01288,INV-00170,TKT-00271,airport_fee,PSC,Passenger Service Charge,251.8,CNY
+INL-01289,INV-00170,TKT-00271,airport_fee,SEC,Security Fee,86.33,CNY
+INL-01290,INV-00171,TKT-00272,base_fare,BIZFL,Base fare: Business Flex,1434.5,SGD
+INL-01291,INV-00171,TKT-00272,tax,GVT,Government Passenger Tax,100.41,SGD
+INL-01292,INV-00171,TKT-00272,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01293,INV-00171,TKT-00272,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01294,INV-00171,TKT-00273,base_fare,BIZFL,Base fare: Business Flex,1434.5,SGD
+INL-01295,INV-00171,TKT-00273,tax,GVT,Government Passenger Tax,100.41,SGD
+INL-01296,INV-00171,TKT-00273,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01297,INV-00171,TKT-00273,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01298,INV-00171,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-430.35,SGD
+INL-01299,INV-00172,TKT-00274,base_fare,PREMY,Base fare: Premium Economy,2209.93,AUD
+INL-01300,INV-00172,TKT-00274,tax,GVT,Government Passenger Tax,154.69,AUD
+INL-01301,INV-00172,TKT-00274,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01302,INV-00172,TKT-00274,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01303,INV-00172,TKT-00275,base_fare,PREMY,Base fare: Premium Economy,2209.93,AUD
+INL-01304,INV-00172,TKT-00275,tax,GVT,Government Passenger Tax,154.69,AUD
+INL-01305,INV-00172,TKT-00275,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01306,INV-00172,TKT-00275,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01307,INV-00172,,discount,CORP-CORP-001,Discount: Corporate rate: Vantage Consulting Group,-530.38,AUD
+INL-01308,INV-00173,TKT-00276,base_fare,ECOFL,Base fare: Economy Flex,8622.32,ZAR
+INL-01309,INV-00173,TKT-00276,tax,GVT,Government Passenger Tax,603.56,ZAR
+INL-01310,INV-00173,TKT-00276,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-01311,INV-00173,TKT-00276,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-01312,INV-00173,TKT-00277,base_fare,ECOFL,Base fare: Economy Flex,8622.32,ZAR
+INL-01313,INV-00173,TKT-00277,tax,GVT,Government Passenger Tax,603.56,ZAR
+INL-01314,INV-00173,TKT-00277,airport_fee,PSC,Passenger Service Charge,648.15,ZAR
+INL-01315,INV-00173,TKT-00277,airport_fee,SEC,Security Fee,222.22,ZAR
+INL-01316,INV-00173,,discount,CORP-CORP-004,Discount: Corporate rate: Meridian Bank Group,-2586.7,ZAR
+INL-01317,INV-00174,TKT-00278,base_fare,ECOSV,Base fare: Economy Saver,1018.52,SGD
+INL-01318,INV-00174,TKT-00278,tax,GVT,Government Passenger Tax,71.3,SGD
+INL-01319,INV-00174,TKT-00278,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01320,INV-00174,TKT-00278,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01321,INV-00174,TKT-00279,base_fare,ECOSV,Base fare: Economy Saver,1018.52,SGD
+INL-01322,INV-00174,TKT-00279,tax,GVT,Government Passenger Tax,71.3,SGD
+INL-01323,INV-00174,TKT-00279,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01324,INV-00174,TKT-00279,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01325,INV-00175,TKT-00280,base_fare,FIRST,Base fare: First,4524.42,SGD
+INL-01326,INV-00175,TKT-00280,tax,GVT,Government Passenger Tax,316.71,SGD
+INL-01327,INV-00175,TKT-00280,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01328,INV-00175,TKT-00280,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01329,INV-00175,TKT-00280,ancillary,SEATPR,Ancillary service: SEATPR,33.56,SGD
+INL-01330,INV-00175,TKT-00281,base_fare,FIRST,Base fare: First,4524.42,SGD
+INL-01331,INV-00175,TKT-00281,tax,GVT,Government Passenger Tax,316.71,SGD
+INL-01332,INV-00175,TKT-00281,airport_fee,PSC,Passenger Service Charge,46.98,SGD
+INL-01333,INV-00175,TKT-00281,airport_fee,SEC,Security Fee,16.11,SGD
+INL-01334,INV-00176,TKT-00282,base_fare,ECOSV,Base fare: Economy Saver,540.01,AUD
+INL-01335,INV-00176,TKT-00282,tax,GVT,Government Passenger Tax,37.8,AUD
+INL-01336,INV-00176,TKT-00282,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01337,INV-00176,TKT-00282,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01338,INV-00176,,discount,CORP-CORP-005,Discount: Corporate rate: Falcon Logistics International,-54.0,AUD
+INL-01339,INV-00177,TKT-00283,base_fare,ECOFL,Base fare: Economy Flex,878.37,EUR
+INL-01340,INV-00177,TKT-00283,tax,GVT,Government Passenger Tax,61.49,EUR
+INL-01341,INV-00177,TKT-00283,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01342,INV-00177,TKT-00283,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01343,INV-00177,TKT-00284,base_fare,ECOFL,Base fare: Economy Flex,878.37,EUR
+INL-01344,INV-00177,TKT-00284,tax,GVT,Government Passenger Tax,61.49,EUR
+INL-01345,INV-00177,TKT-00284,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01346,INV-00177,TKT-00284,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01347,INV-00177,TKT-00284,ancillary,WIFI,Ancillary service: WIFI,13.76,EUR
+INL-01348,INV-00177,TKT-00285,base_fare,ECOFL,Base fare: Economy Flex,878.37,EUR
+INL-01349,INV-00177,TKT-00285,tax,GVT,Government Passenger Tax,61.49,EUR
+INL-01350,INV-00177,TKT-00285,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01351,INV-00177,TKT-00285,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01352,INV-00178,TKT-00286,base_fare,BIZSV,Base fare: Business Saver,8983.25,BRL
+INL-01353,INV-00178,TKT-00286,tax,GVT,Government Passenger Tax,628.83,BRL
+INL-01354,INV-00178,TKT-00286,airport_fee,PSC,Passenger Service Charge,205.88,BRL
+INL-01355,INV-00178,TKT-00286,airport_fee,SEC,Security Fee,70.59,BRL
+INL-01356,INV-00179,TKT-00287,base_fare,FIRST,Base fare: First,10098.88,AUD
+INL-01357,INV-00179,TKT-00287,tax,GVT,Government Passenger Tax,706.92,AUD
+INL-01358,INV-00179,TKT-00287,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01359,INV-00179,TKT-00287,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01360,INV-00179,TKT-00288,base_fare,FIRST,Base fare: First,10098.88,AUD
+INL-01361,INV-00179,TKT-00288,tax,GVT,Government Passenger Tax,706.92,AUD
+INL-01362,INV-00179,TKT-00288,airport_fee,PSC,Passenger Service Charge,53.03,AUD
+INL-01363,INV-00179,TKT-00288,airport_fee,SEC,Security Fee,18.18,AUD
+INL-01364,INV-00180,TKT-00289,base_fare,PREMY,Base fare: Premium Economy,910.45,EUR
+INL-01365,INV-00180,TKT-00289,tax,GVT,Government Passenger Tax,63.73,EUR
+INL-01366,INV-00180,TKT-00289,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01367,INV-00180,TKT-00289,airport_fee,SEC,Security Fee,11.01,EUR
+INL-01368,INV-00180,TKT-00290,base_fare,PREMY,Base fare: Premium Economy,910.45,EUR
+INL-01369,INV-00180,TKT-00290,tax,GVT,Government Passenger Tax,63.73,EUR
+INL-01370,INV-00180,TKT-00290,airport_fee,PSC,Passenger Service Charge,32.11,EUR
+INL-01371,INV-00180,TKT-00290,airport_fee,SEC,Security Fee,11.01,EUR
+INL-00024-DUP,INV-00005-DUP,TKT-00006,base_fare,PREMY,Base fare: Premium Economy,1341.07,CAD
+INL-00025-DUP,INV-00005-DUP,TKT-00006,tax,GVT,Government Passenger Tax,93.88,CAD
+INL-00026-DUP,INV-00005-DUP,TKT-00006,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00027-DUP,INV-00005-DUP,TKT-00006,airport_fee,SEC,Security Fee,16.22,CAD
+INL-00028-DUP,INV-00005-DUP,TKT-00006,ancillary,MEALSP,Ancillary service: MEALSP,27.03,CAD
+INL-00029-DUP,INV-00005-DUP,TKT-00006,ancillary,BAG20,Ancillary service: BAG20,60.81,CAD
+INL-00030-DUP,INV-00005-DUP,TKT-00007,base_fare,PREMY,Base fare: Premium Economy,1341.07,CAD
+INL-00031-DUP,INV-00005-DUP,TKT-00007,tax,GVT,Government Passenger Tax,93.88,CAD
+INL-00032-DUP,INV-00005-DUP,TKT-00007,airport_fee,PSC,Passenger Service Charge,47.3,CAD
+INL-00033-DUP,INV-00005-DUP,TKT-00007,airport_fee,SEC,Security Fee,16.22,CAD

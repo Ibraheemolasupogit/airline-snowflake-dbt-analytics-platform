@@ -1,0 +1,6 @@
+corporate_account_id,company_name,country,negotiated_discount_pct,default_currency
+CORP-001,Vantage Consulting Group,US,0.12,USD
+CORP-002,Northfield Industrial Holdings,GB,0.1,GBP
+CORP-003,Solenne Cosmetiques,FR,0.08,EUR
+CORP-004,Meridian Bank Group,SG,0.15,SGD
+CORP-005,Falcon Logistics International,AE,0.1,AED

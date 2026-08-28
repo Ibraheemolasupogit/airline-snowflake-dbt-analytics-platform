@@ -1,0 +1,7 @@
+product_code,product_name,fare_class_code,included_service_codes
+PRD-ECOSV,Economy Basic,ECOSV,
+PRD-ECOFL,Economy Standard,ECOFL,BAG20
+PRD-PREMY,Premium Economy,PREMY,BAG20|SEATPR
+PRD-BIZSV,Business Saver,BIZSV,BAG20|SEATPR|MEALSP
+PRD-BIZFL,Business Flex,BIZFL,BAG20|SEATPR|MEALSP|LOUNGE
+PRD-FIRST,First,FIRST,BAG20|SEATPR|MEALSP|LOUNGE

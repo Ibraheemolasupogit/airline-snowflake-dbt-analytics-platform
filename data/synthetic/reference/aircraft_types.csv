@@ -1,0 +1,7 @@
+aircraft_type_code,type_name,body_type,typical_seats,cabins,cruise_speed_kmh
+A320,Airbus A320-200,narrowbody,180,Y|C,830
+A321,Airbus A321-200,narrowbody,220,Y|C,830
+A359,Airbus A350-900,widebody,325,Y|W|C|F,900
+B738,Boeing 737-800,narrowbody,189,Y|C,840
+B77W,Boeing 777-300ER,widebody,396,Y|W|C|F,900
+E190,Embraer E190,regional,100,Y|C,800

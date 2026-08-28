@@ -1,0 +1,7 @@
+fare_rule_id,fare_class_code,refundable,change_fee_usd,advance_purchase_days,min_stay_nights
+FRR-ECOSV,ECOSV,False,75.0,14,1
+FRR-ECOFL,ECOFL,True,0.0,14,0
+FRR-PREMY,PREMY,True,0.0,0,0
+FRR-BIZSV,BIZSV,False,150.0,0,1
+FRR-BIZFL,BIZFL,True,0.0,0,0
+FRR-FIRST,FIRST,True,0.0,0,0

@@ -1,0 +1,8 @@
+service_code,service_name,category,base_price_usd
+BAG20,Extra Checked Bag 20kg,baggage,45.0
+SEATPR,Preferred Seat Selection,seating,25.0
+SEATXL,Extra Legroom Seat,seating,60.0
+MEALSP,Special Meal,catering,20.0
+LOUNGE,Airport Lounge Access,lounge,55.0
+UPGCB,Upgrade to Business,upgrade,220.0
+WIFI,Inflight Wi-Fi,connectivity,15.0

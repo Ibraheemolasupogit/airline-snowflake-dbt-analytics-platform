@@ -1,0 +1,9 @@
+travel_agent_id,agency_name,iata_number,country,commission_pct
+TA-001,Compass Point Travel,90-100137,US,0.07
+TA-002,Blue Horizon Journeys,90-100274,GB,0.06
+TA-003,Voyage Elegante,90-100411,FR,0.065
+TA-004,Pacific Rim Travel Partners,90-100548,SG,0.07
+TA-005,Oasis Business Travel,90-100685,AE,0.06
+TA-006,Southern Skies Travel Co,90-100822,AU,0.065
+TA-007,Harborview Corporate Travel,90-100959,CA,0.06
+TA-008,Golden Gate Getaways,90-101096,US,0.05

@@ -1,0 +1,9 @@
+discount_code,discount_name,discount_type,value,corporate_account_id
+WELCOME10,Welcome 10 Percent,percentage,0.1,
+SUMMER25,Summer Fixed Discount,fixed_amount,25.0,
+LOYALTY5,Loyalty 5 Percent,percentage,0.05,
+CORP-CORP-001,Corporate rate: Vantage Consulting Group,percentage,0.12,CORP-001
+CORP-CORP-002,Corporate rate: Northfield Industrial Holdings,percentage,0.1,CORP-002
+CORP-CORP-003,Corporate rate: Solenne Cosmetiques,percentage,0.08,CORP-003
+CORP-CORP-004,Corporate rate: Meridian Bank Group,percentage,0.15,CORP-004
+CORP-CORP-005,Corporate rate: Falcon Logistics International,percentage,0.1,CORP-005

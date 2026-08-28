@@ -1,0 +1,7 @@
+fare_class_code,cabin,fare_basis_code,refundable,change_fee_usd,base_fare_usd,per_km_usd,description
+ECOSV,Y,QOWECO,False,75.0,90.0,0.045,Economy Saver
+ECOFL,Y,YFLECO,True,0.0,140.0,0.055,Economy Flex
+PREMY,W,WFLPEY,True,0.0,260.0,0.085,Premium Economy
+BIZSV,C,CNRBIZ,False,150.0,520.0,0.16,Business Saver
+BIZFL,C,CFLBIZ,True,0.0,780.0,0.2,Business Flex
+FIRST,F,FFLFST,True,0.0,1450.0,0.34,First

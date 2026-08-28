@@ -1,0 +1,49 @@
+airport_fee_id,airport_ident,fee_code,fee_name,currency_code,amount
+FEE-KJFK-PSC,KJFK,PSC,Passenger Service Charge,USD,35.0
+FEE-KJFK-SEC,KJFK,SEC,Security Fee,USD,12.0
+FEE-KLAX-PSC,KLAX,PSC,Passenger Service Charge,USD,35.0
+FEE-KLAX-SEC,KLAX,SEC,Security Fee,USD,12.0
+FEE-KORD-PSC,KORD,PSC,Passenger Service Charge,USD,35.0
+FEE-KORD-SEC,KORD,SEC,Security Fee,USD,12.0
+FEE-KATL-PSC,KATL,PSC,Passenger Service Charge,USD,35.0
+FEE-KATL-SEC,KATL,SEC,Security Fee,USD,12.0
+FEE-KDFW-PSC,KDFW,PSC,Passenger Service Charge,USD,35.0
+FEE-KDFW-SEC,KDFW,SEC,Security Fee,USD,12.0
+FEE-KSFO-PSC,KSFO,PSC,Passenger Service Charge,USD,35.0
+FEE-KSFO-SEC,KSFO,SEC,Security Fee,USD,12.0
+FEE-CYYZ-PSC,CYYZ,PSC,Passenger Service Charge,CAD,47.3
+FEE-CYYZ-SEC,CYYZ,SEC,Security Fee,CAD,16.22
+FEE-EGLL-PSC,EGLL,PSC,Passenger Service Charge,GBP,27.56
+FEE-EGLL-SEC,EGLL,SEC,Security Fee,GBP,9.45
+FEE-EGKK-PSC,EGKK,PSC,Passenger Service Charge,GBP,27.56
+FEE-EGKK-SEC,EGKK,SEC,Security Fee,GBP,9.45
+FEE-LFPG-PSC,LFPG,PSC,Passenger Service Charge,EUR,32.11
+FEE-LFPG-SEC,LFPG,SEC,Security Fee,EUR,11.01
+FEE-EDDF-PSC,EDDF,PSC,Passenger Service Charge,EUR,32.11
+FEE-EDDF-SEC,EDDF,SEC,Security Fee,EUR,11.01
+FEE-EHAM-PSC,EHAM,PSC,Passenger Service Charge,EUR,32.11
+FEE-EHAM-SEC,EHAM,SEC,Security Fee,EUR,11.01
+FEE-LEMD-PSC,LEMD,PSC,Passenger Service Charge,EUR,32.11
+FEE-LEMD-SEC,LEMD,SEC,Security Fee,EUR,11.01
+FEE-LIRF-PSC,LIRF,PSC,Passenger Service Charge,EUR,32.11
+FEE-LIRF-SEC,LIRF,SEC,Security Fee,EUR,11.01
+FEE-OMDB-PSC,OMDB,PSC,Passenger Service Charge,AED,128.53
+FEE-OMDB-SEC,OMDB,SEC,Security Fee,AED,44.07
+FEE-VHHH-PSC,VHHH,PSC,Passenger Service Charge,HKD,273.01
+FEE-VHHH-SEC,VHHH,SEC,Security Fee,HKD,93.6
+FEE-WSSS-PSC,WSSS,PSC,Passenger Service Charge,SGD,46.98
+FEE-WSSS-SEC,WSSS,SEC,Security Fee,SGD,16.11
+FEE-RJTT-PSC,RJTT,PSC,Passenger Service Charge,JPY,5223.88
+FEE-RJTT-SEC,RJTT,SEC,Security Fee,JPY,1791.04
+FEE-RJAA-PSC,RJAA,PSC,Passenger Service Charge,JPY,5223.88
+FEE-RJAA-SEC,RJAA,SEC,Security Fee,JPY,1791.04
+FEE-ZBAA-PSC,ZBAA,PSC,Passenger Service Charge,CNY,251.8
+FEE-ZBAA-SEC,ZBAA,SEC,Security Fee,CNY,86.33
+FEE-YSSY-PSC,YSSY,PSC,Passenger Service Charge,AUD,53.03
+FEE-YSSY-SEC,YSSY,SEC,Security Fee,AUD,18.18
+FEE-FAOR-PSC,FAOR,PSC,Passenger Service Charge,ZAR,648.15
+FEE-FAOR-SEC,FAOR,SEC,Security Fee,ZAR,222.22
+FEE-SBGR-PSC,SBGR,PSC,Passenger Service Charge,BRL,205.88
+FEE-SBGR-SEC,SBGR,SEC,Security Fee,BRL,70.59
+FEE-LTFM-PSC,LTFM,PSC,Passenger Service Charge,TRY,1166.67
+FEE-LTFM-SEC,LTFM,SEC,Security Fee,TRY,400.0

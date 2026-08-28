@@ -1,0 +1,20 @@
+{
+  "as_of_date": "2026-01-15",
+  "control_totals": {
+    "booking_cancelled_count": 7,
+    "booking_confirmed_count": 173,
+    "booking_count": 180,
+    "flight_instance_cancelled_count": 1,
+    "flight_instance_completed_count": 623,
+    "flight_instance_count": 864,
+    "flight_instance_scheduled_count": 240,
+    "invoice_count": 181,
+    "invoice_total_value": 8117998.23,
+    "refund_count": 7,
+    "refund_total_value": 67888.54,
+    "successful_payment_count": 171,
+    "successful_payment_total_value": 7986366.42,
+    "ticket_count": 290
+  },
+  "notes": "Values are computed as-generated, including deliberately injected exceptions (for example the duplicate invoice in exception_manifest.csv). Amounts are summed in each row's native currency without cross-currency conversion, so 'total_value' figures are illustrative multi-currency sums, not a single reporting currency total."
+}

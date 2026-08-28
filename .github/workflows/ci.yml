@@ -67,3 +67,15 @@ jobs:
         run: |
           sqlfluff lint --dialect snowflake --templater jinja models tests analyses macros
           sqlfluff lint --dialect snowflake --templater jinja --ignore templating snapshots
+
+      - name: Generate synthetic airline source data
+        run: python scripts/generate_airline_data.py
+
+      - name: Generate synthetic control totals
+        run: python scripts/generate_control_totals.py
+
+      - name: Validate synthetic airline source data
+        run: python scripts/validate_source_data.py
+
+      - name: Run Python tests
+        run: python -m pytest tests/python

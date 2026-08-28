@@ -1,0 +1,6 @@
+voucher_id,passenger_id,issued_from,amount,currency,issued_at_utc,expiry_date,status,redeemed_booking_id
+VCH-00001,PSG-00130,goodwill,324.69,EUR,2025-12-30T11:00:00Z,2026-12-29,active,
+VCH-00002,PSG-00125,goodwill,684.3,EUR,2025-12-13T11:00:00Z,2026-12-12,active,
+VCH-00003,PSG-00091,goodwill,1287.83,CNY,2025-11-06T11:00:00Z,2026-11-05,active,
+VCH-00004,PSG-00011,goodwill,7214.22,JPY,2025-11-18T11:00:00Z,2026-11-17,active,
+VCH-00005,PSG-00049,goodwill,648.66,EUR,2025-12-13T11:00:00Z,2026-12-12,active,

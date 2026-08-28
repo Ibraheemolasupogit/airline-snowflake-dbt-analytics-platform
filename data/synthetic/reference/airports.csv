@@ -1,0 +1,25 @@
+ident,icao_code,iata_code,airport_name,municipality,iso_country,iso_region,continent_code,latitude_deg,longitude_deg,utc_offset_hours
+KJFK,KJFK,JFK,John F Kennedy International Airport,New York,US,US-NY,NA,40.6398,-73.7789,-5.0
+KLAX,KLAX,LAX,Los Angeles International Airport,Los Angeles,US,US-CA,NA,33.9425,-118.4081,-8.0
+KORD,KORD,ORD,Chicago O'Hare International Airport,Chicago,US,US-IL,NA,41.9786,-87.9048,-6.0
+KATL,KATL,ATL,Hartsfield Jackson Atlanta International Airport,Atlanta,US,US-GA,NA,33.6407,-84.4277,-5.0
+KDFW,KDFW,DFW,Dallas Fort Worth International Airport,Dallas-Fort Worth,US,US-TX,NA,32.8968,-97.038,-6.0
+KSFO,KSFO,SFO,San Francisco International Airport,San Francisco,US,US-CA,NA,37.6188,-122.375,-8.0
+CYYZ,CYYZ,YYZ,Toronto Pearson International Airport,Mississauga,CA,CA-ON,NA,43.6772,-79.6306,-5.0
+EGLL,EGLL,LHR,London Heathrow Airport,London,GB,GB-ENG,EU,51.47,-0.4543,0.0
+EGKK,EGKK,LGW,London Gatwick Airport,London,GB,GB-ENG,EU,51.1481,-0.1903,0.0
+LFPG,LFPG,CDG,Charles de Gaulle International Airport,Paris,FR,FR-J,EU,49.0097,2.5479,1.0
+EDDF,EDDF,FRA,Frankfurt am Main Airport,Frankfurt,DE,DE-HE,EU,50.0333,8.5706,1.0
+EHAM,EHAM,AMS,Amsterdam Airport Schiphol,Amsterdam,NL,NL-NH,EU,52.3086,4.7639,1.0
+LEMD,LEMD,MAD,Adolfo Suarez Madrid-Barajas Airport,Madrid,ES,ES-M,EU,40.4936,-3.5668,1.0
+LIRF,LIRF,FCO,Leonardo da Vinci International Airport,Rome,IT,IT-62,EU,41.8003,12.2389,1.0
+OMDB,OMDB,DXB,Dubai International Airport,Dubai,AE,AE-DU,AS,25.2528,55.3644,4.0
+VHHH,VHHH,HKG,Hong Kong International Airport,Hong Kong,HK,HK-U-A,AS,22.308,113.9185,8.0
+WSSS,WSSS,SIN,Singapore Changi Airport,Singapore,SG,SG-04,AS,1.3644,103.9915,8.0
+RJTT,RJTT,HND,Tokyo Haneda Airport,Tokyo,JP,JP-13,AS,35.5494,139.7798,9.0
+RJAA,RJAA,NRT,Narita International Airport,Narita,JP,JP-12,AS,35.7647,140.3864,9.0
+ZBAA,ZBAA,PEK,Beijing Capital International Airport,Beijing,CN,CN-11,AS,40.0801,116.5846,8.0
+YSSY,YSSY,SYD,Sydney Kingsford Smith Airport,Sydney,AU,AU-NSW,OC,-33.9461,151.1772,10.0
+FAOR,FAOR,JNB,OR Tambo International Airport,Johannesburg,ZA,ZA-GT,AF,-26.1392,28.246,2.0
+SBGR,SBGR,GRU,Sao Paulo-Guarulhos International Airport,Sao Paulo,BR,BR-SP,SA,-23.4356,-46.4731,-3.0
+LTFM,LTFM,IST,Istanbul Airport,Istanbul,TR,TR-34,EU,41.2753,28.7519,3.0

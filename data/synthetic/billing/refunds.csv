@@ -1,0 +1,8 @@
+refund_id,invoice_id,booking_id,payment_id,refund_datetime_utc,reason,amount,currency,method,status
+REF-00001,INV-00003,BKG-00003,PMT-00003,2025-12-24T11:00:00Z,cancellation,10585.89,BRL,original_payment,issued
+REF-00002,INV-00011,BKG-00011,PMT-00011,2025-12-25T11:00:00Z,cancellation,1011.67,SGD,original_payment,issued
+REF-00003,INV-00043,BKG-00043,PMT-00041,2025-12-09T11:00:00Z,cancellation,2280.19,AUD,original_payment,issued
+REF-00004,INV-00074,BKG-00074,PMT-00071,2025-10-30T11:00:00Z,cancellation,6237.22,CAD,original_payment,issued
+REF-00005,INV-00095,BKG-00095,PMT-00091,2025-12-05T11:00:00Z,cancellation,37604.1,ZAR,original_payment,issued
+REF-00006,INV-00113,BKG-00113,PMT-00108,2025-11-19T11:00:00Z,cancellation,280.92,GBP,original_payment,issued
+REF-00007,INV-00178,BKG-00178,PMT-00169,2025-12-23T11:00:00Z,cancellation,9888.55,BRL,original_payment,issued

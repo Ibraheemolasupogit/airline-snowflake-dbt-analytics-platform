@@ -1,0 +1,9 @@
+adjustment_id,invoice_id,adjustment_type,amount,currency,reason,created_at_utc
+ADJ-00001,INV-00022,credit,-49.26,AUD,goodwill_rate_correction,2025-11-11T11:00:00Z
+ADJ-00002,INV-00045,credit,-316.88,AED,goodwill_rate_correction,2025-12-31T11:00:00Z
+ADJ-00003,INV-00068,credit,-59.39,EUR,goodwill_rate_correction,2025-12-03T11:00:00Z
+ADJ-00004,INV-00091,credit,-47.9,GBP,goodwill_rate_correction,2025-12-03T11:00:00Z
+ADJ-00005,INV-00114,credit,-472.89,BRL,goodwill_rate_correction,2025-12-03T11:00:00Z
+ADJ-00006,INV-00137,credit,-129.32,USD,goodwill_rate_correction,2025-11-20T11:00:00Z
+ADJ-00007,INV-00160,credit,-9092.34,JPY,goodwill_rate_correction,2025-12-20T11:00:00Z
+ADJ-09001,INV-99998,credit,999999.0,USD,data_entry_error,2026-01-03T08:00:00Z

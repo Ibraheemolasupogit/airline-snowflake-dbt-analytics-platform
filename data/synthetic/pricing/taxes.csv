@@ -1,0 +1,18 @@
+tax_id,country_code,tax_code,tax_name,percentage_rate,currency_code
+TAX-AE-GVT,AE,GVT,Government Passenger Tax,0.07,AED
+TAX-AU-GVT,AU,GVT,Government Passenger Tax,0.07,AUD
+TAX-BR-GVT,BR,GVT,Government Passenger Tax,0.07,BRL
+TAX-CA-GVT,CA,GVT,Government Passenger Tax,0.07,CAD
+TAX-CN-GVT,CN,GVT,Government Passenger Tax,0.07,CNY
+TAX-DE-GVT,DE,GVT,Government Passenger Tax,0.07,EUR
+TAX-ES-GVT,ES,GVT,Government Passenger Tax,0.07,EUR
+TAX-FR-GVT,FR,GVT,Government Passenger Tax,0.07,EUR
+TAX-GB-GVT,GB,GVT,Government Passenger Tax,0.07,GBP
+TAX-HK-GVT,HK,GVT,Government Passenger Tax,0.07,HKD
+TAX-IT-GVT,IT,GVT,Government Passenger Tax,0.07,EUR
+TAX-JP-GVT,JP,GVT,Government Passenger Tax,0.07,JPY
+TAX-NL-GVT,NL,GVT,Government Passenger Tax,0.07,EUR
+TAX-SG-GVT,SG,GVT,Government Passenger Tax,0.07,SGD
+TAX-TR-GVT,TR,GVT,Government Passenger Tax,0.07,TRY
+TAX-US-GVT,US,GVT,Government Passenger Tax,0.07,USD
+TAX-ZA-GVT,ZA,GVT,Government Passenger Tax,0.07,ZAR

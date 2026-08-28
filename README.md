@@ -6,9 +6,9 @@ Production-style analytics engineering portfolio project for airline operations 
 
 This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
 
-Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completes the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. It does not include synthetic airline data, billing models, dashboards, or Snowflake deployment — those remain planned for later milestones.
+Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completed the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. Milestone 9 adds a deterministic synthetic airline operational/commercial source dataset — airlines, aircraft, routes, flights, bookings, tickets, fares, invoices, payments, and refunds — that later milestones will model. It does not add airline dbt staging models, core dimensions/facts, booking/pricing/billing transformations, revenue recognition, reconciliation, commercial marts, dashboards, or Snowflake deployment — those remain planned for later milestones.
 
-See `reports/airstats_capstone_summary.md` for a concise capstone summary and `docs/data_models/airstats_capstone_completion_evidence.md` for the full requirement-to-file mapping.
+See `reports/airstats_capstone_summary.md` for a concise AirStats capstone summary, `docs/data_models/airstats_capstone_completion_evidence.md` for the full AirStats requirement-to-file mapping, and `docs/data_models/airline_synthetic_source_data.md` for the Milestone 9 synthetic-data design.
 
 ## Core Stack
 
@@ -26,8 +26,9 @@ AirStats airport/runway reference -> routes and flights -> bookings and tickets 
 
 - `models/`: dbt model layers: staging, intermediate, core, and marts (AirStats marts under `models/marts/airport_operations/`); reusable `doc()` blocks live in `models/docs/`
 - `macros/`, `snapshots/`, `seeds/`, `analyses/`: standard dbt project areas (AirStats analyses under `analyses/`)
-- `data/`: raw, synthetic, seed, and sample data landing areas for local development artifacts
-- `tests/`: generic, singular, reconciliation, business-rule, and source-quality tests
+- `data/`: raw, synthetic, seed, and sample data landing areas; `data/synthetic/` holds the generated Milestone 9 airline dataset (reference/operations/bookings/pricing/billing)
+- `scripts/`: standard-library Python tooling, including `generate_airline_data.py`, `generate_control_totals.py`, and `validate_source_data.py`
+- `tests/`: generic, singular, reconciliation, business-rule, and source-quality dbt tests, plus lightweight Python tests under `tests/python/`
 - `docs/`: architecture, glossary, data-model, billing, reconciliation, runbook, and decision records
 - `reports/`: portfolio-facing summary reports, such as `airstats_capstone_summary.md`
 - `.github/workflows/`: CI checks that can run without live Snowflake credentials
@@ -44,7 +45,8 @@ Implementation status:
 - Milestone 6 - complete
 - Milestone 7 - complete
 - Milestone 8 - complete
-- Milestone 9 and later milestones - planned
+- Milestone 9 - complete
+- Milestone 10 and later milestones - planned
 
 Implemented (AirStats capstone, Milestones 1-8):
 
@@ -66,11 +68,20 @@ Implemented (AirStats capstone, Milestones 1-8):
 - curated AirStats analysis queries under `analyses/`
 - capstone completion evidence (`docs/data_models/airstats_capstone_completion_evidence.md`) and summary report (`reports/airstats_capstone_summary.md`)
 
-Planned (Milestone 9 onward):
+Implemented (Milestone 9, synthetic airline source data):
 
-- synthetic airline operational data (airlines, aircraft, routes, flights, passengers)
-- bookings, ticketing, fares, and ancillary services
-- invoices, payments, refunds, and adjustments
+- a deterministic synthetic-data generator (`scripts/generate_airline_data.py`) covering all 31 entities across reference/operations, passenger/booking, products/pricing, and billing/payments domains — standard library only, fixed seed, no live Snowflake connection
+- an AirStats-consistent airport-reference fixture used by routes, flight schedules, flight instances, ticket segments, and airport fees
+- a documented catalogue of 14 deliberately injected data-quality/financial-control exceptions with a machine-readable manifest (`data/synthetic/exception_manifest.csv`)
+- synthetic source-level control totals (`scripts/generate_control_totals.py`, `data/synthetic/control_totals.json`)
+- an offline validator (`scripts/validate_source_data.py`) and pytest suite (`tests/python/`) that check keys, relationships, currencies, exception fingerprints, and generator determinism without dbt or Snowflake
+- full design documentation (`docs/data_models/airline_synthetic_source_data.md`, `docs/data_models/airline_synthetic_exception_catalogue.md`)
+
+Planned (Milestone 10 onward):
+
+- airline dbt staging models and core dimensions/facts
+- booking-lifecycle, pricing, and billing transformations
+- invoices, payments, refunds, and adjustments modelling
 - revenue recognition
 - outstanding balances and billing exceptions
 - reconciliation controls
@@ -106,6 +117,15 @@ dbt parse --profiles-dir .
 
 Real credentials, private keys, local profiles, and environment files must not be committed.
 
+To regenerate the synthetic airline dataset and validate it offline:
+
+```bash
+python scripts/generate_airline_data.py
+python scripts/generate_control_totals.py
+python scripts/validate_source_data.py
+python -m pytest tests/python
+```
+
 ## Roadmap
 
 1. Repository Foundation - complete
@@ -116,7 +136,7 @@ Real credentials, private keys, local profiles, and environment files must not b
 6. AirStats SCD Type 2 Snapshots - complete
 7. AirStats Testing and Assurance - complete
 8. AirStats Documentation, Analysis Queries, Airport Marts, and Capstone Completion Evidence - complete
-9. Synthetic Airline Data Foundation - planned
+9. Synthetic Airline Data Foundation - complete
 10. Airline Staging Models - planned
 11. Core Airline Operations Model - planned
 12. Booking and Ticketing - planned

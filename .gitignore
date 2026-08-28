@@ -36,6 +36,14 @@ outputs/*
 !data/raw/airstats/
 !data/raw/airstats/README.md
 !data/synthetic/.gitkeep
+!data/synthetic/README.md
+!data/synthetic/reference/
+!data/synthetic/operations/
+!data/synthetic/bookings/
+!data/synthetic/pricing/
+!data/synthetic/billing/
+!data/synthetic/exception_manifest.csv
+!data/synthetic/control_totals.json
 !data/sample/.gitkeep
 !reports/.gitkeep
 !reports/airstats_capstone_summary.md
