@@ -1,0 +1,171 @@
+version: 2
+
+models:
+  - name: fct_flight_schedule
+    description: >
+      Grain is one row per scheduled flight service (schedule_id). Natural key is schedule_id.
+      Foreign keys: flight_key (dim_flight), airline_key (dim_airline), origin_airport_key and
+      destination_airport_key (dim_airport), aircraft_type_key (dim_aircraft_type). Operational
+      schedule measures only; no passenger-booking, revenue, or ticketing facts.
+    columns:
+      - name: schedule_id
+        description: Natural flight-schedule identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_scheduled_flight_segments')
+              field: schedule_id
+      - name: flight_key
+        description: Foreign key to dim_flight.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_flight')
+              field: flight_key
+      - name: airline_key
+        description: Foreign key to dim_airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: origin_airport_key
+        description: Foreign key to dim_airport for the origin.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: destination_airport_key
+        description: Foreign key to dim_airport for the destination.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: aircraft_type_key
+        description: Foreign key to dim_aircraft_type for the assigned equipment type.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_aircraft_type')
+              field: aircraft_type_key
+      - name: route_id
+        description: Natural route identifier, retained for lineage.
+      - name: scheduled_departure_local_time
+        description: Scheduled local departure time of day (HH:MM) at the origin airport.
+      - name: scheduled_duration_minutes
+        description: Scheduled flight duration in minutes.
+      - name: weekly_operating_day_count
+        description: Count of days per week the schedule operates.
+      - name: distance_km
+        description: Great-circle route distance in kilometres.
+
+  - name: fct_flight_operations
+    description: >
+      Grain is one row per dated flight instance. Natural key is flight_instance_id. Foreign
+      keys: flight_key (dim_flight), airline_key (dim_airline), origin_airport_key and
+      destination_airport_key (dim_airport), aircraft_key (dim_aircraft), actual_aircraft_type_key
+      (dim_aircraft_type, the type of the aircraft that actually operated the flight). Uses only
+      flight-instance operational data -- no booking or ticket data. passengers_carried and
+      load_factor are structurally present but always null in this milestone; see
+      docs/data_models/airline_core_operations.md for why.
+    columns:
+      - name: flight_instance_id
+        description: Natural flight-instance identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_operated_flight_segments')
+              field: flight_instance_id
+      - name: flight_date
+        description: Calendar date of the flight occurrence.
+        tests:
+          - not_null
+      - name: flight_key
+        description: Foreign key to dim_flight.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_flight')
+              field: flight_key
+      - name: airline_key
+        description: Foreign key to dim_airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: origin_airport_key
+        description: Foreign key to dim_airport for the origin.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: destination_airport_key
+        description: Foreign key to dim_airport for the destination.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: aircraft_key
+        description: Foreign key to dim_aircraft for the aircraft that actually operated this instance.
+        tests:
+          - relationships:
+              to: ref('dim_aircraft')
+              field: aircraft_key
+      - name: actual_aircraft_type_key
+        description: Foreign key to dim_aircraft_type for the actual operating equipment type.
+        tests:
+          - relationships:
+              to: ref('dim_aircraft_type')
+              field: aircraft_type_key
+      - name: scheduled_departure_utc
+        description: Scheduled departure timestamp in UTC.
+      - name: scheduled_arrival_utc
+        description: Scheduled arrival timestamp in UTC.
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: ">= scheduled_departure_utc"
+              config:
+                where: "scheduled_departure_utc is not null and scheduled_arrival_utc is not null"
+      - name: status
+        description: Flight-instance status, unchanged from staging.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+      - name: operational_completion_status
+        description: >
+          Deterministic operational completion category. Source-observed operational signal
+          only; does not infer service fulfilment, revenue recognition, or on-time performance.
+      - name: is_assigned_aircraft_type_consistent
+        description: >
+          True when the actual operating aircraft's type matches the schedule's assigned type;
+          false when it does not; null when unknown. Both true and false genuinely occur.
+      - name: seats_available
+        description: Typical seat count of the actual operating equipment type.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              row_condition: seats_available is not null
+      - name: passengers_carried
+        description: >
+          Always null in this milestone. Populating this requires ticket-level passenger counts,
+          which are explicitly out of scope until Milestone 12+; this column exists as a stable,
+          documented placeholder rather than a schema change later milestones must retrofit.
+      - name: load_factor
+        description: >
+          passengers_carried / seats_available, guarded to compute only when seats_available > 0.
+          Always null in this milestone because passengers_carried is always null.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: load_factor is not null

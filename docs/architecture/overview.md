@@ -21,9 +21,16 @@ sources (`RAW_AIRLINE_REFERENCE`, `RAW_AIRLINE_OPERATIONS`, `RAW_AIRLINE_BOOKING
 `RAW_AIRLINE_PRICING`, `RAW_AIRLINE_BILLING`) and 31 typed `stg_airline__*` staging views under
 `models/staging/airline_*/`, documented in `docs/data_models/airline_staging_layer.md`. It is a
 faithful typed pass-through of Milestone 9's source truth, including its deliberately planted
-exceptions -- no intermediate, core, or mart models exist yet for the airline domain. Route,
-flight, operational, billing, revenue, and commercial dbt models remain planned for later
-milestones.
+exceptions -- no intermediate, core, or mart models existed yet for the airline domain at that
+point.
+
+Milestone 11 adds the first airline intermediate transformations and core dimensions/facts:
+four `int_*` models under `models/intermediate/airline_operations/`, six conformed dimensions
+under `models/core/dimensions/` (including the first genuine `dim_airport` join to AirStats), and
+two facts under `models/core/facts/` (`fct_flight_schedule`, `fct_flight_operations`), documented
+in `docs/data_models/airline_core_operations.md`. It covers route/airline/aircraft/airport/flight
+reference and flight-schedule/flight-instance operations only. Booking, ticketing, pricing,
+invoicing, billing, revenue, and commercial dbt models remain planned for later milestones.
 
 ## Layers
 
@@ -36,11 +43,12 @@ milestones.
 
 ## AirStats Source Role
 
-The AirStats source layer supplies airport and runway reference data that later milestones will
-conform for route and flight modelling. The AirStats marts under `models/marts/airport_operations/`
-are the current consumption-ready interface for airport-reference reporting. Future airline
-operational and commercial models should join to this conformed airport layer rather than
-duplicating airport-reference logic.
+The AirStats source layer supplies airport and runway reference data that Milestone 11 conforms
+for route and flight modelling via `dim_airport`, `int_route_airport_pair`, and downstream core
+models. The AirStats marts under `models/marts/airport_operations/` remain the consumption-ready
+interface for airport-reference reporting and are the source `dim_airport` is built from. Future
+airline commercial models should continue to join to this conformed airport layer (directly, or
+via `dim_airport`) rather than duplicating airport-reference logic.
 
 ## Control Principles
 

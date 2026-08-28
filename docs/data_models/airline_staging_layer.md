@@ -177,9 +177,15 @@ core-modelling milestone once a conformed airport dimension exists.
 
 ## What Comes Next
 
-Milestone 11 onward builds intermediate transformations, core dimensions and facts (including
-the conformed `dim_airport` that will finally join to AirStats), booking-lifecycle and journey
-logic, pricing and invoice calculations, payment allocation, revenue recognition, billing
-exception detection, reconciliation, and commercial marts. None of that exists yet -- this
-milestone is a faithful, typed pass-through of the Milestone 9 source truth, including its
+At the time this milestone was completed, none of the following existed yet: intermediate
+transformations, core dimensions and facts, the conformed `dim_airport` join to AirStats,
+booking-lifecycle and journey logic, pricing and invoice calculations, payment allocation,
+revenue recognition, billing exception detection, reconciliation, and commercial marts. This
+milestone was a faithful, typed pass-through of the Milestone 9 source truth, including its
 deliberately planted defects.
+
+Milestone 11 has since added the intermediate transformations, core dimensions/facts, and the
+conformed `dim_airport` join described above -- see `docs/data_models/airline_core_operations.md`.
+Booking-lifecycle and journey logic, pricing and invoice calculations, payment allocation, revenue
+recognition, billing exception detection, reconciliation, and commercial marts remain planned for
+Milestone 12 onward.

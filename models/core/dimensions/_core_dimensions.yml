@@ -1,0 +1,336 @@
+version: 2
+
+models:
+  - name: dim_airport
+    description: >
+      The first true conformed airport dimension. Grain is one row per current airport
+      identifier. Natural key is airport_ident; surrogate key is airport_key
+      (dbt_utils.generate_surrogate_key(['airport_ident'])). AirStats is the sole authoritative
+      source, reused via mart_airport_geographic_coverage and mart_airport_capacity_profile; the
+      synthetic reference/airports.csv fixture is never joined here. This is a current-state
+      dimension (no history); AirStats' own snap_airports/snap_runways snapshots remain the
+      place for SCD Type 2 airport history.
+    columns:
+      - name: airport_key
+        description: Surrogate key, generated from airport_ident.
+        tests:
+          - not_null
+          - unique
+      - name: airport_ident
+        description: Natural airport identifier, conformed from AirStats.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_name
+        description: Airport name from the AirStats conformed layer.
+      - name: airport_type
+        description: Source airport type from the AirStats conformed layer.
+      - name: country_code
+        description: Country code from the AirStats conformed layer.
+      - name: country_name
+        description: Country name from the AirStats conformed layer.
+      - name: region_code
+        description: Region code from the AirStats conformed layer.
+      - name: region_name
+        description: Region name from the AirStats conformed layer.
+      - name: municipality
+        description: Municipality from the AirStats conformed layer.
+      - name: continent_code
+        description: Continent code from the AirStats conformed layer.
+      - name: latitude_deg
+        description: Latitude from the AirStats conformed layer.
+      - name: longitude_deg
+        description: Longitude from the AirStats conformed layer.
+      - name: elevation_ft
+        description: Elevation from the AirStats conformed layer.
+      - name: gps_code
+        description: GPS code from the AirStats conformed layer.
+      - name: icao_code
+        description: ICAO code from the AirStats conformed layer.
+      - name: iata_code
+        description: IATA code from the AirStats conformed layer.
+      - name: local_code
+        description: Local code from the AirStats conformed layer.
+      - name: has_scheduled_service
+        description: Source-derived scheduled-service flag from the AirStats conformed layer.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: runway_count
+        description: Count of staged AirStats runway records for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: open_runway_count
+        description: Count of staged AirStats runway records whose source closed flag is false.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: dim_airline
+    description: >
+      Grain is one row per airline. Natural key is airline_code; surrogate key is airline_key.
+      Validates each airline's hub airport against dim_airport via hub_airport_key, which is the
+      concrete evidence (not just documentation) that AirStats airport identifiers are genuinely
+      integrated into the airline domain.
+    columns:
+      - name: airline_key
+        description: Surrogate key, generated from airline_code.
+        tests:
+          - not_null
+          - unique
+      - name: airline_code
+        description: Natural airline identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__airlines')
+              field: airline_code
+      - name: airline_name
+        description: Airline display name (synthetic, fictional).
+      - name: home_country
+        description: ISO country code of the airline's home market.
+      - name: hub_ident
+        description: Hub airport identifier, AirStats-conformed.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_ident
+      - name: hub_airport_key
+        description: Surrogate key of the hub airport in dim_airport.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+
+  - name: dim_aircraft_type
+    description: >
+      Grain is one row per aircraft type. Natural key is aircraft_type_code; surrogate key is
+      aircraft_type_key.
+    columns:
+      - name: aircraft_type_key
+        description: Surrogate key, generated from aircraft_type_code.
+        tests:
+          - not_null
+          - unique
+      - name: aircraft_type_code
+        description: Natural aircraft type identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__aircraft_types')
+              field: aircraft_type_code
+      - name: type_name
+        description: Manufacturer/model display name.
+      - name: body_type
+        description: Airframe category.
+        tests:
+          - accepted_values:
+              values:
+                - narrowbody
+                - widebody
+                - regional
+      - name: typical_seats
+        description: Typical total seat count for the type.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              row_condition: typical_seats is not null
+      - name: cabins
+        description: Pipe-delimited ordered list of cabin codes the type supports.
+      - name: cruise_speed_kmh
+        description: Assumed cruise speed in km/h.
+
+  - name: dim_aircraft
+    description: >
+      Grain is one row per aircraft registration. Natural key is aircraft_registration;
+      surrogate key is aircraft_key.
+    columns:
+      - name: aircraft_key
+        description: Surrogate key, generated from aircraft_registration.
+        tests:
+          - not_null
+          - unique
+      - name: aircraft_registration
+        description: Natural aircraft tail identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__aircraft')
+              field: aircraft_registration
+      - name: airline_key
+        description: Surrogate key of the operating airline in dim_airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_code
+      - name: aircraft_type_key
+        description: Surrogate key of the aircraft type in dim_aircraft_type.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_aircraft_type')
+              field: aircraft_type_key
+      - name: aircraft_type_code
+        description: Aircraft type.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_aircraft_type')
+              field: aircraft_type_code
+      - name: manufactured_year
+        description: Synthetic manufacture year for the airframe.
+
+  - name: dim_route
+    description: >
+      Grain is one row per airline route. Natural key is route_id; surrogate key is route_key.
+      Origin and destination use conformed dim_airport keys, proving the airline route layer is
+      genuinely joined to AirStats rather than merely documented as compatible with it.
+    columns:
+      - name: route_key
+        description: Surrogate key, generated from route_id.
+        tests:
+          - not_null
+          - unique
+      - name: route_id
+        description: Natural route identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_route_airport_pair')
+              field: route_id
+      - name: airline_key
+        description: Surrogate key of the operating airline in dim_airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+      - name: origin_airport_key
+        description: Surrogate key of the origin airport in dim_airport.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: origin_ident
+        description: Origin airport identifier, AirStats-conformed.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_ident
+      - name: origin_airport_name
+        description: Origin airport name.
+      - name: destination_airport_key
+        description: Surrogate key of the destination airport in dim_airport.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: destination_ident
+        description: Destination airport identifier, AirStats-conformed.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_ident
+      - name: destination_airport_name
+        description: Destination airport name.
+      - name: distance_km
+        description: Great-circle route distance in kilometres.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              row_condition: distance_km is not null
+
+  - name: dim_flight
+    description: >
+      Grain is one row per flight schedule (schedule_id) -- see the model SQL comment for why
+      this grain was chosen over flight_number. Natural key is schedule_id; surrogate key is
+      flight_key. Do not confuse this scheduled-flight identity with a dated flight instance,
+      which is fct_flight_operations' grain.
+    columns:
+      - name: flight_key
+        description: Surrogate key, generated from schedule_id.
+        tests:
+          - not_null
+          - unique
+      - name: schedule_id
+        description: Natural flight-schedule identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_scheduled_flight_segments')
+              field: schedule_id
+      - name: flight_number
+        description: Marketing/operating flight number (1:1 with schedule_id in this dataset).
+        tests:
+          - not_null
+      - name: airline_key
+        description: Surrogate key of the operating airline in dim_airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_airline')
+              field: airline_key
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+      - name: route_key
+        description: Surrogate key of the route in dim_route.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: route_id
+        description: Route this schedule operates.
+        tests:
+          - not_null
+      - name: aircraft_type_key
+        description: Surrogate key of the assigned equipment type in dim_aircraft_type.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_aircraft_type')
+              field: aircraft_type_key
+      - name: aircraft_type_code
+        description: Equipment type assigned to this schedule.
+        tests:
+          - not_null
+      - name: scheduled_departure_local_time
+        description: Scheduled local departure time of day (HH:MM) at the origin airport.
+      - name: scheduled_duration_minutes
+        description: Scheduled flight duration in minutes.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              row_condition: scheduled_duration_minutes is not null
+      - name: operating_days_of_week
+        description: Pipe-delimited three-letter day-of-week codes the schedule operates on.

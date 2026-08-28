@@ -16,6 +16,15 @@ profiles_dir = .
 profile = airline_snowflake_dbt_analytics_platform
 target = dev
 
+[sqlfluff:templater:jinja]
+# The dbt templater needs a live Snowflake connection, which CI/offline linting does not have
+# (see .github/workflows/ci.yml, which lints with --templater jinja instead). SQLFluff's jinja
+# templater has built-in mocks for dbt's own ref()/source()/config()/var()/is_incremental(), but
+# not for package macros. dim_aircraft, dim_aircraft_type, dim_airline, dim_airport, dim_flight,
+# and dim_route call dbt_utils.generate_surrogate_key(), so sqlfluff_libs/dbt_utils.py provides an
+# offline-lint-only shim for that one macro, loaded here and exposed in templates as dbt_utils.
+library_path = sqlfluff_libs
+
 [sqlfluff:indentation]
 tab_space_size = 4
 indent_unit = space

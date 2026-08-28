@@ -1,0 +1,290 @@
+version: 2
+
+models:
+  - name: int_route_airport_pair
+    description: >
+      Conforms airline route origin/destination airport identifiers to the AirStats airport
+      reference layer via int_airport_geography. Grain is one row per airline route. Primary key
+      is route_id. Upstream models are stg_airline__routes and int_airport_geography. This is
+      the first genuine join between the airline domain and AirStats; the synthetic
+      reference/airports.csv fixture is not used. The source does not model a distinct route
+      status field, so none is included here.
+    columns:
+      - name: route_id
+        description: Natural route identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__routes')
+              field: route_id
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier, conformed to AirStats.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: origin_airport_name
+        description: Origin airport name from the AirStats conformed layer; null if unresolved.
+      - name: origin_country_code
+        description: Origin airport country code from the AirStats conformed layer.
+      - name: origin_country_name
+        description: Origin airport country name from the AirStats conformed layer.
+      - name: origin_region_code
+        description: Origin airport region code from the AirStats conformed layer.
+      - name: origin_region_name
+        description: Origin airport region name from the AirStats conformed layer.
+      - name: destination_ident
+        description: Destination airport identifier, conformed to AirStats.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: destination_airport_name
+        description: Destination airport name from the AirStats conformed layer; null if unresolved.
+      - name: destination_country_code
+        description: Destination airport country code from the AirStats conformed layer.
+      - name: destination_country_name
+        description: Destination airport country name from the AirStats conformed layer.
+      - name: destination_region_code
+        description: Destination airport region code from the AirStats conformed layer.
+      - name: destination_region_name
+        description: Destination airport region name from the AirStats conformed layer.
+      - name: distance_km
+        description: Great-circle route distance in kilometres, from staging.
+
+  - name: int_scheduled_flight_segments
+    description: >
+      Reusable scheduled-flight-service transformation. Grain is one row per flight schedule.
+      Primary key is schedule_id. Upstream models are stg_airline__flight_schedules,
+      stg_airline__airlines, stg_airline__aircraft_types, and int_route_airport_pair.
+      operating_days_of_week is preserved as pipe-delimited text; weekly_operating_day_count is
+      the one derived measure worth computing from it at this layer.
+    columns:
+      - name: schedule_id
+        description: Natural flight-schedule identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__flight_schedules')
+              field: schedule_id
+      - name: route_id
+        description: Route this schedule operates.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_route_airport_pair')
+              field: route_id
+      - name: airline_code
+        description: Operating airline.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__airlines')
+              field: airline_code
+      - name: airline_name
+        description: Operating airline display name.
+      - name: flight_number
+        description: Marketing/operating flight number.
+      - name: origin_ident
+        description: Origin airport identifier.
+        tests:
+          - not_null
+      - name: origin_airport_name
+        description: Origin airport name from the AirStats conformed layer.
+      - name: origin_country_code
+        description: Origin airport country code.
+      - name: destination_ident
+        description: Destination airport identifier.
+        tests:
+          - not_null
+      - name: destination_airport_name
+        description: Destination airport name from the AirStats conformed layer.
+      - name: destination_country_code
+        description: Destination airport country code.
+      - name: distance_km
+        description: Great-circle route distance in kilometres.
+      - name: aircraft_type_code
+        description: Equipment type assigned to this schedule.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__aircraft_types')
+              field: aircraft_type_code
+      - name: aircraft_type_name
+        description: Assigned equipment type display name.
+      - name: aircraft_body_type
+        description: Assigned equipment airframe category.
+      - name: aircraft_typical_seats
+        description: Assigned equipment typical seat count.
+      - name: aircraft_cabins
+        description: Pipe-delimited ordered list of cabin codes the assigned equipment supports.
+      - name: scheduled_departure_local_time
+        description: Scheduled local departure time of day (HH:MM) at the origin airport.
+      - name: scheduled_duration_minutes
+        description: Scheduled flight duration in minutes.
+      - name: operating_days_of_week
+        description: Pipe-delimited three-letter day-of-week codes the schedule operates on.
+      - name: weekly_operating_day_count
+        description: Count of days per week the schedule operates, derived from operating_days_of_week.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 1
+              max_value: 7
+
+  - name: int_operated_flight_segments
+    description: >
+      Reusable dated-flight-occurrence transformation. Grain is one row per flight instance.
+      Primary key is flight_instance_id. Upstream models are stg_airline__flight_instances,
+      int_scheduled_flight_segments, stg_airline__aircraft, and stg_airline__aircraft_types. No
+      actual/observed departure or arrival timestamps exist in the source, so no delay measures
+      are computed. No booking or ticket data is referenced.
+    columns:
+      - name: flight_instance_id
+        description: Natural flight-instance identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__flight_instances')
+              field: flight_instance_id
+      - name: schedule_id
+        description: Flight schedule this instance realises.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_scheduled_flight_segments')
+              field: schedule_id
+      - name: route_id
+        description: Route this instance flew (denormalised from the schedule).
+      - name: airline_code
+        description: Operating airline.
+      - name: airline_name
+        description: Operating airline display name.
+      - name: flight_number
+        description: Flight number (denormalised from the schedule).
+      - name: flight_date
+        description: Calendar date of the flight occurrence.
+        tests:
+          - not_null
+      - name: origin_ident
+        description: Origin airport identifier.
+        tests:
+          - not_null
+      - name: origin_airport_name
+        description: Origin airport name from the AirStats conformed layer.
+      - name: destination_ident
+        description: Destination airport identifier.
+        tests:
+          - not_null
+      - name: destination_airport_name
+        description: Destination airport name from the AirStats conformed layer.
+      - name: distance_km
+        description: Great-circle route distance in kilometres.
+      - name: aircraft_registration
+        description: Operating aircraft tail; null only if unassigned in source.
+        tests:
+          - relationships:
+              to: ref('stg_airline__aircraft')
+              field: aircraft_registration
+      - name: scheduled_aircraft_type_code
+        description: Equipment type the flight schedule was planned around.
+      - name: actual_aircraft_type_code
+        description: Equipment type of the aircraft that actually operated this instance.
+      - name: actual_aircraft_type_name
+        description: Display name of the actual operating equipment type.
+      - name: actual_aircraft_typical_seats
+        description: Typical seat count of the actual operating equipment type.
+      - name: scheduled_departure_utc
+        description: Scheduled departure timestamp in UTC.
+      - name: scheduled_arrival_utc
+        description: Scheduled arrival timestamp in UTC.
+      - name: status
+        description: Flight-instance status, unchanged from staging.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+      - name: operational_completion_status
+        description: >
+          Deterministic operational completion category derived directly from status
+          (scheduled/completed/cancelled), with a defensive 'other' fallback for any future
+          source status value not yet enumerated. This is a source-observed operational signal
+          only; it does not infer service fulfilment, revenue recognition, or on-time performance.
+        tests:
+          - accepted_values:
+              values:
+                - scheduled
+                - completed
+                - cancelled
+                - other
+      - name: is_assigned_aircraft_type_consistent
+        description: >
+          True when the actual operating aircraft's type matches the type the flight schedule
+          was planned around; false when the generator fell back to a different-type aircraft;
+          null when either type is unknown. Both true and false genuinely occur in this dataset.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_aircraft_route_compatibility
+    description: >
+      Aircraft-type assignment consistency, aggregated to the flight-schedule grain. Grain is
+      one row per flight schedule. Primary key is schedule_id. Upstream model is
+      int_operated_flight_segments. This is the only aircraft/route compatibility signal the
+      source data defensibly supports (see model SQL comment for why seat-capacity-vs-schedule
+      and distance-vs-range checks are not implemented). Does not imply certified runway
+      compatibility, regulatory approval, airport operating approval, or dispatch suitability.
+    columns:
+      - name: schedule_id
+        description: Natural flight-schedule identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__flight_schedules')
+              field: schedule_id
+      - name: route_id
+        description: Route this schedule operates.
+      - name: airline_code
+        description: Operating airline.
+      - name: scheduled_aircraft_type_code
+        description: Equipment type the flight schedule was planned around.
+      - name: operated_instance_count
+        description: Count of flight instances for this schedule with a known aircraft/type comparison.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: consistent_instance_count
+        description: Count of those instances where the actual aircraft type matched the schedule's assigned type.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: inconsistent_instance_count
+        description: Count of those instances where the actual aircraft type differed from the schedule's assigned type.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: consistent_ratio
+        description: consistent_instance_count / operated_instance_count; null when operated_instance_count is 0.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: consistent_ratio is not null
+      - name: is_fully_consistent
+        description: True when every operated instance for this schedule used the assigned aircraft type.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
