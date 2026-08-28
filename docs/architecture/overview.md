@@ -7,9 +7,11 @@ The intended analytical flow is:
 AirStats airport/runway reference -> routes and flights -> bookings and tickets -> fares/products/services -> invoices and payments -> refunds and adjustments -> revenue recognition -> balances and billing exceptions -> reconciliation -> commercial reporting.
 
 Milestone 2 establishes AirStats as the authoritative raw airport-reference source for later
-airport and runway analytical reference modelling. The implemented scope is limited to raw/source
-metadata; route, flight, operational, billing, revenue, and commercial models remain planned for
-later milestones.
+airport and runway analytical reference modelling. Milestones 3-8 complete the AirStats capstone:
+staging, intermediate transformations, an incremental comments model, SCD Type 2 snapshots,
+assurance testing, consumption-ready marts under `models/marts/airport_operations/`, reusable
+`doc()` blocks, and curated analyses. Route, flight, operational, billing, revenue, and commercial
+models remain planned for later milestones.
 
 ## Layers
 
@@ -23,8 +25,10 @@ later milestones.
 ## AirStats Source Role
 
 The AirStats source layer supplies airport and runway reference data that later milestones will
-prepare for route and flight modelling. Downstream operational and commercial analytics should use
-the conformed airport layer once implemented, rather than duplicating airport-reference logic.
+conform for route and flight modelling. The AirStats marts under `models/marts/airport_operations/`
+are the current consumption-ready interface for airport-reference reporting. Future airline
+operational and commercial models should join to this conformed airport layer rather than
+duplicating airport-reference logic.
 
 ## Control Principles
 

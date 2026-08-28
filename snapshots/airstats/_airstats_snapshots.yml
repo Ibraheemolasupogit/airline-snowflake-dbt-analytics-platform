@@ -3,14 +3,11 @@ version: 2
 snapshots:
   - name: snap_airports
     description: >
-      SCD Type 2 snapshot of staged AirStats airports. Historical grain is one row per airport
-      version over time. Unique key is ident. The snapshot uses dbt's check strategy because the
-      source does not provide a trustworthy row-level updated_at timestamp. Hard deletes are
-      invalidated so disappeared source records close the active historical version rather than
-      deleting prior history.
+      {{ doc('snapshot_semantics') }} Historical grain is one row per airport version over time.
+      Unique key is ident.
     columns:
       - name: ident
-        description: Airport natural identifier and snapshot unique key.
+        description: "{{ doc('airport_identifier') }} Also the snapshot unique key."
         tests:
           - not_null
       - name: airport_type
@@ -52,11 +49,8 @@ snapshots:
 
   - name: snap_runways
     description: >
-      SCD Type 2 snapshot of staged AirStats runways. Historical grain is one row per runway
-      version over time. Unique key is runway_source_id. The snapshot uses dbt's check strategy
-      because the source does not provide a trustworthy row-level updated_at timestamp. Hard
-      deletes are invalidated so disappeared source records close the active historical version
-      rather than deleting prior history.
+      {{ doc('snapshot_semantics') }} Historical grain is one row per runway version over time.
+      Unique key is runway_source_id.
     columns:
       - name: runway_source_id
         description: Provider runway identifier and snapshot unique key.

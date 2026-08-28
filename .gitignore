@@ -38,6 +38,7 @@ outputs/*
 !data/synthetic/.gitkeep
 !data/sample/.gitkeep
 !reports/.gitkeep
+!reports/airstats_capstone_summary.md
 !outputs/.gitkeep
 
 # OS and editor files

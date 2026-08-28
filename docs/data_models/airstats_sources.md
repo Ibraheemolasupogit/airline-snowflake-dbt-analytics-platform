@@ -16,6 +16,8 @@ RAW_AIRSTATS
 -> incremental airport comments
 -> AirStats snapshots
 -> historical airport/runway reference
+-> AirStats marts (models/marts/airport_operations/)
+-> analyses/ and future reporting consumers
 ```
 
 The staging views perform explicit column selection, Snowflake-safe typing, source-aligned
@@ -198,3 +200,43 @@ Milestone 7 adds focused assurance across the AirStats layers:
 AirStats assurance failures are configured to be stored under the logical `DBT_TEST_FAILURES`
 schema during warehouse-backed test execution. This repository documents and parses the
 configuration; it does not claim that Snowflake failure tables already exist.
+
+## AirStats Marts
+
+Milestone 8 adds consumption-ready AirStats marts under `models/marts/airport_operations/`. Every
+mart is table-materialized, uses `ref()` only, avoids a final `select *`, and reuses upstream
+intermediate logic rather than recomputing it:
+
+- `mart_airport_capacity_profile`: one row per airport identifier (`ident`). Combines
+  `int_airport_geography`, `int_airport_runway_profile`, and the scheduled-service flag from
+  `int_airport_operational_status` into a single capacity-oriented reporting row.
+- `mart_airport_runway_capability`: one row per runway source identifier (`runway_source_id`).
+  Passes through `int_runway_capability` categories enriched with airport/country context from
+  `int_airport_geography`.
+- `mart_airport_geographic_coverage`: one row per airport identifier (`ident`). Passes through
+  `int_airport_geography` and adds simple region/country/coordinate coverage-completeness flags.
+- `mart_airport_operational_status`: one row per airport identifier (`ident`). Passes through
+  `int_airport_operational_status` enriched with airport/country context.
+- `mart_airport_comment_activity`: one row per airport identifier (`ident`). Passes through
+  `int_airport_comment_activity` enriched with airport/country context.
+- `mart_airport_data_quality`: one row per airport identifier (`ident`). Surfaces comment
+  completeness from `int_airport_comment_quality`, geography reference validity derived from
+  `int_airport_geography`, and runway-profile count consistency derived from
+  `int_airport_runway_profile`, as reporting-facing flags rather than new intermediate logic.
+
+All mart attributes remain source-derived analytical descriptions of AirStats reference data. They
+are not live operational, regulatory, or certification conclusions.
+
+## Reusable Documentation Blocks
+
+Milestone 8 adds reusable dbt `doc()` blocks in `models/docs/_airstats_docs.md`: `airstats_overview`,
+`airport_identifier`, `runway_capability_definition`, `snapshot_semantics`,
+`incremental_airport_comments_strategy`, and `airstats_assurance_strategy`. They are referenced
+from model and snapshot YAML descriptions so the same wording is reused rather than restated.
+
+## Analyses
+
+Milestone 8 adds curated analysis SQL under `analyses/` that query the AirStats marts:
+`airstats_airport_capacity_analysis`, `airstats_runway_capability_analysis`,
+`airstats_data_quality_analysis`, and `airstats_comment_activity_analysis`. dbt analyses are
+compiled for review but are not executed against Snowflake by this repository.

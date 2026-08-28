@@ -262,16 +262,9 @@ models:
 
   - name: int_airport_comments_incremental
     description: >
-      Incremental AirStats airport-comments model. Grain is one row per source airport comment.
-      Primary and incremental unique key is airport_comment_source_id from
-      stg_airstats__airport_comments. The model is materialized as incremental with Snowflake
-      merge semantics. The incremental watermark uses comment_at, the strongest available source
-      recency field; a seven-day lookback reprocesses recent comments to tolerate late-arriving
-      or reloaded records, while null comment_at rows are reprocessed on each incremental run.
-      Schema changes append new columns without silently dropping existing target columns. Full
-      refresh rebuilds the table from all staged comments. Source data does not include an update
-      timestamp, so corrected older comments outside the lookback require full refresh or a wider
-      manual lookback.
+      {{ doc('incremental_airport_comments_strategy') }} Grain is one row per source airport
+      comment. Primary and incremental unique key is airport_comment_source_id from
+      stg_airstats__airport_comments.
     columns:
       - name: airport_comment_source_id
         description: Stable provider comment identifier and incremental merge key.

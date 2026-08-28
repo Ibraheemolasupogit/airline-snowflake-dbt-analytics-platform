@@ -6,7 +6,9 @@ Production-style analytics engineering portfolio project for airline operations 
 
 This repository is being developed as an airline analytics-engineering platform that can model airport reference data, flights, bookings, ticketing, billing, revenue, reconciliation, and commercial reporting in later milestones.
 
-Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 adds AirStats testing and assurance only; it does not include synthetic airline data, billing models, marts, dashboards, or Snowflake deployment.
+Milestone 1 established the repository foundation. Milestone 2 added AirStats raw-data conventions and dbt source metadata. Milestone 3 added AirStats staging views. Milestone 4 added AirStats intermediate transformations. Milestone 5 added an AirStats incremental airport-comments model. Milestone 6 added AirStats SCD Type 2 snapshots. Milestone 7 added AirStats testing and assurance. Milestone 8 completes the AirStats capstone with consumption-ready marts, reusable `doc()` blocks, curated analyses, and capstone completion evidence. It does not include synthetic airline data, billing models, dashboards, or Snowflake deployment — those remain planned for later milestones.
+
+See `reports/airstats_capstone_summary.md` for a concise capstone summary and `docs/data_models/airstats_capstone_completion_evidence.md` for the full requirement-to-file mapping.
 
 ## Core Stack
 
@@ -22,11 +24,12 @@ AirStats airport/runway reference -> routes and flights -> bookings and tickets 
 
 ## Repository Structure
 
-- `models/`: dbt model layers: staging, intermediate, core, and marts
-- `macros/`, `snapshots/`, `seeds/`, `analyses/`: standard dbt project areas
+- `models/`: dbt model layers: staging, intermediate, core, and marts (AirStats marts under `models/marts/airport_operations/`); reusable `doc()` blocks live in `models/docs/`
+- `macros/`, `snapshots/`, `seeds/`, `analyses/`: standard dbt project areas (AirStats analyses under `analyses/`)
 - `data/`: raw, synthetic, seed, and sample data landing areas for local development artifacts
 - `tests/`: generic, singular, reconciliation, business-rule, and source-quality tests
 - `docs/`: architecture, glossary, data-model, billing, reconciliation, runbook, and decision records
+- `reports/`: portfolio-facing summary reports, such as `airstats_capstone_summary.md`
 - `.github/workflows/`: CI checks that can run without live Snowflake credentials
 
 ## Current Status
@@ -40,9 +43,10 @@ Implementation status:
 - Milestone 5 - complete
 - Milestone 6 - complete
 - Milestone 7 - complete
-- Milestone 8 and later milestones - planned
+- Milestone 8 - complete
+- Milestone 9 and later milestones - planned
 
-Implemented:
+Implemented (AirStats capstone, Milestones 1-8):
 
 - dbt project configuration with logical modelling layers
 - dependency and Python development configuration
@@ -56,15 +60,22 @@ Implemented:
 - AirStats intermediate transformations for geography, runway profile, source-derived status, comment activity, comment quality, and runway capability
 - AirStats incremental airport-comments model using comment timestamp watermarking and merge semantics
 - AirStats SCD Type 2 snapshot definitions for airport and runway reference history
-- AirStats testing and assurance checks with targeted stored-failure configuration
+- AirStats testing and assurance checks with targeted stored-failure configuration (184 discoverable dbt data tests)
+- AirStats consumption-ready marts under `models/marts/airport_operations/`: capacity profile, runway capability, geographic coverage, operational status, comment activity, and data quality
+- reusable dbt `doc()` blocks in `models/docs/_airstats_docs.md`, referenced from model/snapshot YAML
+- curated AirStats analysis queries under `analyses/`
+- capstone completion evidence (`docs/data_models/airstats_capstone_completion_evidence.md`) and summary report (`reports/airstats_capstone_summary.md`)
 
-Not yet implemented:
+Planned (Milestone 9 onward):
 
-- AirStats capstone documentation, analysis queries, airport marts, or Snowflake ingestion automation
-- airline operational or commercial models
-- billing, revenue-recognition, reconciliation, or mart logic
-- credential-backed Snowflake dbt runs
-- dashboards or reporting outputs
+- synthetic airline operational data (airlines, aircraft, routes, flights, passengers)
+- bookings, ticketing, fares, and ancillary services
+- invoices, payments, refunds, and adjustments
+- revenue recognition
+- outstanding balances and billing exceptions
+- reconciliation controls
+- commercial reporting marts
+- credential-backed Snowflake dbt runs, `dbt docs generate`, and dashboards
 
 ## Local Setup
 
@@ -104,10 +115,18 @@ Real credentials, private keys, local profiles, and environment files must not b
 5. AirStats Incremental Airport Comments - complete
 6. AirStats SCD Type 2 Snapshots - complete
 7. AirStats Testing and Assurance - complete
-8. AirStats Documentation, Analysis Queries, Airport Marts, and Capstone Completion Evidence - planned
-9. Airline Operational Source Modelling
-10. Bookings, Ticketing, and Commercial Data Modelling
-11. Billing, Revenue Recognition, and Reconciliation Controls
-12. Core Dimensions and Facts
-13. Commercial Marts and Reporting Outputs
-14. Documentation, Quality Gates, and Portfolio Polish
+8. AirStats Documentation, Analysis Queries, Airport Marts, and Capstone Completion Evidence - complete
+9. Synthetic Airline Data Foundation - planned
+10. Airline Staging Models - planned
+11. Core Airline Operations Model - planned
+12. Booking and Ticketing - planned
+13. Products, Services, Prices and Tariffs - planned
+14. Invoices and Invoice Lines - planned
+15. Payments and Failed Payments - planned
+16. Refunds and Adjustments - planned
+17. Revenue Recognition - planned
+18. Outstanding Balances and Billing Exceptions - planned
+19. Reconciliation Controls - planned
+20. Commercial Reporting Marts - planned
+21. Production dbt Engineering - planned
+22. Final Portfolio Polish - planned

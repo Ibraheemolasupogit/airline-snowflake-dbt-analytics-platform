@@ -1,0 +1,436 @@
+version: 2
+
+models:
+  - name: mart_airport_capacity_profile
+    description: >
+      {{ doc('airstats_overview') }} Consumption-ready AirStats capacity profile. Grain is one row
+      per airport identifier. Primary key is ident. Reuses int_airport_geography,
+      int_airport_runway_profile, and int_airport_operational_status without recomputing their
+      logic. Runway counts and length/width summaries are source-derived aggregates, not
+      certified capacity or regulatory conclusions.
+    columns:
+      - name: ident
+        description: "{{ doc('airport_identifier') }}"
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_source_id
+        description: Provider airport identifier retained for lineage.
+        tests:
+          - not_null
+      - name: airport_name
+        description: Airport name sourced from int_airport_geography.
+      - name: airport_type
+        description: Source airport type sourced from int_airport_geography.
+      - name: country_code
+        description: Country code sourced from int_airport_geography.
+      - name: country_name
+        description: Country name when a matching staged country exists.
+      - name: region_code
+        description: Region code sourced from int_airport_geography.
+      - name: region_name
+        description: Region name when a matching staged region exists.
+      - name: has_scheduled_service
+        description: Source-derived scheduled-service flag from int_airport_operational_status.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: runway_count
+        description: Count of staged runway records for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: open_runway_count
+        description: Count of staged runway records whose source closed flag is false.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: closed_runway_count
+        description: Count of staged runway records whose source closed flag is true.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: lighted_runway_count
+        description: Count of staged runway records whose source lighted flag is true.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: max_runway_length_ft
+        description: Longest staged runway length for the airport, where populated.
+      - name: min_runway_length_ft
+        description: Shortest staged runway length for the airport, where populated.
+      - name: avg_runway_length_ft
+        description: Average staged runway length for the airport, where populated.
+      - name: max_runway_width_ft
+        description: Widest staged runway width for the airport, where populated.
+      - name: avg_runway_width_ft
+        description: Average staged runway width for the airport, where populated.
+      - name: distinct_surface_count
+        description: Count of distinct non-null source runway surface values.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_airport_runway_capability
+    description: >
+      Consumption-ready AirStats runway capability reporting model. Grain is one row per runway
+      source identifier. Primary key is runway_source_id. Reuses int_runway_capability and enriches
+      it with airport and country context from int_airport_geography. {{ doc('runway_capability_definition') }}
+    columns:
+      - name: runway_source_id
+        description: Provider runway identifier and primary key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__runways')
+              field: runway_source_id
+      - name: airport_source_id
+        description: Provider internal airport identifier retained for source lineage.
+      - name: airport_ident
+        description: "{{ doc('airport_identifier') }}"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_name
+        description: Airport name sourced from int_airport_geography.
+      - name: country_code
+        description: Country code sourced from int_airport_geography.
+      - name: country_name
+        description: Country name when a matching staged country exists.
+      - name: length_ft
+        description: Landing-surface length in feet, where populated.
+      - name: width_ft
+        description: Landing-surface width in feet, where populated.
+      - name: surface
+        description: Source surface code or description.
+      - name: is_lighted
+        description: Source-derived lighted flag.
+      - name: is_closed
+        description: Source-derived closed flag.
+      - name: is_source_usable
+        description: True only when the staged source closed flag is false; null when unknown.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: runway_length_category
+        description: Analytical length bucket using 4000 ft and 8000 ft thresholds.
+        tests:
+          - accepted_values:
+              values:
+                - unknown
+                - short_lt_4000_ft
+                - medium_4000_to_7999_ft
+                - long_8000_ft_plus
+      - name: runway_width_category
+        description: Analytical width bucket using 75 ft and 150 ft thresholds.
+        tests:
+          - accepted_values:
+              values:
+                - unknown
+                - narrow_lt_75_ft
+                - standard_75_to_149_ft
+                - wide_150_ft_plus
+      - name: runway_surface_category
+        description: Deterministic text-pattern category derived from the raw surface value.
+        tests:
+          - accepted_values:
+              values:
+                - unknown
+                - hard_surface
+                - soft_surface
+                - water
+                - other
+      - name: endpoint_completeness_status
+        description: Whether runway-end identifiers and coordinates are complete, partial, or missing.
+        tests:
+          - accepted_values:
+              values:
+                - complete
+                - partial
+                - missing
+
+  - name: mart_airport_geographic_coverage
+    description: >
+      Consumption-ready AirStats geographic coverage reporting model. Grain is one row per airport
+      identifier. Primary key is ident. Reuses int_airport_geography without recomputing its
+      country/region join logic and adds simple coverage-completeness flags for reporting.
+    columns:
+      - name: ident
+        description: "{{ doc('airport_identifier') }}"
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_source_id
+        description: Provider airport identifier retained for lineage.
+        tests:
+          - not_null
+      - name: airport_type
+        description: Source airport type from staging.
+      - name: airport_name
+        description: Source airport name from staging.
+      - name: municipality
+        description: Source municipality from staging.
+      - name: region_code
+        description: Source region code from the airport record.
+      - name: local_region_code
+        description: Local subdivision code from the matching staged region, where available.
+      - name: region_name
+        description: Region name when a matching staged region exists.
+      - name: country_code
+        description: Source country code from the airport record.
+      - name: country_name
+        description: Country name when a matching staged country exists.
+      - name: continent_code
+        description: Continent code selected from airport, region, then country sources.
+      - name: latitude_deg
+        description: Airport latitude from staging.
+      - name: longitude_deg
+        description: Airport longitude from staging.
+      - name: elevation_ft
+        description: Airport elevation from staging.
+      - name: gps_code
+        description: Source GPS code from staging.
+      - name: icao_code
+        description: Source ICAO code from staging.
+      - name: iata_code
+        description: Source IATA code from staging.
+      - name: local_code
+        description: Source local code from staging.
+      - name: has_region_coverage
+        description: True when the airport has a populated source region code.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_country_coverage
+        description: True when the airport has a populated source country code.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_coordinate_coverage
+        description: True when both latitude and longitude are populated.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: mart_airport_operational_status
+    description: >
+      Consumption-ready AirStats operational-status reporting model. Grain is one row per airport
+      identifier. Primary key is ident. Reuses int_airport_operational_status and enriches it with
+      airport and country context from int_airport_geography. The status is a source-derived
+      analytical category, not live operations, NOTAMs, regulatory approval, or real-world flight
+      suitability.
+    columns:
+      - name: ident
+        description: "{{ doc('airport_identifier') }}"
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_source_id
+        description: Provider airport identifier retained for lineage.
+        tests:
+          - not_null
+      - name: airport_name
+        description: Airport name sourced from int_airport_geography.
+      - name: country_code
+        description: Country code sourced from int_airport_geography.
+      - name: country_name
+        description: Country name when a matching staged country exists.
+      - name: region_code
+        description: Region code sourced from int_airport_geography.
+      - name: region_name
+        description: Region name when a matching staged region exists.
+      - name: airport_type
+        description: Source airport type from staging.
+      - name: has_scheduled_service
+        description: Boolean normalized from source yes/no scheduled_service values.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: runway_count
+        description: Count of staged runway records for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: open_runway_count
+        description: Count of staged runway records whose source closed flag is false.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: has_open_runway_record
+        description: True when at least one staged runway has source closed flag false.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_not_source_closed_airport
+        description: True when source airport_type is not closed_airport.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: analytical_operational_status
+        description: Deterministic category based only on staged airport type, scheduled service, and runway records.
+        tests:
+          - accepted_values:
+              values:
+                - source_closed_airport
+                - source_scheduled_service
+                - source_open_runway_recorded
+                - source_reference_only
+
+  - name: mart_airport_comment_activity
+    description: >
+      Consumption-ready AirStats comment-activity reporting model. Grain is one row per airport
+      identifier. Primary key is ident. Reuses int_airport_comment_activity and enriches it with
+      airport and country context from int_airport_geography. Contains counts and timestamps only;
+      it does not perform NLP, sentiment, or activity scoring.
+    columns:
+      - name: ident
+        description: "{{ doc('airport_identifier') }}"
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_source_id
+        description: Provider airport identifier retained for lineage.
+        tests:
+          - not_null
+      - name: airport_name
+        description: Airport name sourced from int_airport_geography.
+      - name: country_code
+        description: Country code sourced from int_airport_geography.
+      - name: country_name
+        description: Country name when a matching staged country exists.
+      - name: comment_count
+        description: Count of staged comments for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: first_comment_at
+        description: Earliest staged comment timestamp for the airport, where populated.
+      - name: latest_comment_at
+        description: Latest staged comment timestamp for the airport, where populated.
+      - name: distinct_thread_count
+        description: Count of distinct non-null source thread identifiers.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: distinct_member_count
+        description: Count of distinct non-null source member nicknames.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: comments_with_text_count
+        description: Count of staged comments with non-null body text.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+
+  - name: mart_airport_data_quality
+    description: >
+      {{ doc('airstats_assurance_strategy') }} Consumption-ready AirStats data-quality reporting
+      model surfacing cross-cutting quality signals for reporting consumers. Grain is one row per
+      airport identifier. Primary key is ident. Reuses int_airport_comment_quality,
+      int_airport_geography, and int_airport_runway_profile without recomputing their internal
+      logic; only comparison flags are derived here.
+    columns:
+      - name: ident
+        description: "{{ doc('airport_identifier') }}"
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airstats__airports')
+              field: ident
+      - name: airport_source_id
+        description: Provider airport identifier retained for lineage.
+        tests:
+          - not_null
+      - name: comment_count
+        description: Count of staged comments for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: comments_missing_text_count
+        description: Count of staged comments with null body text.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: comments_missing_timestamp_count
+        description: Count of staged comments with null comment timestamp.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: complete_comment_record_ratio
+        description: Ratio of complete comment records to total comments; null when no comments exist.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+              max_value: 1
+              row_condition: complete_comment_record_ratio is not null
+      - name: comment_completeness_status
+        description: Deterministic structural completeness category.
+        tests:
+          - accepted_values:
+              values:
+                - no_comments
+                - complete
+                - partially_complete
+                - incomplete
+      - name: region_code
+        description: Source region code from int_airport_geography.
+      - name: region_source_id
+        description: Provider region identifier when a matching staged region exists.
+      - name: has_valid_region_reference
+        description: True when the airport has no region code, or its region code resolves to a staged region.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: country_code
+        description: Source country code from int_airport_geography.
+      - name: country_source_id
+        description: Provider country identifier when a matching staged country exists.
+      - name: has_valid_country_reference
+        description: True when the airport has no country code, or its country code resolves to a staged country.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: runway_count
+        description: Count of staged runway records for the airport.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: open_runway_count
+        description: Count of staged runway records whose source closed flag is false.
+      - name: closed_runway_count
+        description: Count of staged runway records whose source closed flag is true.
+      - name: lighted_runway_count
+        description: Count of staged runway records whose source lighted flag is true.
+      - name: has_consistent_runway_profile_counts
+        description: True when open plus closed counts do not exceed the total, and lighted count does not exceed the total.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
