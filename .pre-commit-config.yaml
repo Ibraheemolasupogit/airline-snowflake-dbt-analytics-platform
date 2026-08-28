@@ -13,7 +13,24 @@ repos:
   - repo: https://github.com/sqlfluff/sqlfluff
     rev: 3.2.5
     hooks:
+      # Milestone 21: uses --templater jinja, matching .github/workflows/ci.yml and
+      # sqlfluff_libs/ (the offline-lint-only dbt_utils shim) -- the dbt templater needs a live
+      # Snowflake connection this project never has locally or in CI, so pre-commit previously
+      # failed this hook unconditionally outside a fully configured warehouse session. Snapshots
+      # are excluded here (the jinja templater cannot parse the {% snapshot %} tag) and linted
+      # separately below with --ignore templating, mirroring the CI script exactly.
       - id: sqlfluff-lint
+        name: sqlfluff-lint (models/tests/analyses/macros)
+        args: ["--templater", "jinja"]
+        exclude: ^snapshots/
+        additional_dependencies:
+          - dbt-core>=1.8,<1.10
+          - dbt-snowflake>=1.8,<1.10
+          - sqlfluff-templater-dbt>=3.2,<4.0
+      - id: sqlfluff-lint
+        name: sqlfluff-lint (snapshots)
+        args: ["--templater", "jinja", "--ignore", "templating"]
+        files: ^snapshots/
         additional_dependencies:
           - dbt-core>=1.8,<1.10
           - dbt-snowflake>=1.8,<1.10

@@ -7,8 +7,11 @@ on:
       - main
 
 jobs:
-  foundation:
-    name: Foundation checks
+  # Always runs, on every PR and push, without any Snowflake credentials. Every step here is
+  # safe to run with zero secrets configured -- see docs/engineering/dbt_production_engineering.md
+  # ("Offline vs Warehouse CI") for the full policy this job implements.
+  offline-assurance:
+    name: Offline assurance
     runs-on: ubuntu-latest
 
     env:
@@ -24,6 +27,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -77,10 +82,35 @@ jobs:
       - name: Discover airline staging tests
         run: dbt ls --profiles-dir . --resource-type test --select "models/staging/airline_*"
 
+      # Milestone 21: contract/incremental/snapshot/exposure discovery. Parse-time discovery only
+      # -- contract enforcement and incremental merge behaviour are checked at build time against
+      # a real warehouse (see the warehouse-assurance job below), never claimed here.
+      - name: Discover contracted models
+        run: >
+          dbt ls --profiles-dir . --resource-type model --select
+          dim_airport dim_route fct_flight_operations fct_bookings fct_invoice_lines
+          fct_payments fct_revenue fct_billing_exceptions fct_outstanding_balances
+
+      - name: Discover incremental models
+        run: >
+          dbt ls --profiles-dir . --resource-type model --select
+          fct_payment_attempts fct_payments fct_refunds fct_revenue
+
+      - name: Discover snapshots
+        run: dbt ls --profiles-dir . --resource-type snapshot
+
+      - name: Discover exposures
+        run: dbt ls --profiles-dir . --resource-type exposure
+
       - name: Lint SQL offline
         run: |
           sqlfluff lint --dialect snowflake --templater jinja models tests analyses macros
           sqlfluff lint --dialect snowflake --templater jinja --ignore templating snapshots
+
+      - name: Run pre-commit hooks
+        run: |
+          python -m pip install pre-commit
+          pre-commit run --all-files
 
       - name: Generate synthetic airline source data
         run: python scripts/generate_airline_data.py
@@ -88,8 +118,97 @@ jobs:
       - name: Generate synthetic control totals
         run: python scripts/generate_control_totals.py
 
+      - name: Generate reconciliation evidence
+        run: python scripts/generate_reconciliation_evidence.py
+
       - name: Validate synthetic airline source data
         run: python scripts/validate_source_data.py
 
       - name: Run Python tests
         run: python -m pytest tests/python
+
+      - name: Check for whitespace/conflict-marker errors in the diff
+        run: git diff --check
+
+      - name: Secret scan
+        run: |
+          ! grep -rEliI "(AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|password\s*=|secret\s*=|api[_-]?key\s*=)" \
+            --include="*.py" --include="*.sql" --include="*.yml" --include="*.yaml" --include="*.md" \
+            --exclude-dir=".git" --exclude-dir="dbt_packages" --exclude-dir="target" --exclude-dir=".venv" .
+
+      # dbt parse's manifest.json is a legitimate offline artifact -- see docs/engineering/
+      # dbt_production_engineering.md ("dbt Artifact Handling"). It is the baseline a future
+      # `dbt build --select state:modified+ --defer --state <this artifact>` run would compare
+      # against; no such comparison has ever executed in this repository (see the same doc's
+      # "State/Defer Strategy" section for why).
+      - name: Upload manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-manifest-${{ github.sha }}
+          path: target/manifest.json
+          retention-days: 30
+
+  # Only runs when a Snowflake account secret is configured in this repository's settings.
+  # Skipped (not failed) on every fork/PR/push where it is absent -- this repository ships with
+  # no live Snowflake credentials, and must never require them for a public contributor to get a
+  # green build. See docs/engineering/dbt_production_engineering.md ("Offline vs Warehouse CI").
+  warehouse-assurance:
+    name: Warehouse assurance
+    runs-on: ubuntu-latest
+    needs: offline-assurance
+    if: ${{ secrets.SNOWFLAKE_ACCOUNT != '' }}
+
+    env:
+      DBT_PROFILES_DIR: .
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ secrets.SNOWFLAKE_PRIVATE_KEY_PATH }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Install dbt packages
+        run: dbt deps
+
+      - name: Prepare local dbt profile
+        run: cp profiles.example.yml profiles.yml
+
+      # Prerequisite external to this workflow: the RAW_AIRLINE_*/RAW_AIRSTATS Snowflake schemas
+      # this project's sources point at must already be loaded with the synthetic CSVs (or a real
+      # ingestion pipeline's output) before this step can succeed -- this repository has never
+      # performed that load. See docs/runbooks/dbt_production_runbook.md ("Environment Setup").
+      # `dbt build` seeds, runs, snapshots, and tests together in one dependency-ordered command.
+      - name: Build dbt project
+        run: dbt build --profiles-dir .
+
+      - name: Check source freshness
+        run: dbt source freshness --profiles-dir .
+        continue-on-error: true
+
+      - name: Generate dbt docs
+        run: dbt docs generate --profiles-dir .
+
+      - name: Upload warehouse-run artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-warehouse-artifacts-${{ github.sha }}
+          path: |
+            target/manifest.json
+            target/catalog.json
+            target/run_results.json
+          retention-days: 30

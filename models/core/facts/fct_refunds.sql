@@ -1,7 +1,21 @@
 -- Grain is one row per refund transaction (refund_id). Reuses int_refund_allocation rather than
 -- re-deriving matching/allocation logic, and adds surrogate dimension keys. No revenue-reversal
 -- field exists on this fact -- that remains out of scope until Milestone 17+.
-with allocation as (
+--
+-- Milestone 21: incremental (merge on refund_id), filtered on refund_datetime_utc with a
+-- lookback window (var incremental_lookback_days, default 3) to catch late-arriving rows. See
+-- docs/engineering/dbt_production_engineering.md for the full incremental policy; this has never
+-- executed against a live warehouse -- a first deployment run requires --full-refresh.
+{{
+    config(
+        materialized='incremental',
+        unique_key='refund_id',
+        incremental_strategy='merge',
+        on_schema_change='fail'
+    )
+}}
+
+with source_data as (
 
     select
         refund_id,
@@ -21,6 +35,30 @@ with allocation as (
     from {{ ref('int_refund_allocation') }}
 
 ),
+
+{% if is_incremental() %}
+    incremental_cutoff as (
+
+        select dateadd(day, -{{ var('incremental_lookback_days', 3) }}, max(refund_datetime_utc)) as cutoff_at
+        from {{ this }}
+
+    ),
+
+    allocation as (
+
+        select source_data.*
+        from source_data
+        cross join incremental_cutoff
+        where source_data.refund_datetime_utc >= incremental_cutoff.cutoff_at
+
+    ),
+{% else %}
+allocation as (
+
+    select * from source_data
+
+),
+{% endif %}
 
 payments as (
 

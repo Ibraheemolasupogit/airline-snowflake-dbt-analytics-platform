@@ -22,24 +22,77 @@ clean-targets:
   - target
   - dbt_packages
 
+vars:
+  # Milestone 21: shared lookback window (days) for every incremental model's late-arriving-row
+  # filter (fct_payment_attempts, fct_payments, fct_refunds, fct_revenue). See docs/engineering/
+  # dbt_production_engineering.md for the incremental policy this backs.
+  incremental_lookback_days: 3
+
 models:
   airline_snowflake_dbt_analytics_platform:
+    # Milestone 21: default logical ownership for every model, overridden per layer/domain below.
+    # See docs/engineering/dbt_production_engineering.md ("Model Governance Metadata") for the
+    # full owner/domain/sensitivity policy and why these are logical team-style values, not real
+    # employee names.
+    +meta:
+      owner: analytics_engineering
     staging:
       +materialized: view
       +schema: staging
+      +meta:
+        domain: source_integration
+        sensitivity: internal
     intermediate:
       +materialized: view
       +schema: intermediate
+      +meta:
+        domain: transformation
+        sensitivity: internal
     core:
       +materialized: table
       +schema: core
       dimensions:
         +materialized: table
+        +meta:
+          domain: core_dimensions
+          sensitivity: internal
       facts:
         +materialized: table
+        +meta:
+          domain: core_facts
+          sensitivity: confidential
     marts:
       +materialized: table
       +schema: marts
+      airport_operations:
+        +meta:
+          domain: airport_operations_reporting
+          sensitivity: internal
+      airline_operations:
+        +meta:
+          owner: commercial_analytics
+          domain: airline_operations_reporting
+          sensitivity: internal
+      passenger_commercial:
+        +meta:
+          owner: commercial_analytics
+          domain: commercial_analytics
+          sensitivity: confidential
+      billing_assurance:
+        +meta:
+          owner: billing_assurance
+          domain: billing_assurance
+          sensitivity: confidential
+      revenue:
+        +meta:
+          owner: commercial_analytics
+          domain: commercial_revenue_reporting
+          sensitivity: confidential
+      executive:
+        +meta:
+          owner: commercial_analytics
+          domain: executive_airline_reporting
+          sensitivity: restricted
 
 seeds:
   airline_snowflake_dbt_analytics_platform:

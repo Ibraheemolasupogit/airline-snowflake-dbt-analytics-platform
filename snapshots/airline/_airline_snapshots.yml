@@ -1,0 +1,121 @@
+version: 2
+
+snapshots:
+  - name: snap_fare_rules
+    description: >
+      Milestone 21 SCD Type 2 snapshot. Historical grain is one row per fare-rule version over
+      time. Unique key is fare_rule_id. Uses the 'check' strategy (not 'timestamp'): the
+      Milestone 9 synthetic source has no updated_at/equivalent field anywhere on fare_rules --
+      see docs/engineering/dbt_production_engineering.md for why a timestamp field was not
+      fabricated to force the timestamp strategy.
+    columns:
+      - name: fare_rule_id
+        description: Natural fare-rule identifier and snapshot unique key.
+        tests:
+          - not_null
+      - name: fare_class_code
+        description: Tracked fare class this rule applies to.
+      - name: refundable
+        description: Tracked refundability flag.
+      - name: change_fee_usd
+        description: Tracked change fee in USD.
+      - name: advance_purchase_days
+        description: Tracked advance-purchase requirement in days.
+      - name: min_stay_nights
+        description: Tracked minimum-stay requirement in nights.
+      - name: dbt_scd_id
+        description: dbt-generated SCD version identifier.
+      - name: dbt_updated_at
+        description: dbt-generated timestamp representing when dbt observed the snapshot change.
+      - name: dbt_valid_from
+        description: dbt-generated start timestamp for the historical version.
+      - name: dbt_valid_to
+        description: dbt-generated end timestamp for the historical version; null means active.
+
+  - name: snap_airport_fees
+    description: >
+      Milestone 21 SCD Type 2 snapshot. Historical grain is one row per airport-fee version over
+      time. Unique key is airport_fee_id. Uses the 'check' strategy: no updated_at/equivalent
+      field exists on airport_fees in the Milestone 9 synthetic source.
+    columns:
+      - name: airport_fee_id
+        description: Natural airport-fee identifier and snapshot unique key.
+        tests:
+          - not_null
+      - name: airport_ident
+        description: Tracked airport this fee applies to.
+      - name: fee_code
+        description: Tracked fee code.
+      - name: fee_name
+        description: Tracked fee name.
+      - name: currency_code
+        description: Tracked fee currency.
+      - name: amount
+        description: Tracked fee amount.
+      - name: dbt_scd_id
+        description: dbt-generated SCD version identifier.
+      - name: dbt_updated_at
+        description: dbt-generated timestamp representing when dbt observed the snapshot change.
+      - name: dbt_valid_from
+        description: dbt-generated start timestamp for the historical version.
+      - name: dbt_valid_to
+        description: dbt-generated end timestamp for the historical version; null means active.
+
+  - name: snap_taxes
+    description: >
+      Milestone 21 SCD Type 2 snapshot. Historical grain is one row per tax-rule version over
+      time. Unique key is tax_id. Uses the 'check' strategy: no updated_at/equivalent field
+      exists on taxes in the Milestone 9 synthetic source.
+    columns:
+      - name: tax_id
+        description: Natural tax identifier and snapshot unique key.
+        tests:
+          - not_null
+      - name: country_code
+        description: Tracked country this tax applies to.
+      - name: tax_code
+        description: Tracked tax code.
+      - name: tax_name
+        description: Tracked tax name.
+      - name: percentage_rate
+        description: Tracked tax percentage rate.
+      - name: currency_code
+        description: Tracked tax currency.
+      - name: dbt_scd_id
+        description: dbt-generated SCD version identifier.
+      - name: dbt_updated_at
+        description: dbt-generated timestamp representing when dbt observed the snapshot change.
+      - name: dbt_valid_from
+        description: dbt-generated start timestamp for the historical version.
+      - name: dbt_valid_to
+        description: dbt-generated end timestamp for the historical version; null means active.
+
+  - name: snap_corporate_accounts
+    description: >
+      Milestone 21 SCD Type 2 snapshot. Historical grain is one row per corporate-account version
+      over time. Unique key is corporate_account_id. Uses the 'check' strategy: no updated_at/
+      equivalent field exists on corporate_accounts in the Milestone 9 synthetic source. A
+      negotiated_discount_pct or default_currency change is exactly the kind of mutable
+      reference-data attribute a real airline's commercial team would revise over an account's
+      lifetime.
+    columns:
+      - name: corporate_account_id
+        description: Natural corporate-account identifier and snapshot unique key.
+        tests:
+          - not_null
+      - name: company_name
+        description: Tracked company name.
+      - name: country
+        description: Tracked country.
+      - name: negotiated_discount_pct
+        description: Tracked negotiated discount percentage.
+      - name: default_currency
+        description: Tracked default billing currency.
+      - name: dbt_scd_id
+        description: dbt-generated SCD version identifier.
+      - name: dbt_updated_at
+        description: dbt-generated timestamp representing when dbt observed the snapshot change.
+      - name: dbt_valid_from
+        description: dbt-generated start timestamp for the historical version.
+      - name: dbt_valid_to
+        description: dbt-generated end timestamp for the historical version; null means active.

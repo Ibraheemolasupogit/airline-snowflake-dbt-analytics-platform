@@ -10,14 +10,24 @@ models:
       synthetic reference/airports.csv fixture is never joined here. This is a current-state
       dimension (no history); AirStats' own snap_airports/snap_runways snapshots remain the
       place for SCD Type 2 airport history.
+
+      Milestone 21: this model carries an enforced dbt model contract (governed consumption
+      contract for downstream marts/BI) -- every column below has a fixed data_type matching its
+      actual SQL output; no speculative precision was invented (see docs/engineering/
+      dbt_production_engineering.md for the contract policy).
+    config:
+      contract:
+        enforced: true
     columns:
       - name: airport_key
         description: Surrogate key, generated from airport_ident.
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: airport_ident
         description: Natural airport identifier, conformed from AirStats.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -26,47 +36,65 @@ models:
               field: ident
       - name: airport_name
         description: Airport name from the AirStats conformed layer.
+        data_type: varchar
       - name: airport_type
         description: Source airport type from the AirStats conformed layer.
+        data_type: varchar
       - name: country_code
         description: Country code from the AirStats conformed layer.
+        data_type: varchar
       - name: country_name
         description: Country name from the AirStats conformed layer.
+        data_type: varchar
       - name: region_code
         description: Region code from the AirStats conformed layer.
+        data_type: varchar
       - name: region_name
         description: Region name from the AirStats conformed layer.
+        data_type: varchar
       - name: municipality
         description: Municipality from the AirStats conformed layer.
+        data_type: varchar
       - name: continent_code
         description: Continent code from the AirStats conformed layer.
+        data_type: varchar
       - name: latitude_deg
         description: Latitude from the AirStats conformed layer.
+        data_type: float
       - name: longitude_deg
         description: Longitude from the AirStats conformed layer.
+        data_type: float
       - name: elevation_ft
         description: Elevation from the AirStats conformed layer.
+        data_type: number(38,0)
       - name: gps_code
         description: GPS code from the AirStats conformed layer.
+        data_type: varchar
       - name: icao_code
         description: ICAO code from the AirStats conformed layer.
+        data_type: varchar
       - name: iata_code
         description: IATA code from the AirStats conformed layer.
+        data_type: varchar
       - name: local_code
         description: Local code from the AirStats conformed layer.
+        data_type: varchar
       - name: has_scheduled_service
         description: Source-derived scheduled-service flag from the AirStats conformed layer.
+        data_type: boolean
         tests:
           - accepted_values:
               values: [true, false]
               quote: false
       - name: runway_count
         description: Count of staged AirStats runway records for the airport.
+        data_type: number(38,0)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
       - name: open_runway_count
         description: Count of staged AirStats runway records whose source closed flag is false.
+        data_type: number(38,0)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
@@ -203,14 +231,24 @@ models:
       Grain is one row per airline route. Natural key is route_id; surrogate key is route_key.
       Origin and destination use conformed dim_airport keys, proving the airline route layer is
       genuinely joined to AirStats rather than merely documented as compatible with it.
+
+      Milestone 21: this model carries an enforced dbt model contract (governed consumption
+      contract for downstream marts/BI) -- every column below has a fixed data_type matching its
+      actual SQL output; no speculative precision was invented (see docs/engineering/
+      dbt_production_engineering.md for the contract policy).
+    config:
+      contract:
+        enforced: true
     columns:
       - name: route_key
         description: Surrogate key, generated from route_id.
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: route_id
         description: Natural route identifier.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -219,6 +257,7 @@ models:
               field: route_id
       - name: airline_key
         description: Surrogate key of the operating airline in dim_airline.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -226,10 +265,12 @@ models:
               field: airline_key
       - name: airline_code
         description: Operating airline.
+        data_type: varchar
         tests:
           - not_null
       - name: origin_airport_key
         description: Surrogate key of the origin airport in dim_airport.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -237,6 +278,7 @@ models:
               field: airport_key
       - name: origin_ident
         description: Origin airport identifier, AirStats-conformed.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -244,8 +286,10 @@ models:
               field: airport_ident
       - name: origin_airport_name
         description: Origin airport name.
+        data_type: varchar
       - name: destination_airport_key
         description: Surrogate key of the destination airport in dim_airport.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -253,6 +297,7 @@ models:
               field: airport_key
       - name: destination_ident
         description: Destination airport identifier, AirStats-conformed.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -260,8 +305,10 @@ models:
               field: airport_ident
       - name: destination_airport_name
         description: Destination airport name.
+        data_type: varchar
       - name: distance_km
         description: Great-circle route distance in kilometres.
+        data_type: decimal(18,1)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0

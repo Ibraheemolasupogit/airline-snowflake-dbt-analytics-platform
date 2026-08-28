@@ -5,7 +5,21 @@
 --
 -- invoice_key/booking_key are null for the deliberately injected payment_without_invoice
 -- controlled exception (has_invoice_match = false) -- preserved, not repaired or dropped.
-with allocation as (
+--
+-- Milestone 21: incremental (merge on payment_id), filtered on payment_datetime_utc with a
+-- lookback window (var incremental_lookback_days, default 3) to catch late-arriving rows. See
+-- docs/engineering/dbt_production_engineering.md for the full incremental policy; this has never
+-- executed against a live warehouse -- a first deployment run requires --full-refresh.
+{{
+    config(
+        materialized='incremental',
+        unique_key='payment_id',
+        incremental_strategy='merge',
+        on_schema_change='fail'
+    )
+}}
+
+with source_data as (
 
     select
         payment_id,
@@ -27,6 +41,30 @@ with allocation as (
     from {{ ref('int_payment_allocation') }}
 
 ),
+
+{% if is_incremental() %}
+    incremental_cutoff as (
+
+        select dateadd(day, -{{ var('incremental_lookback_days', 3) }}, max(payment_datetime_utc)) as cutoff_at
+        from {{ this }}
+
+    ),
+
+    allocation as (
+
+        select source_data.*
+        from source_data
+        cross join incremental_cutoff
+        where source_data.payment_datetime_utc >= incremental_cutoff.cutoff_at
+
+    ),
+{% else %}
+allocation as (
+
+    select * from source_data
+
+),
+{% endif %}
 
 invoices as (
 

@@ -102,9 +102,11 @@ joined as (
         coalesce(passenger_counts.passengers_carried, 0) as passengers_carried,
         case
             when operated_segments.actual_aircraft_typical_seats > 0
-                then
+                then cast(
                     coalesce(passenger_counts.passengers_carried, 0)
                     / operated_segments.actual_aircraft_typical_seats
+                    as decimal(9, 6)
+                )
         end as load_factor
     from operated_segments
     left join flights

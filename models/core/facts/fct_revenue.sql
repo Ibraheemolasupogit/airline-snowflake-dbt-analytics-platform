@@ -27,6 +27,22 @@
 --
 -- No invoice_id, payment_id, outstanding-balance, or billing-exception field exists on this fact.
 -- Payment collection is never a recognition trigger -- see the upstream intermediate models.
+--
+-- Milestone 21: incremental (merge on [event_type, source_event_id]), filtered on event_date with
+-- a lookback window (var incremental_lookback_days, default 3) to catch late-arriving rows. The
+-- filter is applied once, after the four event types are unioned (see the "joined" CTE below), so
+-- none of the four sub-selects above needed to change. See docs/engineering/
+-- dbt_production_engineering.md for the full incremental policy; this has never executed against
+-- a live warehouse -- a first deployment run requires --full-refresh.
+{{
+    config(
+        materialized='incremental',
+        unique_key=['event_type', 'source_event_id'],
+        incremental_strategy='merge',
+        on_schema_change='fail'
+    )
+}}
+
 with ticket_revenue_rows as (
 
     select
@@ -144,6 +160,15 @@ currencies as (
 
 ),
 
+{% if is_incremental() %}
+    incremental_cutoff as (
+
+        select dateadd(day, -{{ var('incremental_lookback_days', 3) }}, max(event_date)) as cutoff_at
+        from {{ this }}
+
+    ),
+{% endif %}
+
 joined as (
 
     select
@@ -171,6 +196,10 @@ joined as (
         on unioned.route_id = routes.route_id
     left join currencies
         on unioned.currency = currencies.currency_code
+    {% if is_incremental() %}
+        cross join incremental_cutoff
+        where unioned.event_date >= incremental_cutoff.cutoff_at
+    {% endif %}
 
 ),
 

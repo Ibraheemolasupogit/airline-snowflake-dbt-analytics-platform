@@ -72,9 +72,17 @@ models:
       passenger ticket segments (int_passenger_journey_completion); see model SQL comment and
       docs/data_models/airline_booking_ticketing.md for the counting rule. No fare, invoice, or
       revenue data is used.
+
+      Milestone 21: this model carries an enforced dbt model contract -- every column below has a
+      fixed data_type matching its actual SQL output; no speculative precision was invented. See
+      docs/engineering/dbt_production_engineering.md for the contract policy.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: flight_instance_id
         description: Natural flight-instance identifier and grain key.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -83,10 +91,12 @@ models:
               field: flight_instance_id
       - name: flight_date
         description: Calendar date of the flight occurrence.
+        data_type: date
         tests:
           - not_null
       - name: flight_key
         description: Foreign key to dim_flight.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -94,6 +104,7 @@ models:
               field: flight_key
       - name: airline_key
         description: Foreign key to dim_airline.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -101,6 +112,7 @@ models:
               field: airline_key
       - name: origin_airport_key
         description: Foreign key to dim_airport for the origin.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -108,6 +120,7 @@ models:
               field: airport_key
       - name: destination_airport_key
         description: Foreign key to dim_airport for the destination.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -115,20 +128,24 @@ models:
               field: airport_key
       - name: aircraft_key
         description: Foreign key to dim_aircraft for the aircraft that actually operated this instance.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_aircraft')
               field: aircraft_key
       - name: actual_aircraft_type_key
         description: Foreign key to dim_aircraft_type for the actual operating equipment type.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_aircraft_type')
               field: aircraft_type_key
       - name: scheduled_departure_utc
         description: Scheduled departure timestamp in UTC.
+        data_type: timestamp_ntz
       - name: scheduled_arrival_utc
         description: Scheduled arrival timestamp in UTC.
+        data_type: timestamp_ntz
         tests:
           - dbt_utils.expression_is_true:
               expression: ">= scheduled_departure_utc"
@@ -136,6 +153,7 @@ models:
                 where: "scheduled_departure_utc is not null and scheduled_arrival_utc is not null"
       - name: status
         description: Flight-instance status, unchanged from staging.
+        data_type: varchar
         tests:
           - accepted_values:
               values:
@@ -146,12 +164,15 @@ models:
         description: >
           Deterministic operational completion category. Source-observed operational signal
           only; does not infer service fulfilment, revenue recognition, or on-time performance.
+        data_type: varchar
       - name: is_assigned_aircraft_type_consistent
         description: >
           True when the actual operating aircraft's type matches the schedule's assigned type;
           false when it does not; null when unknown. Both true and false genuinely occur.
+        data_type: boolean
       - name: seats_available
         description: Typical seat count of the actual operating equipment type.
+        data_type: number(38,0)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 1
@@ -162,6 +183,7 @@ models:
           journey_completion_status = 'completed' (int_passenger_journey_completion) -- i.e.
           actually flown. Cancelled and not-yet-flown segments are excluded. 0, not null, for
           flight instances with no completed segments (still-scheduled or cancelled flights).
+        data_type: number(38,0)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
@@ -174,6 +196,7 @@ models:
         description: >
           passengers_carried / seats_available, guarded to compute only when seats_available > 0;
           null when seats_available is null or 0.
+        data_type: decimal(9,6)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
@@ -186,14 +209,23 @@ models:
       Foreign keys: airline_key (dim_airline), route_key (dim_route),
       booking_channel_key (dim_booking_channel). No fare, invoice, or revenue measures --
       passenger_count and ticket_count are structural counts from int_booking_current_state.
+
+      Milestone 21: this model carries an enforced dbt model contract -- every column below has a
+      fixed data_type matching its actual SQL output; no speculative precision was invented. See
+      docs/engineering/dbt_production_engineering.md for the contract policy.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: booking_key
         description: Surrogate key, generated from booking_id.
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: booking_id
         description: Natural booking identifier and grain key.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -202,24 +234,37 @@ models:
               field: booking_id
       - name: booking_reference
         description: Passenger-facing booking reference code.
+        data_type: varchar
         tests:
           - not_null
       - name: airline_key
         description: Foreign key to dim_airline.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('dim_airline')
               field: airline_key
+      - name: airline_code
+        description: Operating airline, unchanged from staging.
+        data_type: varchar
       - name: route_key
         description: Foreign key to dim_route for the outbound route.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('dim_route')
               field: route_key
+      - name: route_id
+        description: Natural outbound route identifier, retained for lineage.
+        data_type: varchar
+      - name: return_route_id
+        description: Natural return-route identifier for round-trip bookings; null for one-way bookings.
+        data_type: varchar
       - name: trip_type
         description: Trip type.
+        data_type: varchar
         tests:
           - accepted_values:
               values:
@@ -227,17 +272,29 @@ models:
                 - round_trip
       - name: booking_channel_key
         description: Foreign key to dim_booking_channel.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('dim_booking_channel')
               field: booking_channel_key
+      - name: booking_channel
+        description: Booking channel name, unchanged from staging.
+        data_type: varchar
       - name: booking_date_utc
         description: Booking creation timestamp in UTC.
+        data_type: timestamp_ntz
         tests:
           - not_null
+      - name: point_of_sale_country
+        description: Country the booking was made in, unchanged from staging.
+        data_type: varchar
+      - name: currency
+        description: Booking's own currency, unchanged from staging.
+        data_type: varchar
       - name: booking_status
         description: Current booking status; see int_booking_current_state for why no history is modelled.
+        data_type: varchar
         tests:
           - accepted_values:
               values:
@@ -245,10 +302,16 @@ models:
                 - cancelled
       - name: corporate_account_id
         description: Corporate account, if this is a corporate booking; null otherwise. No dim_corporate_account exists yet.
+        data_type: varchar
       - name: travel_agent_id
         description: Travel agent, if this booking was made through an agent; null otherwise. No dim_travel_agent exists yet.
+        data_type: varchar
+      - name: discount_code
+        description: Applied discount code, if any; null otherwise.
+        data_type: varchar
       - name: outbound_flight_instance_id
         description: Outbound flight instance.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
@@ -256,22 +319,26 @@ models:
               field: flight_instance_id
       - name: return_flight_instance_id
         description: Return flight instance for round-trip bookings; null for one-way bookings.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('int_operated_flight_segments')
               field: flight_instance_id
       - name: passenger_count
         description: Count of booking_passengers rows for this booking.
+        data_type: number(38,0)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
       - name: ticket_count
         description: Count of tickets rows for this booking.
+        data_type: number(38,0)
         tests:
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
       - name: is_cancelled
         description: True when booking_status = 'cancelled'.
+        data_type: boolean
         tests:
           - accepted_values:
               values: [true, false]
@@ -800,14 +867,23 @@ models:
       fct_payments (Milestone 15) and refund/adjustment detail on fct_refunds/fct_adjustments
       (Milestone 16), not here; no revenue field exists on this fact -- that remains out of scope
       until Milestone 17+.
+
+      Milestone 21: this model carries an enforced dbt model contract -- every column below has a
+      fixed data_type matching its actual SQL output; no speculative precision was invented. See
+      docs/engineering/dbt_production_engineering.md for the contract policy.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: invoice_line_key
         description: Surrogate key, generated from invoice_line_id.
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: invoice_line_id
         description: Natural invoice-line identifier and grain key.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -816,26 +892,36 @@ models:
               field: invoice_line_id
       - name: invoice_key
         description: Foreign key to fct_invoices.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('fct_invoices')
               field: invoice_key
+      - name: invoice_id
+        description: Natural invoice identifier, retained for lineage.
+        data_type: varchar
       - name: booking_key
         description: Foreign key to fct_bookings.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('fct_bookings')
               field: booking_key
+      - name: booking_id
+        description: Natural booking identifier, retained for lineage.
+        data_type: varchar
       - name: ticket_id
         description: Ticket this line relates to; null for booking-level discount lines.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('stg_airline__tickets')
               field: ticket_id
       - name: line_type
         description: Type of charge component, unchanged from source.
+        data_type: varchar
         tests:
           - not_null
           - accepted_values:
@@ -845,32 +931,52 @@ models:
                 - airport_fee
                 - ancillary
                 - discount
+      - name: reference_code
+        description: Natural reference code used to align this line to its matching fct_pricing_events component.
+        data_type: varchar
+      - name: description
+        description: Source line description, unchanged.
+        data_type: varchar
       - name: currency_key
         description: Foreign key to dim_currency.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_currency')
               field: currency_key
+      - name: currency
+        description: Line's own currency, unchanged from source.
+        data_type: varchar
       - name: amount
         description: Source line amount, unchanged. One row carries the incorrect_fare exception.
+        data_type: decimal(18,2)
         tests:
           - not_null
       - name: has_invoice_parent
         description: Validation signal -- true when invoice_id resolves to a real invoice.
+        data_type: boolean
         tests:
           - accepted_values:
               values: [true, false]
               quote: false
       - name: has_supported_line_type
         description: Validation signal -- true when line_type is one of the five known types.
+        data_type: boolean
         tests:
           - accepted_values:
               values: [true, false]
               quote: false
+      - name: has_currency
+        description: Validation signal -- true when currency is populated.
+        data_type: boolean
+      - name: has_non_null_amount
+        description: Validation signal -- true when amount is populated.
+        data_type: boolean
       - name: expected_pricing_component_available
         description: >
           Validation signal -- true when a matching fct_pricing_events component exists for this
           line. Not a billing-exception classification.
+        data_type: boolean
         tests:
           - accepted_values:
               values: [true, false]
@@ -879,18 +985,23 @@ models:
         description: >
           Sum of fct_pricing_events.amount matching this line's (ticket/booking, line_type,
           reference_code); null when no matching pricing component exists.
+        data_type: decimal(18,2)
       - name: pricing_variance_amount
         description: >
           expected-vs-invoiced variance for this line's comparable_line_type bucket (see
           int_invoice_charge_comparison); positive means the invoice charged more than expected.
           Not a billing-exception classification.
+        data_type: decimal(18,2)
 
   - name: fct_payment_attempts
     description: >
       Grain is one row per payment attempt. Natural key is payment_attempt_id; surrogate key is
       payment_attempt_key. Foreign keys: invoice_key (fct_invoices), booking_key (fct_bookings),
       payment_method_key (dim_payment_method), currency_key (dim_currency). Reuses
-      int_payment_attempt_classification. No refund or revenue-recognition field exists on this
+      int_payment_attempt_classification. Milestone 21: incremental (merge on
+      payment_attempt_id), filtered on attempt_datetime_utc with a lookback window (var
+      incremental_lookback_days, default 3); see docs/engineering/dbt_production_engineering.md.
+      No refund or revenue-recognition field exists on this
       fact; those remain out of scope until Milestone 16+.
     columns:
       - name: payment_attempt_key
@@ -966,50 +1077,89 @@ models:
       payment_without_invoice controlled exception (see docs/data_models/airline_synthetic_
       exception_catalogue.md) surfaces here with has_invoice_match = false and null invoice_key/
       booking_key -- preserved, never repaired or dropped.
+
+      Milestone 21: this model is incremental (materialized='incremental', unique_key=
+      'payment_id', incremental_strategy='merge'), filtered on payment_datetime_utc with a
+      configurable lookback window (var incremental_lookback_days, default 3) for late-arriving
+      rows; see docs/engineering/dbt_production_engineering.md for the full incremental policy.
+      It also carries an enforced dbt model contract -- every column below has a fixed data_type
+      matching its actual SQL output; no speculative precision was invented.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: payment_key
         description: Surrogate key, generated from payment_id.
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: payment_id
         description: Natural payment identifier and grain key.
+        data_type: varchar
         tests:
           - not_null
           - unique
           - relationships:
               to: ref('stg_airline__payments')
               field: payment_id
+      - name: payment_attempt_id
+        description: Natural payment-attempt identifier this payment resulted from.
+        data_type: varchar
       - name: invoice_key
         description: Foreign key to fct_invoices; null for an unmatched (payment_without_invoice) payment.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('fct_invoices')
               field: invoice_key
+      - name: invoice_id
+        description: Natural invoice identifier, retained for lineage.
+        data_type: varchar
       - name: booking_key
         description: Foreign key to fct_bookings; null for an unmatched payment.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('fct_bookings')
               field: booking_key
+      - name: booking_id
+        description: Natural booking identifier, retained for lineage.
+        data_type: varchar
+      - name: payment_datetime_utc
+        description: Payment transaction timestamp in UTC; the incremental filter column for this model.
+        data_type: timestamp_ntz
       - name: payment_method_key
         description: Foreign key to dim_payment_method.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_payment_method')
               field: payment_method_key
+      - name: method
+        description: Payment method, unchanged from source.
+        data_type: varchar
       - name: currency_key
         description: Foreign key to dim_currency.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_currency')
               field: currency_key
+      - name: currency
+        description: Payment's own transaction currency, unchanged from source.
+        data_type: varchar
+      - name: invoice_currency
+        description: The matched invoice's own currency; null when unmatched.
+        data_type: varchar
       - name: payment_amount
         description: Amount collected, unchanged from source.
+        data_type: decimal(18,2)
         tests:
           - not_null
       - name: allocated_amount
         description: least(payment_amount, invoice total_amount) when matched, else 0.
+        data_type: decimal(18,2)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
@@ -1018,12 +1168,14 @@ models:
               expression: "<= payment_amount"
       - name: unallocated_amount
         description: payment_amount - allocated_amount.
+        data_type: decimal(18,2)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
       - name: allocation_status
         description: Allocation status of the payment against its invoice, unchanged from source.
+        data_type: varchar
         tests:
           - accepted_values:
               values:
@@ -1032,6 +1184,7 @@ models:
                 - unallocated
       - name: has_invoice_match
         description: True when invoice_id resolves to a real invoice.
+        data_type: boolean
         tests:
           - not_null
           - accepted_values:
@@ -1041,14 +1194,19 @@ models:
         description: >
           True when currency equals invoice_currency; null when there is no invoice to compare
           against.
+        data_type: boolean
         tests:
           - accepted_values:
               values: [true, false]
               quote: false
+      - name: match_status
+        description: Whether this payment matched an invoice, unchanged from source evidence.
+        data_type: varchar
       - name: payment_delay_days
         description: >
           payment_datetime_utc - invoice_date_utc, in days; null when unmatched. No fixed "late"
           threshold is defined -- see docs/data_models/airline_payments.md.
+        data_type: number(38,0)
 
   - name: fct_refunds
     description: >
@@ -1056,6 +1214,15 @@ models:
       refund_key. Foreign keys: payment_key (fct_payments), invoice_key (fct_invoices), booking_key
       (fct_bookings), currency_key (dim_currency). Reuses int_refund_allocation. No
       revenue-reversal field exists on this fact -- that remains out of scope until Milestone 17+.
+
+      Milestone 21: incremental (merge on refund_id), filtered on refund_datetime_utc with a
+      lookback window (var incremental_lookback_days, default 3); see docs/engineering/
+      dbt_production_engineering.md. Known caveat: cumulative_refunded_amount_for_payment is a
+      window aggregate computed over ALL of a payment's refunds in int_refund_allocation -- when a
+      new refund for a payment arrives after an earlier refund for the same payment has already
+      been merged into this incremental table, only the new row gets the freshly recomputed
+      cumulative value; the earlier row's value is not retroactively updated. A full-refresh
+      recomputes every row consistently; see the runbook for when to use one.
     columns:
       - name: refund_key
         description: Surrogate key, generated from refund_id.
@@ -1303,14 +1470,26 @@ models:
       recognised (gross_recognised_amount may be 0) -- see model SQL comment. No invoice_id,
       payment_id, outstanding-balance, or billing-exception field exists on this fact; those
       remain out of scope until Milestone 18+.
+
+      Milestone 21: this model is incremental (materialized='incremental', unique_key=
+      ['event_type', 'source_event_id'], incremental_strategy='merge'), filtered on event_date
+      with a configurable lookback window (var incremental_lookback_days, default 3); see
+      docs/engineering/dbt_production_engineering.md for the full incremental policy. It also
+      carries an enforced dbt model contract -- every column below has a fixed data_type matching
+      its actual SQL output; no speculative precision was invented.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: revenue_event_key
         description: Surrogate key, generated from (event_type, source_event_id).
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: event_type
         description: One of the four event types this milestone models.
+        data_type: varchar
         tests:
           - not_null
           - accepted_values:
@@ -1323,47 +1502,75 @@ models:
         description: >
           The originating ticket_id / ancillary_service_id / refund_id / adjustment_id, depending
           on event_type.
+        data_type: varchar
         tests:
           - not_null
       - name: booking_key
         description: Foreign key to fct_bookings.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('fct_bookings')
               field: booking_key
+      - name: booking_id
+        description: Natural booking identifier, retained for lineage.
+        data_type: varchar
       - name: ticket_id
         description: >
           Populated for ticket_revenue/ancillary_revenue rows only; null for the booking-scoped
           refund_reversal/revenue_adjustment event types.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('stg_airline__tickets')
               field: ticket_id
       - name: passenger_key
         description: Foreign key to dim_passenger; populated for ticket_revenue/ancillary_revenue rows only.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_passenger')
               field: passenger_key
+      - name: passenger_id
+        description: Natural passenger identifier, retained for lineage.
+        data_type: varchar
       - name: route_key
         description: >
           Foreign key to dim_route; populated only for ticket_revenue rows, via the booking's
           outbound route (Milestone 13 convention -- no single flight exists for a round-trip
           ticket).
+        data_type: varchar
         tests:
           - relationships:
               to: ref('dim_route')
               field: route_key
+      - name: route_id
+        description: Natural route identifier, retained for lineage; populated only for ticket_revenue rows.
+        data_type: varchar
+      - name: origin_airport_key
+        description: Foreign key to dim_airport for the route's origin; populated only for ticket_revenue rows.
+        data_type: varchar
       - name: currency_key
         description: Foreign key to dim_currency.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('dim_currency')
               field: currency_key
+      - name: currency
+        description: Event's own currency, unchanged from source.
+        data_type: varchar
+      - name: event_date
+        description: >
+          The event's own natural date (recognition_date / purchase_date_utc /
+          refund_datetime_utc / created_at_utc, depending on event_type). The incremental filter
+          column for this model.
+        data_type: timestamp_ntz
       - name: gross_recognised_amount
         description: Positive new recognition amount; 0 when ineligible/unfulfilled. Never negative.
+        data_type: decimal(18,2)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
@@ -1372,6 +1579,7 @@ models:
         description: >
           <= 0 for refund_reversal rows; carries the adjustment's own native sign for
           revenue_adjustment rows; always 0 for ticket_revenue/ancillary_revenue rows.
+        data_type: decimal(18,2)
         tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -1384,6 +1592,7 @@ models:
                 where: "event_type in ('ticket_revenue', 'ancillary_revenue')"
       - name: net_recognised_amount
         description: gross_recognised_amount + reversal_or_adjustment_amount.
+        data_type: decimal(18,2)
         tests:
           - not_null
 
@@ -1393,9 +1602,22 @@ models:
       Foreign keys: booking_key (fct_bookings), currency_key (dim_currency). Reuses
       int_outstanding_balance. No reconciliation or commercial-mart field exists on this fact;
       those remain out of scope until Milestone 19+.
+
+      Milestone 21: this model carries an enforced dbt model contract -- every column below has a
+      fixed data_type matching its actual SQL output; no speculative precision was invented. Not
+      made incremental (kept full-refresh table): outstanding_balance is a current-state snapshot
+      recomputed from the invoice's full payment/refund/adjustment history on every run, not an
+      append-only event log, so an incremental append would risk holding a stale balance for an
+      invoice whose downstream payment/refund/adjustment activity changed after its row was first
+      materialized. See docs/engineering/dbt_production_engineering.md for the full incremental
+      policy and this exclusion's rationale.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: invoice_key
         description: Foreign key to fct_invoices, reused as this fact's own surrogate key.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -1404,6 +1626,7 @@ models:
               field: invoice_key
       - name: invoice_id
         description: Natural invoice identifier and grain key.
+        data_type: varchar
         tests:
           - not_null
           - unique
@@ -1412,27 +1635,54 @@ models:
               field: invoice_id
       - name: booking_key
         description: Foreign key to fct_bookings.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('fct_bookings')
               field: booking_key
+      - name: booking_id
+        description: Natural booking identifier, retained for lineage.
+        data_type: varchar
       - name: currency_key
         description: Foreign key to dim_currency.
+        data_type: varchar
         tests:
           - not_null
           - relationships:
               to: ref('dim_currency')
               field: currency_key
+      - name: currency
+        description: Invoice's own currency, unchanged from source.
+        data_type: varchar
+      - name: source_invoice_total
+        description: Invoice header total, unchanged from fct_invoices.
+        data_type: decimal(18,2)
+      - name: amount_collected
+        description: Cash collected against this invoice, unchanged from fct_invoices.
+        data_type: decimal(18,2)
+      - name: refund_amount
+        description: Total refunded against this invoice, unchanged from fct_invoices.
+        data_type: decimal(18,2)
+      - name: net_adjustment_amount
+        description: Net adjustment amount for this invoice, unchanged from fct_invoices.
+        data_type: decimal(18,2)
+      - name: credit_note_amount
+        description: >
+          Total credit-note amount for this invoice; exposed as evidence only, not separately
+          netted into outstanding_balance.
+        data_type: decimal(18,2)
       - name: outstanding_balance
         description: >
           source_invoice_total - amount_collected + refund_amount + net_adjustment_amount.
           Positive = amount still due; zero = settled; negative = over-settled. Never clamped to
           zero -- see docs/data_models/airline_outstanding_balances_exceptions.md.
+        data_type: decimal(18,2)
         tests:
           - not_null
       - name: settlement_status
         description: Derived neutrally from the sign of outstanding_balance only.
+        data_type: varchar
         tests:
           - not_null
           - accepted_values:
@@ -1454,14 +1704,29 @@ models:
       occurred in this synthetic dataset, so none is fabricated. See
       docs/data_models/airline_outstanding_balances_exceptions.md for the full taxonomy, severity
       rule, and financial-value-at-risk convention.
+
+      Milestone 21: this model carries an enforced dbt model contract -- every column below has a
+      fixed data_type matching its actual SQL output; no speculative precision was invented. Not
+      made incremental (kept full-refresh table): exception detection re-evaluates current state
+      across many upstream facts on every run and status is a single deterministic 'open' value
+      with no resolution workflow in this dataset -- an append-only incremental could add newly
+      detected exceptions but could never retract one that no longer applies, which is a
+      correctness risk this milestone does not accept. See docs/engineering/
+      dbt_production_engineering.md for the full incremental policy and this exclusion's
+      rationale.
+    config:
+      contract:
+        enforced: true
     columns:
       - name: exception_key
         description: Surrogate key, generated from (exception_type, source_record_id).
+        data_type: varchar
         tests:
           - not_null
           - unique
       - name: exception_type
         description: One of the fourteen detection rules this milestone implements.
+        data_type: varchar
         tests:
           - not_null
           - accepted_values:
@@ -1480,27 +1745,127 @@ models:
                 - ancillary_fulfilled_but_not_billed
                 - missing_invoice_line
                 - late_arriving_payment
+      - name: source_system
+        description: Deterministic label of the source table(s) this exception's detection rule reads from.
+        data_type: varchar
       - name: source_record_id
         description: Deterministic natural identifier of the affected record(s) for this exception_type.
+        data_type: varchar
         tests:
           - not_null
       - name: booking_key
         description: Foreign key to fct_bookings.
+        data_type: varchar
         tests:
           - relationships:
               to: ref('fct_bookings')
               field: booking_key
+      - name: booking_id
+        description: Natural booking identifier, retained for lineage.
+        data_type: varchar
+      - name: ticket_id
+        description: Natural ticket identifier, populated only for ticket-scoped exception types.
+        data_type: varchar
+      - name: ticket_segment_id
+        description: Natural ticket-segment identifier, populated only for segment-scoped exception types.
+        data_type: varchar
+      - name: flight_instance_id
+        description: Natural flight-instance identifier, populated only for flight-scoped exception types.
+        data_type: varchar
+      - name: invoice_key
+        description: >
+          Foreign key to fct_invoices; null for duplicate_invoice (whose source_record_id is a
+          pipe-joined pair of invoice_ids, not a single resolvable invoice_id).
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: invoice_id
+        description: Natural invoice identifier, retained for lineage; see invoice_key note.
+        data_type: varchar
+      - name: payment_key
+        description: Foreign key to fct_payments, populated only for payment-scoped exception types.
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('fct_payments')
+              field: payment_key
+      - name: payment_id
+        description: Natural payment identifier, retained for lineage.
+        data_type: varchar
+      - name: refund_key
+        description: Foreign key to fct_refunds, populated only for refund-scoped exception types.
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('fct_refunds')
+              field: refund_key
+      - name: refund_id
+        description: Natural refund identifier, retained for lineage.
+        data_type: varchar
+      - name: adjustment_key
+        description: Foreign key to fct_adjustments, populated only for adjustment-scoped exception types.
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('fct_adjustments')
+              field: adjustment_key
+      - name: adjustment_id
+        description: Natural adjustment identifier, retained for lineage.
+        data_type: varchar
+      - name: route_key
+        description: Foreign key to dim_route, populated only for route-scoped exception types.
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('dim_route')
+              field: route_key
+      - name: route_id
+        description: Natural route identifier, retained for lineage.
+        data_type: varchar
+      - name: airport_key
+        description: Foreign key to dim_airport, populated only for airport-scoped exception types.
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('dim_airport')
+              field: airport_key
+      - name: airport_ident
+        description: Natural airport identifier, retained for lineage.
+        data_type: varchar
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        data_type: varchar
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: currency
+        description: Exception's own currency, where applicable.
+        data_type: varchar
+      - name: detected_at
+        description: >
+          The affected record's own natural timestamp (invoice date, payment date, refund date,
+          etc., depending on exception_type) -- not a detection-run wall-clock timestamp.
+        data_type: timestamp_ntz
       - name: financial_value_at_risk_amount
         description: >
           Non-negative absolute monetary exposure; always 0 for late_arriving_payment.
+        data_type: decimal(18,2)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
+      - name: rule_description
+        description: >
+          Mechanical statement of which detection rule fired; not a root-cause finding.
+        data_type: varchar
       - name: severity
         description: >
           Deterministic exception_type-driven tier, escalated one level when
           financial_value_at_risk_amount >= 1000. Never randomness.
+        data_type: varchar
         tests:
           - not_null
           - accepted_values:
@@ -1513,6 +1878,7 @@ models:
         description: >
           Deterministic current-state workflow placeholder; always 'open' for every detected
           exception. Not a claim that any triage has occurred.
+        data_type: varchar
         tests:
           - not_null
           - accepted_values:
@@ -1522,14 +1888,18 @@ models:
         description: >
           Always null -- no deterministic synthetic workflow-assignment data exists in the
           Milestone 9 specification; never fabricated.
+        data_type: varchar
       - name: resolution_date
         description: Always null -- no exception has been resolved; this dataset has no such history.
+        data_type: timestamp_ntz
       - name: root_cause
         description: >
           Always null -- distinct from rule_description (int_billing_exceptions), which states
           which detection rule fired, not a human investigation's finding.
+        data_type: varchar
       - name: remediation_action
         description: Always null -- no remediation workflow has occurred.
+        data_type: varchar
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
