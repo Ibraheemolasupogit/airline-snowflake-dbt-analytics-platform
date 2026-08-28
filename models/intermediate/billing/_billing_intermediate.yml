@@ -542,3 +542,127 @@ models:
           - accepted_values:
               values: [true, false]
               quote: false
+
+  - name: int_outstanding_balance
+    description: >
+      Grain is one row per invoice. Primary key is invoice_id. Upstream models are fct_invoices
+      (Milestone 14/15/16) and fct_credit_notes (Milestone 16). See model SQL comment for the
+      exact formula, component sign conventions, and why credit_note_amount is exposed but not
+      separately netted into outstanding_balance.
+    columns:
+      - name: invoice_id
+        description: Natural invoice identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_id
+      - name: outstanding_balance
+        description: >
+          source_invoice_total - amount_collected + refund_amount + net_adjustment_amount.
+          Positive = amount still due; zero = settled; negative = over-settled. Never clamped to
+          zero.
+        tests:
+          - not_null
+      - name: settlement_status
+        description: Derived neutrally from the sign of outstanding_balance only.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - outstanding
+                - settled
+                - over_settled
+
+  - name: int_corporate_outstanding_balances
+    description: >
+      Grain is one row per corporate account per currency (not strictly one row per account -- see
+      model SQL comment for why). Primary key is (corporate_account_id, currency). Upstream models
+      are fct_invoices and int_outstanding_balance. Current-state aggregate only, not a commercial
+      customer mart.
+    columns:
+      - name: corporate_account_id
+        description: Natural corporate-account identifier.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__corporate_accounts')
+              field: corporate_account_id
+      - name: currency
+        description: The currency this row's totals are denominated in.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__currencies')
+              field: currency_code
+      - name: invoice_count
+        description: Count of this corporate account's invoices in this currency.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - corporate_account_id
+            - currency
+
+  - name: int_billing_exceptions
+    description: >
+      Grain is one row per detected billing/revenue exception. Primary key is (exception_type,
+      source_record_id). Every branch reuses existing Milestone 14-17 evidence directly -- see
+      model SQL comment for the full detection-rule rationale per exception_type, the severity
+      rule, and the financial_value_at_risk_amount convention.
+    columns:
+      - name: exception_type
+        description: One of the fourteen detection rules this milestone implements.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - duplicate_invoice
+                - failed_payment_after_ticket_issue
+                - unallocated_payment
+                - payment_without_invoice
+                - incorrect_fare
+                - currency_mismatch
+                - refund_greater_than_collected_amount
+                - invalid_adjustment
+                - cancelled_flight_without_refund
+                - completed_segment_without_recognised_revenue_precursor
+                - ancillary_sold_but_not_fulfilled
+                - ancillary_fulfilled_but_not_billed
+                - missing_invoice_line
+                - late_arriving_payment
+      - name: source_record_id
+        description: >
+          Deterministic natural identifier of the affected record(s) for this exception_type --
+          never a hard-coded ID; see model SQL comment for the exact construction per type.
+        tests:
+          - not_null
+      - name: financial_value_at_risk_amount
+        description: >
+          Non-negative absolute monetary exposure; always 0 for late_arriving_payment (a timing
+          anomaly with no monetary exposure by definition, not an unknown one).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: severity
+        description: >
+          Deterministic exception_type-driven tier, escalated one level when
+          financial_value_at_risk_amount >= 1000. Never randomness.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - critical
+                - high
+                - medium
+                - low
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - exception_type
+            - source_record_id

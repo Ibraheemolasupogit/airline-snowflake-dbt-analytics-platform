@@ -3,7 +3,11 @@ dialect = snowflake
 templater = dbt
 sql_file_exts = .sql
 max_line_length = 120
-large_file_skip_byte_limit = 20000
+# Milestone 18's int_billing_exceptions.sql unions 14 heavily-documented detection-rule CTEs into
+# one file (matching the established union-model pattern from int_booking_charge_components /
+# int_invoice_charge_comparison) and legitimately exceeds the 20000-byte default parser-lock limit
+# -- raised so it is actually linted rather than silently skipped, not to permit unbounded growth.
+large_file_skip_byte_limit = 40000
 exclude_rules = RF04
 exclude_paths =
     .venv

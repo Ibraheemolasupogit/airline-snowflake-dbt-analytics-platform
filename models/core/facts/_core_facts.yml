@@ -1386,3 +1386,152 @@ models:
         description: gross_recognised_amount + reversal_or_adjustment_amount.
         tests:
           - not_null
+
+  - name: fct_outstanding_balances
+    description: >
+      Grain is one row per invoice. Natural key is invoice_id; surrogate key is invoice_key.
+      Foreign keys: booking_key (fct_bookings), currency_key (dim_currency). Reuses
+      int_outstanding_balance. No reconciliation or commercial-mart field exists on this fact;
+      those remain out of scope until Milestone 19+.
+    columns:
+      - name: invoice_key
+        description: Foreign key to fct_invoices, reused as this fact's own surrogate key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: invoice_id
+        description: Natural invoice identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_id
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: outstanding_balance
+        description: >
+          source_invoice_total - amount_collected + refund_amount + net_adjustment_amount.
+          Positive = amount still due; zero = settled; negative = over-settled. Never clamped to
+          zero -- see docs/data_models/airline_outstanding_balances_exceptions.md.
+        tests:
+          - not_null
+      - name: settlement_status
+        description: Derived neutrally from the sign of outstanding_balance only.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - outstanding
+                - settled
+                - over_settled
+
+  - name: fct_billing_exceptions
+    description: >
+      Grain is one row per detected billing/revenue exception. Natural key is (exception_type,
+      source_record_id); surrogate key is exception_key. Foreign keys: booking_key
+      (fct_bookings), invoice_key (fct_invoices), payment_key (fct_payments), refund_key
+      (fct_refunds), adjustment_key (fct_adjustments), route_key (dim_route), airport_key
+      (dim_airport), currency_key (dim_currency) -- each populated only where that exception_type's
+      detection rule resolves it (see int_billing_exceptions). status/assigned_owner/
+      resolution_date/root_cause/remediation_action are deterministic current-state workflow
+      placeholders (status = 'open' for every row; the rest null) -- no investigation ever
+      occurred in this synthetic dataset, so none is fabricated. See
+      docs/data_models/airline_outstanding_balances_exceptions.md for the full taxonomy, severity
+      rule, and financial-value-at-risk convention.
+    columns:
+      - name: exception_key
+        description: Surrogate key, generated from (exception_type, source_record_id).
+        tests:
+          - not_null
+          - unique
+      - name: exception_type
+        description: One of the fourteen detection rules this milestone implements.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - duplicate_invoice
+                - failed_payment_after_ticket_issue
+                - unallocated_payment
+                - payment_without_invoice
+                - incorrect_fare
+                - currency_mismatch
+                - refund_greater_than_collected_amount
+                - invalid_adjustment
+                - cancelled_flight_without_refund
+                - completed_segment_without_recognised_revenue_precursor
+                - ancillary_sold_but_not_fulfilled
+                - ancillary_fulfilled_but_not_billed
+                - missing_invoice_line
+                - late_arriving_payment
+      - name: source_record_id
+        description: Deterministic natural identifier of the affected record(s) for this exception_type.
+        tests:
+          - not_null
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: financial_value_at_risk_amount
+        description: >
+          Non-negative absolute monetary exposure; always 0 for late_arriving_payment.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: severity
+        description: >
+          Deterministic exception_type-driven tier, escalated one level when
+          financial_value_at_risk_amount >= 1000. Never randomness.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - critical
+                - high
+                - medium
+                - low
+      - name: status
+        description: >
+          Deterministic current-state workflow placeholder; always 'open' for every detected
+          exception. Not a claim that any triage has occurred.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - open
+      - name: assigned_owner
+        description: >
+          Always null -- no deterministic synthetic workflow-assignment data exists in the
+          Milestone 9 specification; never fabricated.
+      - name: resolution_date
+        description: Always null -- no exception has been resolved; this dataset has no such history.
+      - name: root_cause
+        description: >
+          Always null -- distinct from rule_description (int_billing_exceptions), which states
+          which detection rule fired, not a human investigation's finding.
+      - name: remediation_action
+        description: Always null -- no remediation workflow has occurred.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - exception_type
+            - source_record_id
