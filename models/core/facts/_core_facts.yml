@@ -669,11 +669,13 @@ models:
     description: >
       Grain is one row per invoice. Natural key is invoice_id; surrogate key is invoice_key.
       Foreign keys: booking_key (fct_bookings), currency_key (dim_currency). Reuses
-      int_invoice_calculation (arithmetic), int_invoice_status (current-state status), and
-      int_payment_allocation (Milestone 15, payment aggregation). amount_collected/payment_count
-      are provisional collected-amount measures, NOT an outstanding-balance calculation -- see
-      model SQL comment. No refund amount or recognised-revenue field exists on this fact; those
-      remain out of scope until Milestone 16+. booking_id is deliberately not unique-tested: the
+      int_invoice_calculation (arithmetic), int_invoice_status (current-state status),
+      int_payment_allocation (Milestone 15, payment aggregation), int_refund_allocation, and
+      int_adjustment_allocation (Milestone 16) rather than re-deriving any of them.
+      amount_collected/payment_count and refund_count/refund_amount/adjustment_count/
+      net_adjustment_amount are provisional financial-movement measures, NOT an outstanding-balance
+      calculation -- see model SQL comment. No recognised-revenue field exists on this fact; that
+      remains out of scope until Milestone 17+. booking_id is deliberately not unique-tested: the
       duplicate_invoice controlled exception produces two invoice_id rows for the same booking_id,
       preserved unchanged -- see docs/data_models/airline_invoices.md.
     columns:
@@ -755,12 +757,39 @@ models:
       - name: amount_collected
         description: >
           sum(int_payment_allocation.allocated_amount) across every payment matched to this
-          invoice. Provisional -- NOT a final outstanding_balance; refunds/credits/adjustments are
-          not yet modelled. See model SQL comment.
+          invoice. Provisional -- NOT a final outstanding_balance. See model SQL comment.
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_between:
               min_value: 0
+      - name: refund_count
+        description: Count of fct_refunds rows matched to this invoice_id (Milestone 16).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: refund_amount
+        description: >
+          sum(int_refund_allocation.refund_amount) across every refund matched to this invoice,
+          unmodified from source (including the refund_greater_than_collected_amount exception's
+          inflated value). Provisional -- NOT a final outstanding_balance. See model SQL comment.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: adjustment_count
+        description: Count of fct_adjustments rows matched to this invoice_id (Milestone 16).
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: net_adjustment_amount
+        description: >
+          sum(int_adjustment_allocation.amount) across every adjustment matched to this invoice,
+          using the actual staged sign convention (credit = negative). Provisional -- NOT a final
+          outstanding_balance. See model SQL comment.
+        tests:
+          - not_null
 
   - name: fct_invoice_lines
     description: >
@@ -768,8 +797,9 @@ models:
       invoice_line_key. Foreign keys: invoice_key (fct_invoices), booking_key (fct_bookings),
       currency_key (dim_currency). Reuses int_invoice_line_validation (structural validation) and
       int_invoice_charge_comparison (pricing-vs-invoice evidence). Payment-level detail lives on
-      fct_payments (Milestone 15), not here; no refund or revenue field exists on this fact -- those
-      remain out of scope until Milestone 16+.
+      fct_payments (Milestone 15) and refund/adjustment detail on fct_refunds/fct_adjustments
+      (Milestone 16), not here; no revenue field exists on this fact -- that remains out of scope
+      until Milestone 17+.
     columns:
       - name: invoice_line_key
         description: Surrogate key, generated from invoice_line_id.
@@ -930,8 +960,9 @@ models:
       key is payment_key. Foreign keys: invoice_key (fct_invoices, null for an unmatched payment),
       booking_key (fct_bookings, null for an unmatched payment), payment_method_key
       (dim_payment_method), currency_key (dim_currency). Reuses int_payment_allocation (which
-      reuses int_invoice_payment_matching). No refunded-amount or revenue-recognition field exists
-      on this fact; those remain out of scope until Milestone 16+. The deliberately injected
+      reuses int_invoice_payment_matching). Refund detail lives on fct_refunds (Milestone 16),
+      joinable via payment_id, not duplicated here; no revenue-recognition field exists on this
+      fact -- that remains out of scope until Milestone 17+. The deliberately injected
       payment_without_invoice controlled exception (see docs/data_models/airline_synthetic_
       exception_catalogue.md) surfaces here with has_invoice_match = false and null invoice_key/
       booking_key -- preserved, never repaired or dropped.
@@ -1018,3 +1049,245 @@ models:
         description: >
           payment_datetime_utc - invoice_date_utc, in days; null when unmatched. No fixed "late"
           threshold is defined -- see docs/data_models/airline_payments.md.
+
+  - name: fct_refunds
+    description: >
+      Grain is one row per refund transaction. Natural key is refund_id; surrogate key is
+      refund_key. Foreign keys: payment_key (fct_payments), invoice_key (fct_invoices), booking_key
+      (fct_bookings), currency_key (dim_currency). Reuses int_refund_allocation. No
+      revenue-reversal field exists on this fact -- that remains out of scope until Milestone 17+.
+    columns:
+      - name: refund_key
+        description: Surrogate key, generated from refund_id.
+        tests:
+          - not_null
+          - unique
+      - name: refund_id
+        description: Natural refund identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__refunds')
+              field: refund_id
+      - name: invoice_key
+        description: Foreign key to fct_invoices.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: booking_key
+        description: Foreign key to fct_bookings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: status
+        description: Refund status, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+                - pending
+      - name: refund_amount
+        description: >
+          Refund amount, unchanged from source. One row carries the deliberately injected
+          refund_greater_than_collected_amount controlled exception.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: refund_limit_variance
+        description: >
+          refund_amount - refundable_amount_reference. Positive means the refund exceeds the
+          amount collected on its matched payment. Calculation evidence only, not a
+          billing-exception classification.
+      - name: has_payment_match
+        description: True when payment_id resolves to a real payment.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: >
+          True when currency equals the matched payment's currency; null when unmatched.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: fct_adjustments
+    description: >
+      Grain is one row per adjustment. Natural key is adjustment_id; surrogate key is
+      adjustment_key. Foreign keys: invoice_key (fct_invoices, null for an unmatched adjustment),
+      booking_key (fct_bookings, null for an unmatched adjustment), currency_key (dim_currency).
+      Reuses int_adjustment_allocation. No revenue-recognition field exists on this fact -- that
+      remains out of scope until Milestone 17+. The deliberately injected invalid_adjustment
+      controlled exception (see docs/data_models/airline_synthetic_exception_catalogue.md)
+      surfaces here with has_invoice_match = false, null invoice_key/booking_key, and
+      has_expected_sign_for_type = false -- preserved, never repaired or dropped.
+    columns:
+      - name: adjustment_key
+        description: Surrogate key, generated from adjustment_id.
+        tests:
+          - not_null
+          - unique
+      - name: adjustment_id
+        description: Natural adjustment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__adjustments')
+              field: adjustment_id
+      - name: invoice_key
+        description: Foreign key to fct_invoices; null for an unmatched (invalid_adjustment) row.
+        tests:
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: booking_key
+        description: Foreign key to fct_bookings; null for an unmatched adjustment.
+        tests:
+          - relationships:
+              to: ref('fct_bookings')
+              field: booking_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: adjustment_type
+        description: Adjustment direction, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - credit
+                - debit
+      - name: amount
+        description: >
+          Adjustment amount, unchanged from source. Sign convention: credit = negative (decreases
+          amount due); debit = positive. See docs/data_models/airline_refunds_adjustments.md.
+        tests:
+          - not_null
+      - name: has_invoice_match
+        description: True when invoice_id resolves to a real invoice.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_supported_adjustment_type
+        description: True when adjustment_type is one of the two known values.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: True when currency equals the matched invoice's currency; null when unmatched.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_expected_sign_for_type
+        description: >
+          True when a 'credit' adjustment's amount is <= 0, or a 'debit' adjustment's amount is
+          >= 0. False for the deliberately injected invalid_adjustment exception. Structural
+          evidence only, not a billing-exception classification.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: fct_credit_notes
+    description: >
+      Grain is one row per credit note. Natural key is credit_note_id; surrogate key is
+      credit_note_key. Foreign keys: invoice_key (fct_invoices), refund_key (fct_refunds, null when
+      unlinked), adjustment_key (fct_adjustments, null in the current dataset -- see model SQL
+      comment), currency_key (dim_currency). Reuses int_credit_note_application. Implemented as a
+      standalone fact, not merged into fct_refunds, because a credit note is its own distinct
+      document type with its own natural key and status lifecycle -- see model SQL comment.
+    columns:
+      - name: credit_note_key
+        description: Surrogate key, generated from credit_note_id.
+        tests:
+          - not_null
+          - unique
+      - name: credit_note_id
+        description: Natural credit-note identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__credit_notes')
+              field: credit_note_id
+      - name: invoice_key
+        description: Foreign key to fct_invoices.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_invoices')
+              field: invoice_key
+      - name: refund_key
+        description: Foreign key to fct_refunds; null when this credit note is not linked to a refund.
+        tests:
+          - relationships:
+              to: ref('fct_refunds')
+              field: refund_key
+      - name: adjustment_key
+        description: >
+          Foreign key to fct_adjustments; null when this credit note is not linked to an
+          adjustment (always null in the current dataset).
+        tests:
+          - relationships:
+              to: ref('fct_adjustments')
+              field: adjustment_key
+      - name: currency_key
+        description: Foreign key to dim_currency.
+        tests:
+          - relationships:
+              to: ref('dim_currency')
+              field: currency_key
+      - name: status
+        description: Credit-note status, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - issued
+      - name: amount
+        description: Credit-note amount, unchanged from source.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: has_refund_link
+        description: True when refund_id is populated. Always true in the current dataset.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_adjustment_link
+        description: True when adjustment_id is populated. Always false in the current dataset.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: True when currency equals the matched invoice's currency; null when unmatched.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false

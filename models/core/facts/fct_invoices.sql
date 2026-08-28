@@ -1,18 +1,31 @@
 -- Grain is one row per invoice (invoice_id). Reuses int_invoice_calculation (arithmetic),
--- int_invoice_status (current-state status), and int_payment_allocation (Milestone 15, payment
--- aggregation) rather than re-deriving any of them, and adds surrogate dimension keys, following
--- the established core-layer pattern. No refund amount or recognised-revenue field exists on this
--- fact -- those remain out of scope until Milestone 16+.
+-- int_invoice_status (current-state status), int_payment_allocation (Milestone 15, payment
+-- aggregation), int_refund_allocation, and int_adjustment_allocation (Milestone 16) rather than
+-- re-deriving any of them, and adds surrogate dimension keys, following the established
+-- core-layer pattern. No revenue-recognition field exists on this fact -- that remains out of
+-- scope until Milestone 17+.
 --
 -- amount_collected/payment_count (Milestone 15) are provisional collected-amount measures, NOT an
 -- outstanding-balance calculation: amount_collected sums int_payment_allocation.allocated_amount
 -- (the portion of each matched payment actually applied to this invoice, capped at
 -- source_invoice_total -- see that model for why) across every payment matched to this invoice_id;
 -- it deliberately excludes any payment_without_invoice row, which by definition cannot match an
--- invoice_id. Refunds, credits, and adjustments are not yet modelled anywhere in this repository,
--- so amount_collected - source_invoice_total is NOT a final outstanding_balance and this fact does
--- not expose one; that calculation is reserved for a later milestone once refunds/adjustments
--- exist to net against it.
+-- invoice_id.
+--
+-- refund_count/refund_amount and adjustment_count/net_adjustment_amount (Milestone 16) are
+-- likewise neutral post-payment financial-movement measures, not a balance calculation.
+-- refund_amount sums int_refund_allocation.refund_amount (the source-staged amount, unmodified --
+-- including the refund_greater_than_collected_amount controlled exception's inflated value) for
+-- refunds matched to this invoice_id. net_adjustment_amount sums int_adjustment_allocation.amount
+-- using its actual staged sign convention (credit = negative, decreasing amount due) for
+-- adjustments matched to this invoice_id, excluding the invalid_adjustment exception row (which
+-- has no resolvable invoice_id to match against here in the first place).
+--
+-- amount_collected - refund_amount is deliberately NOT computed as an outstanding_balance on this
+-- fact: adjustments, credit notes, billing exceptions, and every other financial movement this
+-- repository will ever model are not all present yet, so any such subtraction now would be
+-- provisional in a way this milestone's own scope boundary explicitly defers. Milestone 18 owns
+-- the final outstanding-balance model once every preceding financial movement exists.
 --
 -- The duplicate_invoice controlled exception (see docs/data_models/airline_synthetic_exception_
 -- catalogue.md) produces two distinct invoice_id rows sharing the same booking_id; both are
@@ -84,6 +97,29 @@ payment_aggregates as (
 
 ),
 
+refund_aggregates as (
+
+    select
+        invoice_id,
+        count(*) as refund_count,
+        sum(refund_amount) as refund_amount
+    from {{ ref('int_refund_allocation') }}
+    group by invoice_id
+
+),
+
+adjustment_aggregates as (
+
+    select
+        invoice_id,
+        count(*) as adjustment_count,
+        sum(amount) as net_adjustment_amount
+    from {{ ref('int_adjustment_allocation') }}
+    where has_invoice_match
+    group by invoice_id
+
+),
+
 joined as (
 
     select
@@ -112,7 +148,11 @@ joined as (
         invoice_calculation.calculated_invoice_line_total,
         invoice_calculation.invoice_total_variance,
         coalesce(payment_aggregates.payment_count, 0) as payment_count,
-        coalesce(payment_aggregates.amount_collected, 0) as amount_collected
+        coalesce(payment_aggregates.amount_collected, 0) as amount_collected,
+        coalesce(refund_aggregates.refund_count, 0) as refund_count,
+        coalesce(refund_aggregates.refund_amount, 0) as refund_amount,
+        coalesce(adjustment_aggregates.adjustment_count, 0) as adjustment_count,
+        coalesce(adjustment_aggregates.net_adjustment_amount, 0) as net_adjustment_amount
     from invoice_calculation
     left join invoice_status
         on invoice_calculation.invoice_id = invoice_status.invoice_id
@@ -122,6 +162,10 @@ joined as (
         on invoice_calculation.currency = currencies.currency_code
     left join payment_aggregates
         on invoice_calculation.invoice_id = payment_aggregates.invoice_id
+    left join refund_aggregates
+        on invoice_calculation.invoice_id = refund_aggregates.invoice_id
+    left join adjustment_aggregates
+        on invoice_calculation.invoice_id = adjustment_aggregates.invoice_id
 
 ),
 
@@ -154,7 +198,11 @@ final as (
         calculated_invoice_line_total,
         invoice_total_variance,
         payment_count,
-        cast(amount_collected as decimal(18, 2)) as amount_collected
+        cast(amount_collected as decimal(18, 2)) as amount_collected,
+        refund_count,
+        cast(refund_amount as decimal(18, 2)) as refund_amount,
+        adjustment_count,
+        cast(net_adjustment_amount as decimal(18, 2)) as net_adjustment_amount
     from joined
 
 )
@@ -186,5 +234,9 @@ select
     calculated_invoice_line_total,
     invoice_total_variance,
     payment_count,
-    amount_collected
+    amount_collected,
+    refund_count,
+    refund_amount,
+    adjustment_count,
+    net_adjustment_amount
 from final

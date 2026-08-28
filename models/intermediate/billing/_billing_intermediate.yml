@@ -383,3 +383,162 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               expression: "> 0"
+
+  - name: int_refund_payment_matching
+    description: >
+      Grain is one row per refund. Primary key is refund_id. Upstream models are
+      stg_airline__refunds and stg_airline__payments, LEFT JOINed on payment_id so an unmatched
+      refund would be preserved, not dropped (none currently occurs in this dataset -- see model
+      SQL comment).
+    columns:
+      - name: refund_id
+        description: Natural refund identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__refunds')
+              field: refund_id
+      - name: invoice_id
+        description: Invoice the refund relates to, preserved directly from stg_airline__refunds.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__invoices')
+              field: invoice_id
+      - name: booking_id
+        description: Booking the refund relates to, preserved directly from stg_airline__refunds.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_airline__bookings')
+              field: booking_id
+      - name: has_payment_match
+        description: True when payment_id resolves to a real payment.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: >
+          True when refund_currency equals payment_currency; null when there is no matched
+          payment to compare against.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_refund_allocation
+    description: >
+      Grain is one row per refund. Primary key is refund_id. Upstream model is
+      int_refund_payment_matching. Exposes refund-limit calculation evidence only -- see model SQL
+      comment for the exact formula and for why refundable_amount_reference is the matched
+      payment's amount, not an invoice-level aggregate.
+    columns:
+      - name: refund_id
+        description: Natural refund identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_refund_payment_matching')
+              field: refund_id
+      - name: refund_amount
+        description: Refund amount, unchanged from source. One row carries the deliberately
+          injected refund_greater_than_collected_amount controlled exception.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_between:
+              min_value: 0
+      - name: refund_limit_variance
+        description: >
+          refund_amount - refundable_amount_reference. Positive means the refund exceeds the
+          amount collected on its matched payment. Calculation evidence only, not a
+          billing-exception classification.
+
+  - name: int_adjustment_allocation
+    description: >
+      Grain is one row per adjustment. Primary key is adjustment_id. Upstream models are
+      stg_airline__adjustments and stg_airline__invoices, LEFT JOINed so the deliberately injected
+      invalid_adjustment controlled exception (invoice_id does not resolve) is preserved, not
+      dropped. See model SQL comment for the verified sign convention.
+    columns:
+      - name: adjustment_id
+        description: Natural adjustment identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__adjustments')
+              field: adjustment_id
+      - name: adjustment_type
+        description: Adjustment direction, unchanged from source.
+        tests:
+          - accepted_values:
+              values:
+                - credit
+                - debit
+      - name: has_invoice_match
+        description: True when invoice_id resolves to a real invoice.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_supported_adjustment_type
+        description: True when adjustment_type is one of the two known values.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: is_currency_match
+        description: >
+          True when currency equals the matched invoice's currency; null when unmatched.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_expected_sign_for_type
+        description: >
+          True when a 'credit' adjustment's amount is <= 0, or a 'debit' adjustment's amount is
+          >= 0. False for the deliberately injected invalid_adjustment exception (a 'credit'
+          adjustment with a positive amount). Structural evidence only, not a billing-exception
+          classification.
+        tests:
+          - accepted_values:
+              values: [true, false]
+              quote: false
+
+  - name: int_credit_note_application
+    description: >
+      Grain is one row per credit note. Primary key is credit_note_id. Upstream models are
+      stg_airline__credit_notes and stg_airline__invoices. A credit note in this dataset is a
+      paper-trail document evidencing a refund, not an independent invoice-application instrument
+      -- see model SQL comment for why no allocation rule is invented here.
+    columns:
+      - name: credit_note_id
+        description: Natural credit-note identifier and grain key.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('stg_airline__credit_notes')
+              field: credit_note_id
+      - name: has_refund_link
+        description: True when refund_id is populated. Always true in the current dataset.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
+      - name: has_adjustment_link
+        description: >
+          True when adjustment_id is populated. Always false in the current dataset -- see model
+          SQL comment.
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+              quote: false
